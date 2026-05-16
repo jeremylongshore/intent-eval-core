@@ -1,0 +1,64 @@
+{
+  "name": "@intent-eval/core",
+  "version": "0.0.0",
+  "description": "Canonical contracts kernel for the Intent Eval Platform — TypeScript types, JSON Schemas, Zod validators, and state machines for the 13 canonical entities.",
+  "keywords": [
+    "intent-eval",
+    "contracts",
+    "kernel",
+    "zod",
+    "json-schema",
+    "evidence-bundle"
+  ],
+  "homepage": "https://github.com/jeremylongshore/intent-eval-core",
+  "bugs": "https://github.com/jeremylongshore/intent-eval-core/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jeremylongshore/intent-eval-core.git"
+  },
+  "license": "Apache-2.0",
+  "author": "Jeremy Longshore <jeremy@intentsolutions.io>",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm run lint && pnpm run typecheck && pnpm run test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/node": "^22.10.0",
+    "@typescript-eslint/eslint-plugin": "^8.19.0",
+    "@typescript-eslint/parser": "^8.19.0",
+    "@vitest/coverage-v8": "^2.1.8",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.19.0",
+    "vitest": "^2.1.8"
+  }
+}
