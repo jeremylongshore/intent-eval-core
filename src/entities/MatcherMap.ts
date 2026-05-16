@@ -41,19 +41,94 @@ export const matcherMapTransitions: TransitionMap<MatcherMapState> = {
 } as const;
 
 /**
- * Typed input pattern. Blueprint B § 2.3 specifies "typed pattern (regex,
- * JSON Schema fragment, structural matcher)" without enumerating the type
- * union. Modeled as opaque object for v0.1; refinement deferred to a
- * follow-up bead that ships the pattern-class enum.
+ * Typed input pattern — closed three-variant discriminated union per
+ * Blueprint B § 2.3 (line 159: "regex, JSON Schema fragment, or structural
+ * matcher").
+ *
+ * Adding a fourth variant requires Class-1 ISEDC convening (touches
+ * canonical-domain schema surface).
+ *
+ * Per-variant payload notes:
+ *   - `regex` — regex flavor (RE2/PCRE/ECMA) NOT spec-named. Validators at
+ *     the runtime layer pick a flavor; replay-determinism is enforced via
+ *     MatcherMap.content_hash (§ 2.3 line 163), not via flavor lock-in here.
+ *   - `json-schema` — JSON Schema draft NOT spec-named. Recommendation:
+ *     draft 2020-12 (current open standard). Schema body modeled as
+ *     `Record<string, unknown>` because typing JSON Schema in TS is
+ *     itself a non-trivial type-system problem (out of scope for v1).
+ *   - `structural` — payload is genuinely undefined in Blueprint B.
+ *     Modeled as `unknown` to surface the deferral. Lock when an
+ *     engagement defines it.
  */
-export type MatcherInputPattern = Readonly<Record<string, unknown>>;
+export type MatcherInputPattern =
+  | {
+      readonly kind: 'regex';
+      readonly pattern: string;
+      readonly flags?: string;
+    }
+  | {
+      readonly kind: 'json-schema';
+      readonly schema: Readonly<Record<string, unknown>>;
+    }
+  | {
+      readonly kind: 'structural';
+      /**
+       * Wholly undefined in Blueprint B § 2.3. Lock when a downstream
+       * engagement specifies the matcher format.
+       */
+      readonly matcher: unknown;
+    };
 
 /**
- * Typed expected behavior. Same deferral rationale as MatcherInputPattern —
- * Blueprint B mentions "exact match, semantic match, contract-conformance,
- * redaction-confirmed" as examples but doesn't lock the enum.
+ * Expected-behavior variant identifiers blessed by Blueprint B § 2.3
+ * (line 159: "exact match, semantic match, contract-conformance,
+ * redaction-confirmed, etc.").
+ *
+ * The trailing `etc.` is load-bearing — the spec explicitly leaves the
+ * enum OPEN to additions that follow § 7.2 backward-compat policy
+ * (adding new optional enum values MUST NOT require a URI bump).
+ *
+ * The kernel exports the v1 named set as `MatcherExpectedBehaviorKindV1`
+ * for type-narrowing on the known cases. Open extension is encoded via
+ * the union below.
  */
-export type MatcherExpectedBehavior = Readonly<Record<string, unknown>>;
+export type MatcherExpectedBehaviorKindV1 =
+  | 'exact'
+  | 'semantic'
+  | 'contract-conformance'
+  | 'redaction-confirmed';
+
+/**
+ * Typed expected behavior. Discriminated union of the v1 named variants
+ * plus an open extension slot.
+ *
+ * Per-variant payload shapes are deliberately NOT specified by Blueprint B
+ * (`exact` is probably parameter-free; `semantic` probably needs a
+ * similarity threshold or judge identity; `contract-conformance` probably
+ * references a schema; `redaction-confirmed` probably references a
+ * redaction rule — but the spec does not say). Modeled as `unknown` to
+ * preserve room for the per-engagement DRs that will codify them.
+ *
+ * The extension variant (`kind` typed as `string & {extension: true}`) is
+ * an intentional escape valve that does NOT collide at the type level with
+ * the v1 literal union — discriminating against `MatcherExpectedBehaviorKindV1`
+ * narrows correctly.
+ */
+export type MatcherExpectedBehavior =
+  | {
+      readonly kind: MatcherExpectedBehaviorKindV1;
+      readonly payload?: unknown;
+    }
+  | {
+      /**
+       * Extension variants. The string MUST NOT collide with any v1 literal
+       * in `MatcherExpectedBehaviorKindV1` — discriminating consumers should
+       * check the v1 set first, then fall through to extension handling.
+       */
+      readonly kind: string;
+      readonly payload: unknown;
+      readonly extension: true;
+    };
 
 /**
  * MatcherMap — reusable input→behavior definition referenced by EvalSpec.

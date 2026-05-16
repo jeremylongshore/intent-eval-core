@@ -52,8 +52,10 @@ export const evalRunTransitions: TransitionMap<EvalRunState> = {
 
 /**
  * Terminal reason enum. Blueprint B § 3.1 enumerates these for the
- * `archived_failed` / `skipped_due_to_gate` paths. Set is extensible —
- * additions land via ADR + bead.
+ * `archived_failed` / `skipped_due_to_gate` paths, plus § 1.3 line 100
+ * adds `upstream_feed_failed` for `feeds`-edge cascade failures.
+ *
+ * Set is extensible — additions land via ADR + bead.
  */
 export type EvalRunTerminalReason =
   | 'queued_timeout_elapsed'
@@ -62,7 +64,8 @@ export type EvalRunTerminalReason =
   | 'credential_leak_detected'
   | 'judge_unavailable_exhausted'
   | 'token_ceiling_exceeded'
-  | 'evidence_contract_violation';
+  | 'evidence_contract_violation'
+  | 'upstream_feed_failed';
 
 /**
  * EvalRun — one execution attempt.
