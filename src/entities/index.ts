@@ -7,9 +7,12 @@
  *   - any enum literal unions referenced by the entity
  *   - the const transition map (where applicable)
  *
- * Authoring order: E02a (this file's first three), E02b, E02c, E02d.
+ * Authoring order: E02a, E02b (this iteration), E02c, E02d.
  */
 
 export * from './EvalSpec.js';
 export * from './EvalRun.js';
 export * from './MatcherMap.js';
+export * from './EvidenceBundle.js';
+export * from './JudgeDecision.js';
+export * from './RuntimeReceipt.js';

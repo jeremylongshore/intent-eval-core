@@ -11,10 +11,13 @@
  *
  * Public surface:
  *   - branded primitive types (Uuidv7, Sha256, Sha256Prefixed, Rfc3339, SemVer, ...)
- *   - 13 canonical entities (EvalSpec, EvalRun, MatcherMap, ... — landing E02a..E02d)
- *   - gate-result/v1 normative predicate (landing in a future iec-E0X bead)
+ *   - 13 canonical entities (E02a/b shipped; c+d in flight)
+ *   - in-toto predicate body normative specs (gate-result/v1 in v1; others
+ *     deferred per DR-010 Q3 conditional approval)
+ *   - state-machine helpers
  */
 
 export * from './primitives.js';
 export * from './state-machines/types.js';
 export * from './entities/index.js';
+export * from './predicates/index.js';
