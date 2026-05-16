@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Test + coverage
+coverage/
+.nyc_output/
+.vitest-cache/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment + secrets
+.env
+.env.local
+.env.*.local
+.env.sops
+!.env.example
+!.env.*.example
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# OS
+Thumbs.db
+
+# Beads workspace (kernel is task-tracked at umbrella ~/000-projects/.beads/)
+.beads/
