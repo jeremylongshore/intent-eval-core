@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history for escape-scan range checks
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -35,17 +37,29 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Harness verify (hash-pinned policy artifacts)
+        run: pnpm run harness:verify
+
       - name: Lint
         run: pnpm run lint
 
       - name: Typecheck
         run: pnpm run typecheck
 
-      - name: Test
+      - name: Architecture rules (Blueprint A anti-goals)
+        run: pnpm run arch
+
+      - name: Test (runtime + in-process type assertions)
         run: pnpm run test
+
+      - name: Coverage (100% floor enforced via vitest config)
+        run: pnpm run test:coverage
 
       - name: Build
         run: pnpm run build
+
+      - name: Type tests (tsd — second-opinion against published surface)
+        run: pnpm run test:types
 
       - name: Verify dist artifacts emitted
         run: |

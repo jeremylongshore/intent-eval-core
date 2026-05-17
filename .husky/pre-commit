@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+# Pre-commit gate for @intent-eval/core
+#
+# Runs the in-repo @intentsolutions/audit-harness escape-scan against staged
+# changes, then runs lint-staged (lint + format on staged files only).
+#
+# Per IS Testing SOP: hooks reference the in-repo harness, never ~/.claude/
+# paths. This file is hash-pinned by `pnpm exec audit-harness init`.
+
+set -e
+
+# L1: escape-scan against staged diff (REFUSES on policy violations)
+pnpm exec audit-harness escape-scan --staged
+
+# L2: lint + format staged files only
+pnpm exec lint-staged

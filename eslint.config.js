@@ -5,7 +5,20 @@ import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'node_modules/**', 'coverage/**', '*.config.js', '*.config.ts'],
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      'coverage/**',
+      'reports/**',
+      '*.config.js',
+      '*.config.ts',
+      '*.cjs',
+      '.husky/**',
+      // test-d/ is owned by tsd — runs against dist/ as a separate process.
+      // ESLint's typed lint would need test-d in tsconfig, but test-d
+      // explicitly imports from dist/ which is post-build territory.
+      'test-d/**',
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,

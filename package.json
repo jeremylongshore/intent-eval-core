@@ -38,25 +38,48 @@
   },
   "packageManager": "pnpm@9.15.0",
   "scripts": {
+    "prepare": "husky",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:types": "tsd",
+    "test:coverage": "vitest run --coverage",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "pnpm run lint && pnpm run typecheck && pnpm run test"
+    "arch": "audit-harness arch",
+    "harness:verify": "audit-harness verify",
+    "harness:init": "audit-harness init",
+    "check": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run arch"
+  },
+  "lint-staged": {
+    "*.{ts,js,cjs,mjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "tsd": {
+    "directory": "test-d"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@intentsolutions/audit-harness": "^0.1.0",
     "@types/node": "^22.10.0",
     "@typescript-eslint/eslint-plugin": "^8.19.0",
     "@typescript-eslint/parser": "^8.19.0",
     "@vitest/coverage-v8": "^2.1.8",
+    "dependency-cruiser": "^17.4.0",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.5",
     "prettier": "^3.4.2",
+    "tsd": "^0.33.0",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.19.0",
     "vitest": "^2.1.8"
