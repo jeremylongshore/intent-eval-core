@@ -96,7 +96,7 @@ Removing any waiver requires an engineer commit that adds the gate AND re-pins v
 ## Frameworks
 
 - **Test runner**: vitest 2
-- **Type-level assertions**: `expectTypeOf` from vitest 2 (in-process); `tsd@0.33` (planned, second-opinion framework — iec-E02e)
+- **Type-level assertions**: `expectTypeOf` from vitest 2 (in-process) + `tsd@0.33` (separate-process second-opinion via `pnpm run test:types`) — both wired in iec-E02e
 - **Lint**: ESLint 9 flat + typescript-eslint 8 (typed lint via `projectService`)
 - **Format**: Prettier 3
 - **Coverage**: vitest c8 (`@vitest/coverage-v8@2`)
