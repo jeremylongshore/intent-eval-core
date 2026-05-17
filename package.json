@@ -25,10 +25,21 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./schemas/v1/*.json": "./schemas/v1/*.json",
+    "./schemas/v1": "./schemas/v1/index.json",
+    "./validators/v1": {
+      "types": "./dist/validators/v1/index.d.ts",
+      "import": "./dist/validators/v1/index.js"
+    },
+    "./validators/v1/*": {
+      "types": "./dist/validators/v1/*.d.ts",
+      "import": "./dist/validators/v1/*.js"
     }
   },
   "files": [
     "dist",
+    "schemas",
     "LICENSE",
     "README.md"
   ],
@@ -41,6 +52,7 @@
     "prepare": "husky",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
+    "codegen:validators": "for f in schemas/v1/*.schema.json; do name=$(basename \"$f\" .schema.json); pnpm exec json-schema-to-zod -i \"$f\" -o \"src/validators/v1/_generated/${name}.ts\"; done",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:types": "tsd",
@@ -79,11 +91,15 @@
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
     "husky": "^9.1.7",
+    "json-schema-to-zod": "^2.8.1",
     "lint-staged": "^17.0.5",
     "prettier": "^3.4.2",
     "tsd": "^0.33.0",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.19.0",
     "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
   }
 }

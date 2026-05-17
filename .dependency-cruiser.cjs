@@ -55,13 +55,32 @@ module.exports = {
       name: 'kernel-no-runtime-deps',
       severity: 'error',
       comment:
-        'Blueprint A anti-goal: the kernel ships pure types. No runtime npm packages may appear ' +
-        'in src/. All declared deps are devDependencies (build/test tooling) — none should land in dist.',
-      from: { path: '^src' },
+        'Blueprint A anti-goal: the kernel ships pure types and a thin opt-in validators layer. ' +
+        'src/entities, src/predicates, src/primitives, src/state-machines and the root index ' +
+        'MUST NOT import runtime npm packages. The src/validators/ subtree is the ONLY exception ' +
+        '— it imports `zod` for the opt-in runtime validators per iec-E04. Consumers who only ' +
+        'need types import from the main entry and pay zero zod bundle cost.',
+      from: { path: '^src/(?!validators/)' },
       to: {
         dependencyTypes: ['npm'],
-        // Allow nothing — every runtime import must be explicitly waived here with a comment.
         pathNot: [],
+      },
+    },
+    {
+      name: 'validators-only-import-zod',
+      severity: 'error',
+      comment:
+        'src/validators/ is the only subtree allowed to import npm packages, and the ONLY npm ' +
+        'package it may import is `zod`. Adding another runtime dep here requires explicit ' +
+        'kernel-bloat review.',
+      from: { path: '^src/validators/' },
+      to: {
+        dependencyTypes: ['npm'],
+        // Match the resolved node_modules path. pnpm flattens via virtual
+        // store at `.pnpm/<pkg>@<ver>/node_modules/<pkg>/`. Allow paths
+        // ending in `/zod/...` (matches both the canonical and pnpm-store
+        // variants).
+        pathNot: ['(^|/)zod/'],
       },
     },
     {
@@ -116,15 +135,26 @@ module.exports = {
       from: { path: '^src/primitives\\.ts$' },
       to: { pathNot: '.*' }, // primitives is a leaf — depends on nothing
     },
+    {
+      // Validators may import from sibling validator files + zod (via npm).
+      // No imports from src/entities (which would create a duplicate-source
+      // problem) or src/predicates (validators are the runtime parsers FOR
+      // those types — the predicate body types are duplicated at the Zod
+      // layer for tree-shakable runtime parsing).
+      from: { path: '^src/validators/' },
+      to: { path: '^(src/validators/|node_modules)' },
+    },
   ],
 
   options: {
     doNotFollow: { path: 'node_modules' },
-    // Exclude test files from architecture rules. Tests are not consumer-
-    // shipped code — they MAY import vitest, ajv, node:fs, etc. that
-    // production src/ MUST NOT. The 7 forbidden rules above govern the
-    // consumer-facing surface only.
-    exclude: { path: '\\.(test|spec)\\.ts$' },
+    // Exclude test files and codegen-reference output from architecture
+    // rules. Test files are not consumer-shipped (they MAY import vitest/
+    // ajv/node:fs that production src/ MUST NOT). The _generated/ subtree
+    // is json-schema-to-zod reference output (see src/validators/v1/
+    // _generated/README.md) — not canonical and not exported. The 7
+    // forbidden rules govern the consumer-facing surface only.
+    exclude: { path: '\\.(test|spec)\\.ts$|^src/validators/v1/_generated/' },
     tsPreCompilationDeps: true,
     tsConfig: { fileName: 'tsconfig.json' },
     enhancedResolveOptions: {

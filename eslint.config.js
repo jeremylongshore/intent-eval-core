@@ -18,6 +18,10 @@ export default tseslint.config(
       // ESLint's typed lint would need test-d in tsconfig, but test-d
       // explicitly imports from dist/ which is post-build territory.
       'test-d/**',
+      // _generated/ is json-schema-to-zod codegen output (see
+      // src/validators/v1/_generated/README.md) — reference material, not
+      // canonical. Not exported, not consumed at runtime, not linted.
+      'src/validators/v1/_generated/**',
     ],
   },
   eslint.configs.recommended,
