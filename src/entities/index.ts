@@ -7,7 +7,8 @@
  *   - any enum literal unions referenced by the entity
  *   - the const transition map (where applicable)
  *
- * Authoring order: E02a + E02b + E02c (this iteration) shipped; E02d in flight.
+ * Authoring order: E02a (1-3) + E02b (4-6) + E02c (7-9) + E02d (10-13).
+ * Complete: all 13 canonical entities shipped.
  */
 
 export * from './EvalSpec.js';
@@ -19,3 +20,7 @@ export * from './RuntimeReceipt.js';
 export * from './RegressionPack.js';
 export * from './RolloutGate.js';
 export * from './SkillSnapshot.js';
+export * from './SessionTrace.js';
+export * from './ToolInvocation.js';
+export * from './CostRecord.js';
+export * from './FailureTaxonomy.js';
