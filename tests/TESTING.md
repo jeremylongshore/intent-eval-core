@@ -1,4 +1,4 @@
-# TESTING.md — `@intent-eval/core`
+# TESTING.md — `@intentsolutions/core`
 
 > **This is the engineer-owned policy file.** Policy sections below are hash-pinned via `@intentsolutions/audit-harness`. Lowering any threshold or removing a waiver requires `pnpm exec audit-harness init` to re-pin — and an explanation in the commit message.
 

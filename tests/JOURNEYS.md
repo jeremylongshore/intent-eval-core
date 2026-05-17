@@ -1,4 +1,4 @@
-# JOURNEYS — `@intent-eval/core`
+# JOURNEYS — `@intentsolutions/core`
 
 > Library kernel — journeys are **type-level integration paths**, not runtime user journeys.
 

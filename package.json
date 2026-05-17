@@ -1,6 +1,11 @@
 {
-  "name": "@intent-eval/core",
-  "version": "0.0.0",
+  "name": "@intentsolutions/core",
+  "version": "0.1.0",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "registry": "https://registry.npmjs.org/"
+  },
   "description": "Canonical contracts kernel for the Intent Eval Platform — TypeScript types, JSON Schemas, Zod validators, and state machines for the 13 canonical entities.",
   "keywords": [
     "intent-eval",

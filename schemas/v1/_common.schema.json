@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json",
-  "title": "Common branded-primitive definitions for @intent-eval/core schemas",
+  "title": "Common branded-primitive definitions for @intentsolutions/core schemas",
   "description": "Shared $defs referenced by every entity schema and the gate-result/v1 predicate body. Branded primitives correspond to the TypeScript brands in src/primitives.ts — at the JSON Schema level, they are pattern-validated strings/numbers.",
   "$defs": {
     "uuidv7": {

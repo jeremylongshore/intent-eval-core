@@ -1,4 +1,4 @@
-# PERSONAS — `@intent-eval/core`
+# PERSONAS — `@intentsolutions/core`
 
 > Library kernel — personas are **downstream consumers**, not human end-users.
 
@@ -6,7 +6,7 @@
 
 ### P1 — `audit-harness` (deterministic gate runner)
 
-**Role**: depends on `@intent-eval/core` for type definitions of the entities its gates emit predicate rows about, and for the `gate-result/v1` predicate body shape.
+**Role**: depends on `@intentsolutions/core` for type definitions of the entities its gates emit predicate rows about, and for the `gate-result/v1` predicate body shape.
 
 **Key flows**:
 - Construct a `gate-result/v1` `GateResultV1` payload after running a gate
@@ -28,7 +28,7 @@
 
 ### P3 — `intent-rollout-gate` (GitHub Action shell)
 
-**Role**: thin Action that consumes a signed `EvidenceBundle` + a policy ref, and emits a ship/no-ship decision. Depends on `@intent-eval/core` for the predicate body parsing only.
+**Role**: thin Action that consumes a signed `EvidenceBundle` + a policy ref, and emits a ship/no-ship decision. Depends on `@intentsolutions/core` for the predicate body parsing only.
 
 **Key flows**:
 - Verify DSSE envelope signatures

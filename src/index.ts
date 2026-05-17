@@ -1,5 +1,5 @@
 /**
- * @intent-eval/core
+ * @intentsolutions/core
  *
  * Canonical contracts kernel for the Intent Eval Platform.
  *

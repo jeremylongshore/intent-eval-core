@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/index.json",
-  "title": "@intent-eval/core schema index v1",
+  "title": "@intentsolutions/core schema index v1",
   "description": "Catalog of all v1 schemas shipped by the canonical contracts kernel. Source of truth: Blueprint B (intent-eval-lab) + DR-010. Schemas correspond 1:1 to TypeScript interfaces in src/entities/ and src/predicates/.",
   "version": "1.0.0-draft",
   "schemas": {

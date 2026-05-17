@@ -3,7 +3,7 @@
  *
  * Per-entity schemas are re-exported from named files for tree-shaking.
  * Consumers who only need a subset (e.g., j-rig only needs JudgeDecision +
- * EvalRun) import directly from `@intent-eval/core/validators/v1/<entity>`
+ * EvalRun) import directly from `@intentsolutions/core/validators/v1/<entity>`
  * to drop unused validators at build time.
  *
  * This barrel exists for one-stop ergonomics; production consumers SHOULD

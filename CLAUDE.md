@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`@intent-eval/core` — the canonical contracts kernel for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab). TypeScript types, JSON Schemas, Zod validators, and state machines for the 13 canonical platform entities. **Every** validator in the platform (`audit-harness`, `j-rig`, `intent-rollout-gate`) depends on this package for canonical contract definitions.
+`@intentsolutions/core` — the canonical contracts kernel for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab). TypeScript types, JSON Schemas, Zod validators, and state machines for the 13 canonical platform entities. **Every** validator in the platform (`audit-harness`, `j-rig`, `intent-rollout-gate`) depends on this package for canonical contract definitions.
 
 This repo is **kernel-only**:
 
@@ -72,7 +72,7 @@ intent-eval-core/
 ├── tsconfig.build.json     ← emit-only build config (rootDir=src)
 ├── eslint.config.js        ← flat-config ESLint, typed lint enabled
 ├── vitest.config.ts        ← vitest with 80% coverage thresholds
-├── package.json            ← @intent-eval/core, ESM, Node 20+, pnpm 9+
+├── package.json            ← @intentsolutions/core, ESM, Node 20+, pnpm 9+
 ├── .nvmrc                  ← Node 22
 └── .github/workflows/ci.yml ← lint+typecheck+test+build on PR + push to main
 ```

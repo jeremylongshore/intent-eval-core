@@ -26,7 +26,7 @@ import {
   type Uuidv7,
 } from './index.js';
 
-describe('@intent-eval/core public surface', () => {
+describe('@intentsolutions/core public surface', () => {
   it('re-exports the canTransition helper', () => {
     expect(typeof canTransition).toBe('function');
   });
@@ -201,9 +201,7 @@ describe('type-level: entity shapes have the required FKs from Blueprint B', () 
 
   it('MatcherMap carries mm_class as the closed enum + typed pattern + typed behavior', () => {
     expectTypeOf<MatcherMap>().toHaveProperty('mm_class').toEqualTypeOf<MmClass>();
-    expectTypeOf<MatcherMap>()
-      .toHaveProperty('input_pattern')
-      .toEqualTypeOf<MatcherInputPattern>();
+    expectTypeOf<MatcherMap>().toHaveProperty('input_pattern').toEqualTypeOf<MatcherInputPattern>();
     expectTypeOf<MatcherMap>()
       .toHaveProperty('expected_behavior')
       .toEqualTypeOf<MatcherExpectedBehavior>();

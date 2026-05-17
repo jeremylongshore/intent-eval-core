@@ -1,0 +1,97 @@
+name: Release
+
+# Publishes @intentsolutions/core to npm with sigstore provenance.
+#
+# Triggered by pushing a tag matching `v*.*.*` (e.g., v0.1.0). The job:
+#   1. Re-runs the full CI gate chain (lint+typecheck+test+arch+coverage+build)
+#   2. Verifies package.json#version matches the pushed tag (defends against
+#      tag-vs-package-version drift)
+#   3. `pnpm publish` with `--provenance` (requires id-token: write for OIDC)
+#
+# Provenance attestation lands at https://registry.npmjs.org/@intentsolutions/core
+# alongside the published tarball. Consumers can verify with `npm audit signatures`.
+#
+# Per bead iec-E09 acceptance: "npm publish @intentsolutions/core v0.1.0 succeeds
+# (with sigstore signing)".
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+  # Required for npm provenance (sigstore OIDC token).
+  id-token: write
+
+jobs:
+  release:
+    name: Publish to npm with provenance
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify tag matches package.json version
+        run: |
+          tag_version="${GITHUB_REF#refs/tags/v}"
+          pkg_version=$(node -p "require('./package.json').version")
+          if [ "$tag_version" != "$pkg_version" ]; then
+            echo "::error::Tag v$tag_version does not match package.json version $pkg_version"
+            exit 1
+          fi
+          echo "Tag and package version both: $tag_version"
+
+      - name: Harness verify (hash-pinned policy artifacts)
+        run: pnpm run harness:verify
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Architecture rules
+        run: pnpm run arch
+
+      - name: Test
+        run: pnpm run test
+
+      - name: Coverage (100% floor)
+        run: pnpm run test:coverage
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Type tests (tsd)
+        run: pnpm run test:types
+
+      - name: Verify dist artifacts emitted
+        run: |
+          test -f dist/index.js || { echo "missing dist/index.js"; exit 1; }
+          test -f dist/index.d.ts || { echo "missing dist/index.d.ts"; exit 1; }
+          test -f dist/validators/v1/index.js || { echo "missing dist/validators/v1/index.js"; exit 1; }
+          test -f schemas/v1/gate-result.schema.json || { echo "missing gate-result.schema.json"; exit 1; }
+          echo "All required dist + schemas artifacts present"
+
+      - name: Publish to npm with provenance
+        run: pnpm publish --no-git-checks --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

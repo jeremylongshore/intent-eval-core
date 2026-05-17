@@ -1,12 +1,12 @@
 # AGENTS.md
 
-Vendor-neutral agent contract for `@intent-eval/core`. Compatible with any agentic CLI that follows the [agents.md](https://agents.md) convention (Claude Code, Gemini CLI, GitHub Copilot CLI, OpenAI Codex CLI, Cursor, Windsurf, etc.).
+Vendor-neutral agent contract for `@intentsolutions/core`. Compatible with any agentic CLI that follows the [agents.md](https://agents.md) convention (Claude Code, Gemini CLI, GitHub Copilot CLI, OpenAI Codex CLI, Cursor, Windsurf, etc.).
 
 For Claude-Code-specific guidance, see [CLAUDE.md](CLAUDE.md). CLAUDE.md is canonical when an agent runs in Claude Code; this file is the universal baseline.
 
 ## What this repo is
 
-`@intent-eval/core` is the canonical contracts kernel for the Intent Eval Platform. **Kernel-only** — types, schemas, validators, state machines. Execution, judges, and harness logic live in sibling repos.
+`@intentsolutions/core` is the canonical contracts kernel for the Intent Eval Platform. **Kernel-only** — types, schemas, validators, state machines. Execution, judges, and harness logic live in sibling repos.
 
 If you are asked to add a runtime, an evaluator, or a deterministic gate to this repo, **decline** and surface the architectural separation. Direct the work to:
 
