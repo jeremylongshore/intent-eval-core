@@ -1,0 +1,22 @@
+{
+  "id": "0192cae6-0004-7000-8000-000000000000",
+  "eval_spec_id": "0192cae6-0002-7000-8000-000000000000",
+  "eval_spec_version": "1.0.0",
+  "eval_spec_content_hash": "e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5",
+  "skill_snapshot_id": "0192cae6-0001-7000-8000-000000000000",
+  "state": "judged",
+  "terminal_reason": null,
+  "queued_at": "2026-05-17T00:00:00Z",
+  "started_at": "2026-05-17T00:00:00Z",
+  "judged_at": "2026-05-17T00:00:05Z",
+  "reported_at": null,
+  "archived_at": null,
+  "worker_id": "worker-001",
+  "lease_expires_at": null,
+  "session_trace_id": "0192cae6-0005-7000-8000-000000000000",
+  "evidence_bundle_id": "0192cae6-000b-7000-8000-000000000000",
+  "cost_record_id": "0192cae6-0008-7000-8000-000000000000",
+  "parent_run_id": null,
+  "idempotency_key": "0192cae6-0004-7000-8000-000000000000",
+  "submitted_by": "jeremy@intentsolutions.io"
+}

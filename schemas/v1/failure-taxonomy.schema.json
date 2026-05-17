@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/failure-taxonomy.schema.json",
+  "title": "FailureTaxonomy — canonical registry of failure-mode classes (Blueprint B § 2.13)",
+  "description": "State machine: proposed → canonical → deprecated (forward-only). canonical → deprecated requires Class-1 ISEDC DR. JudgeDecision with verdict='FAIL' MUST classify against an entry here. Drift emits `taxonomy.drift.detected` OTel event. Source of truth for what MM-N classes exist — MatcherMap.mm_class kernel enum is DOWNSTREAM of this entity (proposed → canonical → MmClass enum bump).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "mm_class",
+    "name",
+    "description",
+    "discriminating_question",
+    "examples",
+    "version",
+    "status",
+    "created_at",
+    "created_by"
+  ],
+  "properties": {
+    "id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "mm_class": {
+      "$ref": "_common.schema.json#/$defs/mmClassId",
+      "description": "Natural key. Accepts any MM-N value (broader than MmClass enum)."
+    },
+    "name": { "$ref": "_common.schema.json#/$defs/kebabSlug" },
+    "description": { "type": "string", "minLength": 1 },
+    "discriminating_question": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The question a human asks to decide whether a given failure belongs in this class. Drives the classification UI."
+    },
+    "examples": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ref"],
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "type": "string",
+            "description": "URL, gist, doc path, EvalRun id, etc."
+          },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "version": { "$ref": "_common.schema.json#/$defs/semver" },
+    "status": {
+      "type": "string",
+      "enum": ["proposed", "canonical", "deprecated"]
+    },
+    "created_at": { "$ref": "_common.schema.json#/$defs/rfc3339" },
+    "created_by": { "$ref": "_common.schema.json#/$defs/actorIdentity" }
+  }
+}

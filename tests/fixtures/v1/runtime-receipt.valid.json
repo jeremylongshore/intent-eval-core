@@ -1,0 +1,27 @@
+{
+  "id": "0192cae6-000a-7000-8000-000000000000",
+  "eval_run_id": "0192cae6-0004-7000-8000-000000000000",
+  "created_at": "2026-05-17T00:00:10Z",
+  "eval_spec_content_hash": "e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5",
+  "skill_snapshot_sha": "d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4",
+  "provider_adapter_versions": { "anthropic": "1.2.3" },
+  "tool_versions": { "audit-harness": "0.3.0" },
+  "runtime_limits_in_effect": {
+    "token_ceiling": 100000,
+    "wall_clock_ceiling_ms": 60000,
+    "memory_ceiling_mb": 512,
+    "concurrency_hint": 1
+  },
+  "actual_resource_usage": {
+    "tokens_consumed": 0,
+    "wall_clock_ms": 362,
+    "peak_memory_mb": 42,
+    "network_egress_bytes": 0
+  },
+  "worker_identity": "worker-001",
+  "worker_host_fingerprint": "4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a",
+  "terminal_state": "archived",
+  "terminal_reason": "run_timeout_elapsed",
+  "evidence_bundle_id": "0192cae6-000b-7000-8000-000000000000",
+  "cost_record_id": "0192cae6-0008-7000-8000-000000000000"
+}

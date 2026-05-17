@@ -120,6 +120,11 @@ module.exports = {
 
   options: {
     doNotFollow: { path: 'node_modules' },
+    // Exclude test files from architecture rules. Tests are not consumer-
+    // shipped code — they MAY import vitest, ajv, node:fs, etc. that
+    // production src/ MUST NOT. The 7 forbidden rules above govern the
+    // consumer-facing surface only.
+    exclude: { path: '\\.(test|spec)\\.ts$' },
     tsPreCompilationDeps: true,
     tsConfig: { fileName: 'tsconfig.json' },
     enhancedResolveOptions: {

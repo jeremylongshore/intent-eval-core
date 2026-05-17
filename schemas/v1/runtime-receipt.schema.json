@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/runtime-receipt.schema.json",
+  "title": "RuntimeReceipt — signed record of HOW an EvalRun executed (Blueprint B § 2.6)",
+  "description": "Single terminal state `issued`. Immutable at creation (signed before persistence). 1:1 cardinality with EvalRun. Predicate URI when emitted: runtime-receipt/v1 (currently sigstore_staging).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "eval_run_id",
+    "created_at",
+    "eval_spec_content_hash",
+    "skill_snapshot_sha",
+    "provider_adapter_versions",
+    "tool_versions",
+    "runtime_limits_in_effect",
+    "actual_resource_usage",
+    "worker_identity",
+    "worker_host_fingerprint",
+    "terminal_state",
+    "terminal_reason",
+    "evidence_bundle_id",
+    "cost_record_id"
+  ],
+  "properties": {
+    "id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "eval_run_id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "created_at": { "$ref": "_common.schema.json#/$defs/rfc3339" },
+    "eval_spec_content_hash": { "$ref": "_common.schema.json#/$defs/sha256" },
+    "skill_snapshot_sha": { "$ref": "_common.schema.json#/$defs/sha256" },
+    "provider_adapter_versions": {
+      "type": "object",
+      "description": "Per-provider adapter version mapping. Key: provider id, Value: SemVer.",
+      "additionalProperties": { "type": "string" }
+    },
+    "tool_versions": {
+      "type": "object",
+      "description": "Per-tool version mapping. Key: tool id, Value: SemVer.",
+      "additionalProperties": { "type": "string" }
+    },
+    "runtime_limits_in_effect": {
+      "type": "object",
+      "description": "Copy of EvalSpec.runtime_limits frozen at queue time.",
+      "required": [
+        "token_ceiling",
+        "wall_clock_ceiling_ms",
+        "memory_ceiling_mb",
+        "concurrency_hint"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "token_ceiling": { "type": "integer", "minimum": 0 },
+        "wall_clock_ceiling_ms": { "type": "integer", "minimum": 0 },
+        "memory_ceiling_mb": { "type": "integer", "minimum": 0 },
+        "concurrency_hint": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "actual_resource_usage": {
+      "type": "object",
+      "description": "Measured resource consumption per Blueprint B § 2.6 — fully spec-bound 4-field shape.",
+      "required": ["tokens_consumed", "wall_clock_ms", "peak_memory_mb", "network_egress_bytes"],
+      "additionalProperties": false,
+      "properties": {
+        "tokens_consumed": { "type": "integer", "minimum": 0 },
+        "wall_clock_ms": { "type": "integer", "minimum": 0 },
+        "peak_memory_mb": { "type": "integer", "minimum": 0 },
+        "network_egress_bytes": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "worker_identity": { "type": "string", "minLength": 1 },
+    "worker_host_fingerprint": { "$ref": "_common.schema.json#/$defs/sha256" },
+    "terminal_state": {
+      "type": "string",
+      "description": "Mirrors EvalRun.state's terminal value.",
+      "enum": ["archived", "skipped_due_to_gate", "archived_failed"]
+    },
+    "terminal_reason": {
+      "type": "string",
+      "enum": [
+        "queued_timeout_elapsed",
+        "run_timeout_elapsed",
+        "worker_crash_exhausted",
+        "credential_leak_detected",
+        "judge_unavailable_exhausted",
+        "token_ceiling_exceeded",
+        "evidence_contract_violation",
+        "upstream_feed_failed"
+      ]
+    },
+    "evidence_bundle_id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "cost_record_id": { "$ref": "_common.schema.json#/$defs/uuidv7" }
+  }
+}

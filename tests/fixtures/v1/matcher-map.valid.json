@@ -1,0 +1,12 @@
+{
+  "id": "0192cae6-0003-7000-8000-000000000000",
+  "mm_class": "MM-4",
+  "name": "token-ceiling-escape",
+  "input_pattern": { "kind": "regex", "pattern": ".*", "flags": "i" },
+  "expected_behavior": { "kind": "exact" },
+  "version": "1.0.0",
+  "content_hash": "f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6",
+  "description": "Detects token-ceiling escapes",
+  "created_at": "2026-05-17T00:00:00Z",
+  "created_by": "jeremy@intentsolutions.io"
+}

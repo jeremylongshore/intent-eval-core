@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/index.json",
+  "title": "@intent-eval/core schema index v1",
+  "description": "Catalog of all v1 schemas shipped by the canonical contracts kernel. Source of truth: Blueprint B (intent-eval-lab) + DR-010. Schemas correspond 1:1 to TypeScript interfaces in src/entities/ and src/predicates/.",
+  "version": "1.0.0-draft",
+  "schemas": {
+    "_common": {
+      "path": "_common.schema.json",
+      "title": "Shared branded-primitive $defs",
+      "kind": "common"
+    },
+    "gate-result-v1": {
+      "path": "gate-result.schema.json",
+      "title": "gate-result/v1 NORMATIVE predicate body",
+      "kind": "predicate",
+      "uri": "https://evals.intentsolutions.io/gate-result/v1",
+      "spec": "Blueprint B § 7.4",
+      "signing_mode": "rekor_production"
+    },
+    "eval-spec": {
+      "path": "eval-spec.schema.json",
+      "title": "EvalSpec",
+      "kind": "entity",
+      "spec": "Blueprint B § 2.1"
+    },
+    "eval-run": {
+      "path": "eval-run.schema.json",
+      "title": "EvalRun",
+      "kind": "entity",
+      "spec": "Blueprint B § 2.2"
+    },
+    "matcher-map": {
+      "path": "matcher-map.schema.json",
+      "title": "MatcherMap",
+      "kind": "entity",
+      "spec": "Blueprint B § 2.3"
+    },
+    "evidence-bundle": {
+      "path": "evidence-bundle.schema.json",
+      "title": "EvidenceBundle",
+      "kind": "entity",
+      "spec": "Blueprint B § 2.4"
+    },
+    "judge-decision": {
+      "path": "judge-decision.schema.json",
+      "title": "JudgeDecision",
+      "kind": "entity",
+      "spec": "Blueprint B § 2.5"
+    },
+    "runtime-receipt": {
+      "path": "runtime-receipt.schema.json",
+      "title": "RuntimeReceipt",
+      "kind": "entity",
+      "spec": "Blueprint B § 2.6"
+    },
+    "regression-pack": {
+      "path": "regression-pack.schema.json",
+      "title": "RegressionPack",
+      "kind": "entity",
+      "spec": "Blueprint B § 2.7"
+    },
+    "rollout-gate": {
+      "path": "rollout-gate.schema.json",
+      "title": "RolloutGate",
+      "kind": "entity",
+      "spec": "Blueprint B § 2.8"
+    },
+    "skill-snapshot": {
+      "path": "skill-snapshot.schema.json",
+      "title": "SkillSnapshot",
+      "kind": "entity",
+      "spec": "Blueprint B § 2.9"
+    },
+    "session-trace": {
+      "path": "session-trace.schema.json",
+      "title": "SessionTrace",
+      "kind": "entity",
+      "spec": "Blueprint B § 2.10"
+    },
+    "tool-invocation": {
+      "path": "tool-invocation.schema.json",
+      "title": "ToolInvocation",
+      "kind": "entity",
+      "spec": "Blueprint B § 2.11"
+    },
+    "cost-record": {
+      "path": "cost-record.schema.json",
+      "title": "CostRecord",
+      "kind": "entity",
+      "spec": "Blueprint B § 2.12"
+    },
+    "failure-taxonomy": {
+      "path": "failure-taxonomy.schema.json",
+      "title": "FailureTaxonomy",
+      "kind": "entity",
+      "spec": "Blueprint B § 2.13"
+    }
+  }
+}

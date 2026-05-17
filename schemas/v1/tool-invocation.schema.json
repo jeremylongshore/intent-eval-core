@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/tool-invocation.schema.json",
+  "title": "ToolInvocation — single tool / provider call recorded under a SessionTrace (Blueprint B § 2.11)",
+  "description": "Single terminal state `invoked`. Immutable at creation. Retries = new rows. HARD RULE per § 2.11: credential-shaped string in args or result_summary MUST cause runtime to reject + fail parent EvalRun with terminal_reason=credential_leak_detected (runtime concern, not enforced at this schema layer).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "session_trace_id",
+    "parent_span_id",
+    "tool_id",
+    "tool_version",
+    "args",
+    "args_hash",
+    "result_summary",
+    "result_hash",
+    "result_storage_key",
+    "invoked_at",
+    "latency_ms",
+    "cost_record_ref",
+    "error",
+    "retry_attempt"
+  ],
+  "properties": {
+    "id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "session_trace_id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "parent_span_id": { "$ref": "_common.schema.json#/$defs/otelSpanId" },
+    "tool_id": {
+      "type": "string",
+      "description": "Tool identifier. Convention examples: 'audit-harness:escape-scan', 'provider:anthropic:claude-sonnet-4-5'. Format NOT enforced at this layer.",
+      "minLength": 1
+    },
+    "tool_version": { "$ref": "_common.schema.json#/$defs/semver" },
+    "args": {
+      "type": "object",
+      "description": "Sanitized args (credentials redacted by runtime sanitizer).",
+      "additionalProperties": true
+    },
+    "args_hash": { "$ref": "_common.schema.json#/$defs/sha256" },
+    "result_summary": {
+      "type": "object",
+      "description": "Sanitized result summary (inline-fit portion).",
+      "additionalProperties": true
+    },
+    "result_hash": { "$ref": "_common.schema.json#/$defs/sha256" },
+    "result_storage_key": {
+      "oneOf": [{ "$ref": "_common.schema.json#/$defs/storageKey" }, { "type": "null" }]
+    },
+    "invoked_at": { "$ref": "_common.schema.json#/$defs/rfc3339" },
+    "latency_ms": { "type": "integer", "minimum": 0 },
+    "cost_record_ref": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "error": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["enum_class", "message"],
+          "additionalProperties": false,
+          "properties": {
+            "enum_class": {
+              "type": "string",
+              "description": "Tool-defined error class. NOT a closed enum at the kernel layer — each tool defines its own set (bd_000-projects-84li tracks the registry pattern)."
+            },
+            "message": { "type": "string" }
+          }
+        },
+        { "type": "null" }
+      ]
+    },
+    "retry_attempt": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "0-indexed retry attempt number."
+    }
+  }
+}

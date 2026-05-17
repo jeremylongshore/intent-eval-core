@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/eval-run.schema.json",
+  "title": "EvalRun — single execution of an EvalSpec against a SkillSnapshot (Blueprint B § 2.2)",
+  "description": "State machine spans 7 states with explicit transition table at Blueprint B § 3.1. Mutable in non-terminal states; frozen at terminal. Clock-skew tolerance ±10 ms across workers.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "eval_spec_id",
+    "eval_spec_version",
+    "eval_spec_content_hash",
+    "skill_snapshot_id",
+    "state",
+    "terminal_reason",
+    "queued_at",
+    "started_at",
+    "judged_at",
+    "reported_at",
+    "archived_at",
+    "worker_id",
+    "lease_expires_at",
+    "session_trace_id",
+    "evidence_bundle_id",
+    "cost_record_id",
+    "parent_run_id",
+    "idempotency_key",
+    "submitted_by"
+  ],
+  "properties": {
+    "id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "eval_spec_id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "eval_spec_version": {
+      "$ref": "_common.schema.json#/$defs/semver",
+      "description": "Frozen at queue time — defends against mid-flight spec mutation."
+    },
+    "eval_spec_content_hash": {
+      "$ref": "_common.schema.json#/$defs/sha256",
+      "description": "Frozen at queue time."
+    },
+    "skill_snapshot_id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "state": {
+      "type": "string",
+      "description": "EvalRun state enum (Blueprint B § 2.2 + § 3.1). Terminal states: archived, skipped_due_to_gate, archived_failed.",
+      "enum": [
+        "queued",
+        "running",
+        "judged",
+        "reported",
+        "archived",
+        "skipped_due_to_gate",
+        "archived_failed"
+      ]
+    },
+    "terminal_reason": {
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Why this Run terminated. Set per Blueprint B § 3.1 enumeration + § 1.3 (upstream_feed_failed).",
+          "enum": [
+            "queued_timeout_elapsed",
+            "run_timeout_elapsed",
+            "worker_crash_exhausted",
+            "credential_leak_detected",
+            "judge_unavailable_exhausted",
+            "token_ceiling_exceeded",
+            "evidence_contract_violation",
+            "upstream_feed_failed"
+          ]
+        },
+        { "type": "null" }
+      ]
+    },
+    "queued_at": { "$ref": "_common.schema.json#/$defs/rfc3339" },
+    "started_at": {
+      "oneOf": [{ "$ref": "_common.schema.json#/$defs/rfc3339" }, { "type": "null" }]
+    },
+    "judged_at": {
+      "oneOf": [{ "$ref": "_common.schema.json#/$defs/rfc3339" }, { "type": "null" }]
+    },
+    "reported_at": {
+      "oneOf": [{ "$ref": "_common.schema.json#/$defs/rfc3339" }, { "type": "null" }]
+    },
+    "archived_at": {
+      "oneOf": [{ "$ref": "_common.schema.json#/$defs/rfc3339" }, { "type": "null" }]
+    },
+    "worker_id": { "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }] },
+    "lease_expires_at": {
+      "oneOf": [{ "$ref": "_common.schema.json#/$defs/rfc3339" }, { "type": "null" }]
+    },
+    "session_trace_id": {
+      "$ref": "_common.schema.json#/$defs/uuidv7",
+      "description": "FK → SessionTrace.id. Populated as Run executes."
+    },
+    "evidence_bundle_id": {
+      "oneOf": [{ "$ref": "_common.schema.json#/$defs/uuidv7" }, { "type": "null" }],
+      "description": "FK → EvidenceBundle.id. Populated at judged → reported."
+    },
+    "cost_record_id": {
+      "$ref": "_common.schema.json#/$defs/uuidv7",
+      "description": "FK → CostRecord.id. Populated continuously."
+    },
+    "parent_run_id": {
+      "oneOf": [{ "$ref": "_common.schema.json#/$defs/uuidv7" }, { "type": "null" }],
+      "description": "Multi-step DAG child link."
+    },
+    "idempotency_key": {
+      "$ref": "_common.schema.json#/$defs/uuidv7",
+      "description": "Defaults to `id` if not explicitly provided."
+    },
+    "submitted_by": { "$ref": "_common.schema.json#/$defs/actorIdentity" }
+  }
+}

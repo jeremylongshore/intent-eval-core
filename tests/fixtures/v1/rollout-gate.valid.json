@@ -1,0 +1,17 @@
+{
+  "id": "0192cae6-000c-7000-8000-000000000000",
+  "eval_run_id": "0192cae6-0004-7000-8000-000000000000",
+  "evidence_bundle_id": "0192cae6-000b-7000-8000-000000000000",
+  "policy_ref": "sha256:e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5:tests/TESTING.md",
+  "policy_content_hash": "e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5",
+  "decision": "ship",
+  "decision_reasons": ["policy.escape-scan.pass"],
+  "coverage": {
+    "dimensions_evaluated": ["credential-leak", "token-ceiling"],
+    "dimensions_skipped": []
+  },
+  "evaluated_at": "2026-05-17T00:00:10Z",
+  "gate_version": "0.3.0",
+  "signing_mode": "rekor_production",
+  "rekor_log_index": 42
+}

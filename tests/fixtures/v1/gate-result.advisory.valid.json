@@ -1,0 +1,20 @@
+{
+  "gate_id": "audit-harness:ci:bias-count",
+  "gate_name": "bias-count",
+  "gate_version": "0.3.0",
+  "gate_decision": "advisory",
+  "gate_reasons": ["bias.count.over.threshold"],
+  "coverage": {
+    "dimensions_evaluated": ["lexical-bias"],
+    "dimensions_skipped": ["semantic-bias"]
+  },
+  "policy_ref": "sha256:e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5:tests/TESTING.md",
+  "policy_hash": "sha256:e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5",
+  "input_hash": "sha256:3939393939393939393939393939393939393939393939393939393939393939",
+  "evaluated_at": "2026-05-17T00:00:10Z",
+  "runner": "audit-harness@0.3.0",
+  "commit_sha": "abc1234",
+  "advisory_severity": "warn",
+  "replay_fidelity_level": "RF-1",
+  "metadata": { "bias_score": 0.42 }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "0192cae6-000d-7000-8000-000000000000",
+  "mm_class": "MM-4",
+  "name": "token-ceiling-escape",
+  "description": "Tool consumes more tokens than declared runtime_limits, attempting to escape the resource ceiling.",
+  "discriminating_question": "Did the tool exceed its token_ceiling?",
+  "examples": [
+    {
+      "ref": "evidence://example-1",
+      "description": "Archetypal MM-4 violation observed in audit-harness@0.2.0"
+    }
+  ],
+  "version": "1.0.0",
+  "status": "canonical",
+  "created_at": "2026-05-17T00:00:00Z",
+  "created_by": "jeremy@intentsolutions.io"
+}

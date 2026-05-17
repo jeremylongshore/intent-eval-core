@@ -1,0 +1,12 @@
+{
+  "id": "0192cae6-0005-7000-8000-000000000000",
+  "eval_run_id": "0192cae6-0004-7000-8000-000000000000",
+  "created_at": "2026-05-17T00:00:00Z",
+  "closed_at": "2026-05-17T00:00:05Z",
+  "root_span_id": "0123456789abcdef",
+  "total_spans": 3,
+  "max_loop_depth": 1,
+  "total_tool_invocations": 1,
+  "total_judge_decisions": 1,
+  "trace_blob_storage_key": "s3://intent-eval-platform/traces/0192cae6-0005"
+}

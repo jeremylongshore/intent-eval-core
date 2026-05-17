@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/regression-pack.schema.json",
+  "title": "RegressionPack — frozen bundle of EvalRuns proving a behavior contract (Blueprint B § 2.7)",
+  "description": "State machine: draft → committed → superseded. Mutable in draft; immutable once committed. Predicate URI (deferred Phase B+): regression-pack/v1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "purpose",
+    "skill_snapshot_sha",
+    "eval_spec_ids",
+    "eval_run_ids",
+    "outcome_summary",
+    "ancestor_pack_id",
+    "delta_declaration",
+    "created_at",
+    "created_by",
+    "content_hash"
+  ],
+  "properties": {
+    "id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "name": { "$ref": "_common.schema.json#/$defs/kebabSlug" },
+    "purpose": { "type": "string", "minLength": 1 },
+    "skill_snapshot_sha": { "$ref": "_common.schema.json#/$defs/sha256" },
+    "eval_spec_ids": {
+      "type": "array",
+      "items": { "$ref": "_common.schema.json#/$defs/uuidv7" }
+    },
+    "eval_run_ids": {
+      "type": "array",
+      "items": { "$ref": "_common.schema.json#/$defs/uuidv7" }
+    },
+    "outcome_summary": {
+      "type": "object",
+      "description": "Aggregate pass/fail (and optional extension) per MM-class. Partial because not every pack tests every class. Per Blueprint B § 2.7: 'aggregate pass/fail rates per matcher class' — others optional, not invented.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^MM-[1-6]$": {
+          "type": "object",
+          "required": ["pass", "fail"],
+          "additionalProperties": false,
+          "properties": {
+            "pass": { "type": "integer", "minimum": 0 },
+            "fail": { "type": "integer", "minimum": 0 },
+            "advisory": { "type": "integer", "minimum": 0 },
+            "not_applicable": { "type": "integer", "minimum": 0 },
+            "error": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "ancestor_pack_id": {
+      "oneOf": [{ "$ref": "_common.schema.json#/$defs/uuidv7" }, { "type": "null" }]
+    },
+    "delta_declaration": { "type": "string" },
+    "created_at": { "$ref": "_common.schema.json#/$defs/rfc3339" },
+    "created_by": { "$ref": "_common.schema.json#/$defs/actorIdentity" },
+    "content_hash": { "$ref": "_common.schema.json#/$defs/sha256" }
+  }
+}

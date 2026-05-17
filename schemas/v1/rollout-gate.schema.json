@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/rollout-gate.schema.json",
+  "title": "RolloutGate — evaluation of an EvidenceBundle against a deployment policy (Blueprint B § 2.8)",
+  "description": "Single terminal state `evaluated`. Immutable at creation. Re-evaluations = new rows. Natural uniqueness: (eval_run_id, policy_ref). Decision enum is DELIBERATELY DIFFERENT from gate-result/v1.gate_decision — RolloutGate uses deployment language (ship/no_ship), the predicate body uses verdict language (pass/fail). Mapping is policy-driven and lives in the downstream intent-rollout-gate package, NOT this kernel.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "eval_run_id",
+    "evidence_bundle_id",
+    "policy_ref",
+    "policy_content_hash",
+    "decision",
+    "decision_reasons",
+    "coverage",
+    "evaluated_at",
+    "gate_version",
+    "signing_mode",
+    "rekor_log_index"
+  ],
+  "properties": {
+    "id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "eval_run_id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "evidence_bundle_id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "policy_ref": {
+      "type": "string",
+      "description": "Format: <content_hash>:<path>. Defends against mid-flight policy mutation.",
+      "pattern": "^sha256:[a-f0-9]{64}:.+$"
+    },
+    "policy_content_hash": { "$ref": "_common.schema.json#/$defs/sha256" },
+    "decision": {
+      "type": "string",
+      "enum": ["ship", "no_ship", "advisory", "error"]
+    },
+    "decision_reasons": {
+      "type": "array",
+      "description": "Structured reason strings. Per Blueprint B § 2.8: 'one per matched-or-unmatched policy rule.'",
+      "items": { "type": "string" }
+    },
+    "coverage": { "$ref": "_common.schema.json#/$defs/coverage" },
+    "evaluated_at": { "$ref": "_common.schema.json#/$defs/rfc3339" },
+    "gate_version": { "$ref": "_common.schema.json#/$defs/semver" },
+    "signing_mode": {
+      "type": "string",
+      "enum": ["sigstore_staging", "rekor_production", "unsigned_experimental"]
+    },
+    "rekor_log_index": {
+      "oneOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }]
+    }
+  }
+}

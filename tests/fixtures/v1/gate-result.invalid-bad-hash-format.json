@@ -1,0 +1,14 @@
+{
+  "gate_id": "audit-harness:ci:escape-scan",
+  "gate_name": "escape-scan",
+  "gate_version": "0.3.0",
+  "gate_decision": "pass",
+  "gate_reasons": [],
+  "coverage": { "dimensions_evaluated": [], "dimensions_skipped": [] },
+  "policy_ref": "sha256:e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5:tests/TESTING.md",
+  "policy_hash": "md5:deadbeefdeadbeefdeadbeefdeadbeef",
+  "input_hash": "sha256:3939393939393939393939393939393939393939393939393939393939393939",
+  "evaluated_at": "2026-05-17T00:00:10Z",
+  "runner": "audit-harness@0.3.0",
+  "commit_sha": "abc1234"
+}

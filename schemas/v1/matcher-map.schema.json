@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/matcher-map.schema.json",
+  "title": "MatcherMap — reusable input→behavior pattern definition (Blueprint B § 2.3)",
+  "description": "State machine: draft → published → deprecated (one-way). Immutable once published; revisions = new row + incremented version.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "mm_class",
+    "name",
+    "input_pattern",
+    "expected_behavior",
+    "version",
+    "content_hash",
+    "description",
+    "created_at",
+    "created_by"
+  ],
+  "properties": {
+    "id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "mm_class": { "$ref": "_common.schema.json#/$defs/mmClass" },
+    "name": { "$ref": "_common.schema.json#/$defs/kebabSlug" },
+    "input_pattern": {
+      "description": "Typed input pattern — closed 3-variant discriminated union per Blueprint B § 2.3 line 159.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "pattern"],
+          "properties": {
+            "kind": { "const": "regex" },
+            "pattern": { "type": "string" },
+            "flags": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "schema"],
+          "properties": {
+            "kind": { "const": "json-schema" },
+            "schema": { "type": "object" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["kind", "matcher"],
+          "properties": {
+            "kind": { "const": "structural" },
+            "matcher": {
+              "description": "Wholly undefined in Blueprint B § 2.3. Lock when a downstream engagement specifies (bd_000-projects-ra9a)."
+            }
+          }
+        }
+      ]
+    },
+    "expected_behavior": {
+      "description": "Typed expected behavior. v1 named variants + open extension slot per spec's explicit 'etc.' trailer.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind"],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["exact", "semantic", "contract-conformance", "redaction-confirmed"]
+            },
+            "payload": {}
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "payload", "extension"],
+          "additionalProperties": true,
+          "properties": {
+            "kind": { "type": "string" },
+            "payload": {},
+            "extension": { "const": true }
+          }
+        }
+      ]
+    },
+    "version": { "$ref": "_common.schema.json#/$defs/semver" },
+    "content_hash": { "$ref": "_common.schema.json#/$defs/sha256" },
+    "description": { "type": "string", "minLength": 1 },
+    "created_at": { "$ref": "_common.schema.json#/$defs/rfc3339" },
+    "created_by": { "$ref": "_common.schema.json#/$defs/actorIdentity" }
+  }
+}

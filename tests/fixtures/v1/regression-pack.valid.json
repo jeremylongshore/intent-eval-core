@@ -1,0 +1,16 @@
+{
+  "id": "0192cae6-0010-7000-8000-000000000000",
+  "name": "audit-harness-v030-baseline",
+  "purpose": "Baseline regression suite for audit-harness 0.3.0 escape-scan rules",
+  "skill_snapshot_sha": "d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4",
+  "eval_spec_ids": ["0192cae6-0002-7000-8000-000000000000"],
+  "eval_run_ids": ["0192cae6-0004-7000-8000-000000000000"],
+  "outcome_summary": {
+    "MM-4": { "pass": 1, "fail": 0 }
+  },
+  "ancestor_pack_id": null,
+  "delta_declaration": "Initial pack — no ancestor",
+  "created_at": "2026-05-17T00:00:00Z",
+  "created_by": "jeremy@intentsolutions.io",
+  "content_hash": "abababababababababababababababababababababababababababababababab"
+}

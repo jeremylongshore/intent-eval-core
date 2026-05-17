@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json",
+  "title": "Common branded-primitive definitions for @intent-eval/core schemas",
+  "description": "Shared $defs referenced by every entity schema and the gate-result/v1 predicate body. Branded primitives correspond to the TypeScript brands in src/primitives.ts — at the JSON Schema level, they are pattern-validated strings/numbers.",
+  "$defs": {
+    "uuidv7": {
+      "type": "string",
+      "description": "UUIDv7 — time-ordered 128-bit identifier (RFC 9562). Time-ordered prefix means natural sort order matches insertion order. Per Blueprint B § 6.2 universal conventions.",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "sha256": {
+      "type": "string",
+      "description": "Bare 64-hex-char SHA-256 digest. Used for entity content_hash fields per Blueprint B § 2.x prose.",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "sha256Prefixed": {
+      "type": "string",
+      "description": "Prefixed SHA-256 digest in the form `sha256:<64-lowercase-hex>`. REQUIRED format for every *_hash field in the gate-result/v1 predicate body per Blueprint B § 7.4. Unknown algorithm prefixes cause row verification failure.",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "rfc3339": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 / ISO 8601 timestamp with timezone. Blueprint B requires UTC ('Z') with millisecond precision for fields in worker-lease ordering (clock-skew tolerance ±10 ms)."
+    },
+    "semver": {
+      "type": "string",
+      "description": "SemVer 2.0.0 version string.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(-[A-Za-z0-9.-]+)?(\\+[A-Za-z0-9.-]+)?$"
+    },
+    "kebabSlug": {
+      "type": "string",
+      "description": "Lowercase kebab-case slug.",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "actorIdentity": {
+      "type": "string",
+      "description": "Opaque actor identity string — engineer email, service-account name, or worker id. Format intentionally unspecified at this layer.",
+      "minLength": 1
+    },
+    "storageKey": {
+      "type": "string",
+      "description": "Object-storage key (content-addressed). Format opaque at this layer; storage backends own resolution.",
+      "minLength": 1
+    },
+    "otelSpanId": {
+      "type": "string",
+      "description": "OpenTelemetry span identifier — 16 lowercase hex characters per OTel spec.",
+      "pattern": "^[a-f0-9]{16}$"
+    },
+    "microUsd": {
+      "type": "integer",
+      "description": "Cost in micro-USD for sub-cent precision. Per Blueprint B § 2.12. Convert to USD at display layer (value / 1_000_000).",
+      "minimum": 0
+    },
+    "mmClass": {
+      "type": "string",
+      "description": "Matcher Map class — closed v1 canonical set per Blueprint B § 2.3. Extension via FailureTaxonomy proposed→canonical lifecycle (Class-1 ISEDC).",
+      "enum": ["MM-1", "MM-2", "MM-3", "MM-4", "MM-5", "MM-6"]
+    },
+    "mmClassId": {
+      "type": "string",
+      "description": "FailureTaxonomy natural key — accepts any MM-N value (broader than MmClass enum since taxonomy is upstream of kernel enum).",
+      "pattern": "^MM-[0-9]+$"
+    },
+    "runnerIdentifier": {
+      "type": "string",
+      "description": "Tool + SemVer identifier in the form `<kebab-slug>@<semver>`.",
+      "pattern": "^[a-z0-9][a-z0-9-]*@[0-9]+\\.[0-9]+\\.[0-9]+(-[A-Za-z0-9.-]+)?(\\+[A-Za-z0-9.-]+)?$"
+    },
+    "commitSha": {
+      "type": "string",
+      "description": "Git commit SHA — full 40-hex or short 7-hex accepted per Blueprint B § 7.4 line 815.",
+      "pattern": "^[a-f0-9]{7,40}$"
+    },
+    "subjectName": {
+      "type": "string",
+      "description": "in-toto subject name per Blueprint B § 7.3 line 779. Three segments: `<tool>:<side>:<gate-id>` where side ∈ {client, server, ci, sandbox, local}.",
+      "pattern": "^[a-z0-9][a-z0-9-]*:(client|server|ci|sandbox|local):[a-zA-Z0-9][a-zA-Z0-9.-]*$"
+    },
+    "coverage": {
+      "type": "object",
+      "description": "Coverage declaration per Blueprint B § 7.4 line 807. Both arrays REQUIRED. NOT_APPLICABLE encoding (§ 7.4 line 832): gate_decision='pass' + populated dimensions_skipped + documented skip in gate_reasons.",
+      "required": ["dimensions_evaluated", "dimensions_skipped"],
+      "additionalProperties": false,
+      "properties": {
+        "dimensions_evaluated": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "dimensions_skipped": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

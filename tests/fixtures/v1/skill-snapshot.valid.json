@@ -1,0 +1,12 @@
+{
+  "id": "0192cae6-0001-7000-8000-000000000000",
+  "skill_id": "audit-harness",
+  "source_sha": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+  "dependency_lock_sha": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
+  "config_sha": "c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3",
+  "combined_sha": "d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4",
+  "version_label": "0.3.0",
+  "storage_key": "s3://intent-eval-platform/snapshots/0192cae6-0001",
+  "created_at": "2026-05-17T00:00:00Z",
+  "created_by": "jeremy@intentsolutions.io"
+}

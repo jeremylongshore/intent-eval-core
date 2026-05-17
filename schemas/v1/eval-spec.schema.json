@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/eval-spec.schema.json",
+  "title": "EvalSpec — declarative evaluation specification (Blueprint B § 2.1)",
+  "description": "Content-addressed via content_hash. State machine: draft → published → deprecated (deprecated reversible to published). Mutable in draft; immutable once published.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "version",
+    "name",
+    "description",
+    "matchers",
+    "assertions",
+    "scoring",
+    "composition",
+    "expected_artifacts",
+    "runtime_limits",
+    "provider_constraints",
+    "created_at",
+    "created_by",
+    "content_hash"
+  ],
+  "properties": {
+    "id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "version": { "$ref": "_common.schema.json#/$defs/semver" },
+    "name": { "$ref": "_common.schema.json#/$defs/kebabSlug" },
+    "description": { "type": "string", "minLength": 1 },
+    "matchers": {
+      "type": "array",
+      "description": "MatcherMap FKs.",
+      "items": { "$ref": "_common.schema.json#/$defs/uuidv7" }
+    },
+    "assertions": {
+      "type": "array",
+      "description": "Typed assertion expressions. Blueprint B § 2.1 says only 'typed expression' — no class enum, no payload grammar. Element shape deferred per spec STOP directive (bd_000-projects-gzgj, Class-2 ISEDC required to enumerate).",
+      "items": {}
+    },
+    "scoring": {
+      "type": "object",
+      "description": "Scoring configuration. aggregation_rule is the ONLY spec-bound field per Blueprint B § 2.1. § 7.6 architectural rule: thresholds belong in consumer-side tests/TESTING.md, NOT here. Additions require ISEDC review (bd_000-projects-21re).",
+      "required": ["aggregation_rule"],
+      "properties": {
+        "aggregation_rule": {
+          "type": "string",
+          "enum": ["majority", "unanimous", "weighted"]
+        },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Tool-specific scoring metadata. MUST NOT drive ship/no-ship decisions (mirrors § 7.4 metadata rule)."
+        }
+      }
+    },
+    "composition": {
+      "type": "object",
+      "description": "DAG declaration per Blueprint B § 1.3. Validation contract: runtime topologically sorts; cycles rejected at submission with 400. Wire format (adjacency list with typed edges) is engineer's choice per bd_000-projects-3sjx; semantics ARE spec-bound (node types + edge kinds + failure propagation per § 1.3 line 100).",
+      "required": ["nodes", "edges"],
+      "additionalProperties": false,
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "kind", "ref"],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Local-to-DAG node identifier (unique within composition)."
+              },
+              "kind": {
+                "type": "string",
+                "description": "Node type per Blueprint B § 1.3 line 92.",
+                "enum": ["eval_run", "tool_invocation"]
+              },
+              "ref": { "$ref": "_common.schema.json#/$defs/uuidv7" }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["from", "to", "kind"],
+            "additionalProperties": false,
+            "properties": {
+              "from": { "type": "string" },
+              "to": { "type": "string" },
+              "kind": {
+                "type": "string",
+                "description": "Edge type — drives runtime failure-propagation per Blueprint B § 1.3 line 100.",
+                "enum": ["feeds", "gates", "enriches"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "expected_artifacts": {
+      "type": "array",
+      "description": "SkillSnapshot.combined_sha values this spec targets. Anchors on CONTENT (sha), not FK — rebuilt snapshots with the same combined_sha still satisfy.",
+      "items": { "$ref": "_common.schema.json#/$defs/sha256" }
+    },
+    "runtime_limits": {
+      "type": "object",
+      "description": "Resource ceilings applied per EvalRun per Blueprint B § 2.1.",
+      "required": [
+        "token_ceiling",
+        "wall_clock_ceiling_ms",
+        "memory_ceiling_mb",
+        "concurrency_hint"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "token_ceiling": { "type": "integer", "minimum": 0 },
+        "wall_clock_ceiling_ms": { "type": "integer", "minimum": 0 },
+        "memory_ceiling_mb": { "type": "integer", "minimum": 0 },
+        "concurrency_hint": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "provider_constraints": {
+      "type": "array",
+      "description": "Allowlist of provider IDs.",
+      "items": { "type": "string" }
+    },
+    "created_at": { "$ref": "_common.schema.json#/$defs/rfc3339" },
+    "created_by": { "$ref": "_common.schema.json#/$defs/actorIdentity" },
+    "content_hash": { "$ref": "_common.schema.json#/$defs/sha256" }
+  }
+}

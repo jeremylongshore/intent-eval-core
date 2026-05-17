@@ -1,0 +1,15 @@
+{
+  "id": "0192cae6-0009-7000-8000-000000000000",
+  "eval_run_id": "0192cae6-0004-7000-8000-000000000000",
+  "tool_invocation_id": "0192cae6-0006-7000-8000-000000000000",
+  "attribution_class": "judge",
+  "provider_id": null,
+  "tokens_consumed": 0,
+  "prompt_tokens": 0,
+  "completion_tokens": 0,
+  "cached_tokens": 0,
+  "wall_clock_ms": 12,
+  "external_api_cost_micro_usd": 0,
+  "recorded_at": "2026-05-17T00:00:05Z",
+  "cost_basis_version": "cost-basis@2026-05-01"
+}

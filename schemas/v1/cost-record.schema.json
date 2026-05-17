@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/cost-record.schema.json",
+  "title": "CostRecord — single cost / resource-attribution row (Blueprint B § 2.12)",
+  "description": "Single terminal state `recorded`. Immutable. Rollups = separate rows with attribution_class='system'. NOT replay-deterministic (cost varies by cache state, pricing, seed routing). external_api_cost_micro_usd uses micro-USD per Blueprint B § 2.12 — NORMATIVE precision requirement. Predicate URI: cost-attribution/v1 (sigstore_staging).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "eval_run_id",
+    "tool_invocation_id",
+    "attribution_class",
+    "provider_id",
+    "tokens_consumed",
+    "prompt_tokens",
+    "completion_tokens",
+    "cached_tokens",
+    "wall_clock_ms",
+    "external_api_cost_micro_usd",
+    "recorded_at",
+    "cost_basis_version"
+  ],
+  "properties": {
+    "id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "eval_run_id": {
+      "oneOf": [{ "$ref": "_common.schema.json#/$defs/uuidv7" }, { "type": "null" }],
+      "description": "Nullable for system-level rollups."
+    },
+    "tool_invocation_id": {
+      "oneOf": [{ "$ref": "_common.schema.json#/$defs/uuidv7" }, { "type": "null" }],
+      "description": "Nullable for run-level / system rollups."
+    },
+    "attribution_class": {
+      "type": "string",
+      "description": "Cost attribution class enum (Blueprint B § 2.12, closed 7-element set).",
+      "enum": [
+        "run",
+        "provider",
+        "judge",
+        "replay",
+        "cache_decision",
+        "optimizer_experiment",
+        "system"
+      ]
+    },
+    "provider_id": {
+      "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+    },
+    "tokens_consumed": { "type": "integer", "minimum": 0 },
+    "prompt_tokens": { "type": "integer", "minimum": 0 },
+    "completion_tokens": { "type": "integer", "minimum": 0 },
+    "cached_tokens": { "type": "integer", "minimum": 0 },
+    "wall_clock_ms": { "type": "integer", "minimum": 0 },
+    "external_api_cost_micro_usd": { "$ref": "_common.schema.json#/$defs/microUsd" },
+    "recorded_at": { "$ref": "_common.schema.json#/$defs/rfc3339" },
+    "cost_basis_version": {
+      "type": "string",
+      "description": "Version tag of the cost-basis lookup table. Table itself forward-deferred to iel-E14b.",
+      "minLength": 1
+    }
+  }
+}

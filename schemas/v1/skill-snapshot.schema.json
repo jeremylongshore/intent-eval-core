@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/skill-snapshot.schema.json",
+  "title": "SkillSnapshot — content-addressed pin of a skill's source + deps + config (Blueprint B § 2.9)",
+  "description": "Single terminal state `created`. Immutable. New snapshot = new row + new combined_sha. combined_sha = sha256(source_sha || dependency_lock_sha || config_sha) per Blueprint B § 2.9 — concatenation order is NORMATIVE. Predicate URI (deferred Phase B+): skill-snapshot/v1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "skill_id",
+    "source_sha",
+    "dependency_lock_sha",
+    "config_sha",
+    "combined_sha",
+    "version_label",
+    "storage_key",
+    "created_at",
+    "created_by"
+  ],
+  "properties": {
+    "id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "skill_id": {
+      "$ref": "_common.schema.json#/$defs/kebabSlug",
+      "description": "Logical skill identifier — stable across snapshots of the same skill."
+    },
+    "source_sha": { "$ref": "_common.schema.json#/$defs/sha256" },
+    "dependency_lock_sha": { "$ref": "_common.schema.json#/$defs/sha256" },
+    "config_sha": { "$ref": "_common.schema.json#/$defs/sha256" },
+    "combined_sha": {
+      "$ref": "_common.schema.json#/$defs/sha256",
+      "description": "Load-bearing pin. sha256(source_sha || dependency_lock_sha || config_sha)."
+    },
+    "version_label": {
+      "oneOf": [{ "$ref": "_common.schema.json#/$defs/semver" }, { "type": "null" }]
+    },
+    "storage_key": { "$ref": "_common.schema.json#/$defs/storageKey" },
+    "created_at": { "$ref": "_common.schema.json#/$defs/rfc3339" },
+    "created_by": { "$ref": "_common.schema.json#/$defs/actorIdentity" }
+  }
+}

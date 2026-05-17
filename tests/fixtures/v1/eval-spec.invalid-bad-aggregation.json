@@ -1,0 +1,21 @@
+{
+  "id": "0192cae6-0002-7000-8000-000000000000",
+  "version": "1.0.0",
+  "name": "audit-harness-escape-scan-spec",
+  "description": "Validates escape-scan",
+  "matchers": [],
+  "assertions": [],
+  "scoring": { "aggregation_rule": "plurality" },
+  "composition": { "nodes": [], "edges": [] },
+  "expected_artifacts": [],
+  "runtime_limits": {
+    "token_ceiling": 100000,
+    "wall_clock_ceiling_ms": 60000,
+    "memory_ceiling_mb": 512,
+    "concurrency_hint": 1
+  },
+  "provider_constraints": [],
+  "created_at": "2026-05-17T00:00:00Z",
+  "created_by": "jeremy@intentsolutions.io",
+  "content_hash": "e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5"
+}

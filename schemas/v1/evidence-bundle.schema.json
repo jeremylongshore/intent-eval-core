@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/evidence-bundle.schema.json",
+  "title": "EvidenceBundle — append-only collection of signed predicate rows (Blueprint B § 2.4)",
+  "description": "State machine: building → signing → signed → archived_to_rekor. APPEND-ONLY. Corrections = new bundle with new UUIDv7 referencing prior content_hash.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "eval_run_id",
+    "created_at",
+    "predicate_uri_set",
+    "row_count",
+    "subject_set",
+    "storage_key",
+    "signing_mode",
+    "rekor_log_indices",
+    "verification_status",
+    "verification_last_checked_at"
+  ],
+  "properties": {
+    "id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "eval_run_id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
+    "created_at": { "$ref": "_common.schema.json#/$defs/rfc3339" },
+    "predicate_uri_set": {
+      "type": "array",
+      "description": "Predicate URIs represented in this bundle's rows.",
+      "items": { "type": "string", "format": "uri" }
+    },
+    "row_count": { "type": "integer", "minimum": 0 },
+    "subject_set": {
+      "type": "array",
+      "description": "Deduplicated in-toto Subject entries across all rows.",
+      "items": {
+        "type": "object",
+        "required": ["name", "digest"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "$ref": "_common.schema.json#/$defs/subjectName" },
+          "digest": {
+            "type": "object",
+            "required": ["sha256"],
+            "additionalProperties": true,
+            "properties": {
+              "sha256": { "$ref": "_common.schema.json#/$defs/sha256" }
+            }
+          }
+        }
+      }
+    },
+    "storage_key": { "$ref": "_common.schema.json#/$defs/storageKey" },
+    "signing_mode": {
+      "type": "string",
+      "description": "Signing posture. sigstore_staging is DR-010 Q3 default for predicates without normative SPEC.md (everything except gate-result/v1 at v1).",
+      "enum": ["sigstore_staging", "rekor_production", "unsigned_experimental"]
+    },
+    "rekor_log_indices": {
+      "type": "array",
+      "description": "Populated when signing_mode='rekor_production'; empty otherwise.",
+      "items": { "type": "integer", "minimum": 0 }
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": ["verified", "unverified", "failed"]
+    },
+    "verification_last_checked_at": { "$ref": "_common.schema.json#/$defs/rfc3339" }
+  }
+}
