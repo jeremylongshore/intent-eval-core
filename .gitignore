@@ -39,3 +39,9 @@ Thumbs.db
 
 # Beads workspace (kernel is task-tracked at umbrella ~/000-projects/.beads/)
 .beads/
+
+# api-extractor temp output (golden snapshot at api/intentsolutions-core.api.md IS committed)
+api/temp/
+
+# reports/ (audit-harness output)
+reports/

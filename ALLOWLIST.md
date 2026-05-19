@@ -65,6 +65,7 @@ FORBIDDEN.md
 LICENSE
 README.md
 TEST_AUDIT.md
+api-extractor.json
 eslint.config.js
 package.json
 pnpm-lock.yaml

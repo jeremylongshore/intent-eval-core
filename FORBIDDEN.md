@@ -268,7 +268,6 @@ agent/
 bin/
 servers/
 server/
-api/
 db/
 database/
 persistence/
