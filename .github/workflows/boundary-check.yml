@@ -1,0 +1,103 @@
+name: Boundary check
+
+# Enforces the 4-axis boundary doctrine
+# (000-docs/003-AT-STND-core-repo-boundaries-2026-05-18.md) on every PR + push to main.
+#
+# The checker (scripts/check-boundaries.ts) reads FORBIDDEN.md + ALLOWLIST.md and scans:
+#   - Axis 1: package patterns + runtime cap (package.json)
+#   - Axis 2: forbidden import paths + allowed src/ subpaths (src/ tree)
+#   - Axis 3: forbidden top-level dirs/files + allowlist (repo root)
+#   - Axis 4: package categories (informative-only at v0.1)
+#   - URL patterns: labs.intentsolutions.io (REFUSE; no override path)
+#
+# Exit codes:
+#   0 — clean
+#   1 — CHALLENGE (override path exists per doctrine § 3)
+#   2 — REFUSE   (hard prohibition; no override path)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write # for posting violation comments on PRs
+
+concurrency:
+  group: boundaries-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: 4-axis boundary check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install (offline-ish — only package.json deps used)
+        run: pnpm install --frozen-lockfile
+
+      - name: Run boundary check
+        id: boundaries
+        run: pnpm run boundaries 2>&1 | tee /tmp/boundaries.log
+        continue-on-error: true
+
+      - name: Post violation summary as PR comment
+        if: ${{ github.event_name == 'pull_request' && steps.boundaries.outcome == 'failure' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('node:fs');
+            const log = fs.readFileSync('/tmp/boundaries.log', 'utf-8');
+
+            // Check for override line in PR body
+            const prBody = context.payload.pull_request?.body || '';
+            const overrideMatch = prBody.match(/boundary-override:\s*(\S+)/);
+            const overrideBead = overrideMatch ? overrideMatch[1] : null;
+
+            const body = [
+              '## ⚠️ Boundary check failed',
+              '',
+              'The 4-axis boundary doctrine (`000-docs/003-AT-STND-core-repo-boundaries-2026-05-18.md`) blocked this PR.',
+              '',
+              '<details><summary>Full checker output</summary>',
+              '',
+              '```',
+              log,
+              '```',
+              '',
+              '</details>',
+              '',
+              overrideBead
+                ? `**Override declared**: ${overrideBead}. The PR description includes \`boundary-override: ${overrideBead}\`. Verify the bead is open + within its expiration window + the override scope matches the violation.`
+                : `**No override declared.** To override, file a bead in the \`iec-\` prefix (see doctrine § 3.2) and add a line to this PR description: \`boundary-override: bd_000-projects-<id>\`.`,
+              '',
+              '**Note**: URL violations marked REFUSE have no override path (e.g., `labs.intentsolutions.io` predicate URIs are CISO-binding-forbidden per DR-004 + DR-010 § 10).',
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+      - name: Fail the workflow if boundaries violated
+        if: steps.boundaries.outcome == 'failure'
+        run: |
+          echo "::error::Boundary check failed — see PR comment + log above"
+          exit 1

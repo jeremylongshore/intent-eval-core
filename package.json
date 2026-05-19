@@ -67,9 +67,10 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "arch": "audit-harness arch",
+    "boundaries": "node --experimental-strip-types scripts/check-boundaries.ts",
     "harness:verify": "audit-harness verify",
     "harness:init": "audit-harness init",
-    "check": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run arch"
+    "check": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run arch && pnpm run boundaries"
   },
   "lint-staged": {
     "*.{ts,js,cjs,mjs}": [
