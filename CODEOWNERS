@@ -1,0 +1,45 @@
+# CODEOWNERS — @intentsolutions/core
+#
+# Per iec-E11 (boundary enforcement) — narrowed from default catchall to
+# explicit ownership so PRs touching critical surfaces require explicit
+# owner review.
+#
+# Authority: 000-docs/003-AT-STND-core-repo-boundaries-2026-05-18.md
+#
+# At v0.1.0 this repo has a single maintainer; CODEOWNERS encodes that
+# directly. When co-maintainers join, expand the patterns to encode
+# scope-specific ownership (e.g., @signing-reviewer for schemas/predicate/*).
+
+# ─── Default ownership ────────────────────────────────────────────────────
+*                                       @jeremylongshore
+
+# ─── Critical canonical-contract surfaces ─────────────────────────────────
+# These surfaces are the kernel's most version-sensitive areas — breaking
+# changes require Class-1/Class-2 ISEDC review per the per-repo blueprint
+# § 6.6 stability promise + § 11.1 versioning policy.
+src/entities/                           @jeremylongshore
+src/predicates/                         @jeremylongshore
+src/primitives.ts                       @jeremylongshore
+schemas/v1/                             @jeremylongshore
+src/validators/v1/                      @jeremylongshore
+
+# ─── Policy + boundary surfaces ───────────────────────────────────────────
+# These files are hash-pinned via @intentsolutions/audit-harness. Edits
+# require pnpm exec audit-harness init to re-pin in the same commit.
+FORBIDDEN.md                            @jeremylongshore
+ALLOWLIST.md                            @jeremylongshore
+CODEOWNERS                              @jeremylongshore
+.dependency-cruiser.cjs                 @jeremylongshore
+.harness-hash                           @jeremylongshore
+tests/TESTING.md                        @jeremylongshore
+tests/RTM.md                            @jeremylongshore
+000-docs/                               @jeremylongshore
+
+# ─── CI + release infrastructure ──────────────────────────────────────────
+.github/workflows/                      @jeremylongshore
+package.json                            @jeremylongshore
+pnpm-lock.yaml                          @jeremylongshore
+
+# ─── Boundary checker itself ──────────────────────────────────────────────
+scripts/check-boundaries.ts             @jeremylongshore
+.husky/                                 @jeremylongshore

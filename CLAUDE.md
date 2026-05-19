@@ -116,6 +116,27 @@ Use `bd-sync link/note/close` for every state change. After bulk operations, app
 5. **CI is the source of truth for "passes"** — local `pnpm run check` is necessary but not sufficient; main-branch protection requires the CI status check to pass.
 6. **PRs go through review even from the owner** — the canonical contracts kernel earns its weight from review discipline. No direct pushes to main.
 
+## Anti-goals (binding scope control)
+
+These are the kernel's NORMATIVE boundaries. Each is enforced architecturally — not just documented. The full boundary doctrine is at [`000-docs/003-AT-STND-core-repo-boundaries-2026-05-18.md`](000-docs/003-AT-STND-core-repo-boundaries-2026-05-18.md). The machine-readable enumeration is at [`FORBIDDEN.md`](FORBIDDEN.md). The allowlist counterpart is at [`ALLOWLIST.md`](ALLOWLIST.md). The unified checker is at [`scripts/check-boundaries.ts`](scripts/check-boundaries.ts) (`pnpm run boundaries`).
+
+| Anti-goal | What it prevents | Enforcement |
+|---|---|---|
+| **NOT a runtime** | Adding orchestration / agents / job queues / schedulers to the kernel | FORBIDDEN.md Axis 1 (npm packages) + Axis 2 (src/runtime/, src/orchestrator/) + Axis 3 (services/, workers/) |
+| **NOT a judge** | Adding LLM-judge logic or behavioral evaluation primitives | FORBIDDEN.md Axis 1 (LLM provider adapters) + Axis 2 (src/judges/, src/agents/) |
+| **NOT a harness** | Adding deterministic gate logic (that belongs in audit-harness) | FORBIDDEN.md Axis 2 (src/adapters/, src/optimization/) + dep-cruiser `validators-only-import-zod` |
+| **NOT a service** | Adding HTTP servers / gRPC / REST APIs / websockets | FORBIDDEN.md Axis 1 (web frameworks) + Axis 2 (src/server/, src/api/) + Axis 3 (services/, api/) |
+| **NOT a database** | Adding DB drivers / ORMs / storage SDKs | FORBIDDEN.md Axis 1 (pg, mysql, mongodb, prisma, etc.) + Axis 2 (src/db/, src/persistence/) |
+| **Predicate URIs are scoped** | Using `labs.intentsolutions.io` as a predicate URI host | FORBIDDEN.md URL-pattern axis — REFUSE, no override path; CISO binding DR-004 + DR-010 § 10 |
+| **Schema duplication forbidden** | Peer repos redefining canonical entity types locally | Architectural: the kernel IS the source-of-truth; peer repos import — this is enforced via the unification thesis, validated by `/audit-tests` on peer repos |
+
+**Override process for everything except CISO-binding URL patterns**: file a bead in `iec-` prefix, reference it in PR body as `boundary-override: bd_000-projects-<id>`. See doctrine § 3 for details. Class-2 ISEDC review is required for major-boundary crossings.
+
+**No override exists** for:
+- Predicate URIs at `labs.intentsolutions.io` (CISO binding)
+- Partner names in public-facing artifacts without explicit written consent (DR-004 S1Q2 + DR-010 § 10)
+- Customer-signal gates as Phase B unblockers (DR-010 § 13.5 — removed permanently)
+
 ## When in doubt
 
 - Check the bead description: `bd show bd_000-projects-<id>`

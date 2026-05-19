@@ -20,6 +20,7 @@ Naming: `NNN-CC-ABCD-description-YYYY-MM-DD.md` where:
 |---|---|---|---|---|
 | 001 | [Release v0.1.0 AAR](001-AA-AACR-release-v0.1.0-2026-05-17.md) | 2026-05-17 | AA-AACR | committed |
 | 002 | [Per-repo blueprint (applies Blueprint C)](002-AT-ARCH-repo-blueprint-2026-05-18.md) | 2026-05-18 | AT-ARCH | NORMATIVE (binding authority for this repo) |
+| 003 | [Core repo boundary doctrine](003-AT-STND-core-repo-boundaries-2026-05-18.md) | 2026-05-18 | AT-STND | NORMATIVE (boundary enforcement; pairs with FORBIDDEN.md + ALLOWLIST.md + scripts/check-boundaries.ts) |
 
 ## Cross-repo authority chain
 

@@ -38,6 +38,6 @@
     "sourceMap": true,
     "removeComments": false
   },
-  "include": ["src/**/*.ts", "vitest.config.ts"],
+  "include": ["src/**/*.ts", "vitest.config.ts", "scripts/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
