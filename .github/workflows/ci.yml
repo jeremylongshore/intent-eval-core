@@ -61,6 +61,19 @@ jobs:
       - name: Type tests (tsd — second-opinion against published surface)
         run: pnpm run test:types
 
+      - name: API surface check (iec-E07 SemVer regression gate)
+        id: api_check
+        run: pnpm run api:check
+        continue-on-error: true
+
+      - name: API diff report (if surface drifted)
+        if: steps.api_check.outcome == 'failure'
+        run: |
+          pnpm run api:diff || true
+          echo "::error::Public API surface has drifted from the committed golden snapshot."
+          echo "::error::If this is intentional, bump version per per-repo blueprint § 11.1, run \`pnpm run api:extract\` to update api/intentsolutions-core.api.md, and commit the snapshot in the same PR."
+          exit 1
+
       - name: Verify dist artifacts emitted
         run: |
           test -f dist/index.js || { echo "missing dist/index.js"; exit 1; }

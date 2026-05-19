@@ -1,0 +1,229 @@
+#!/usr/bin/env -S node --experimental-strip-types
+/**
+ * api-diff.ts — print a structured migration-notes diff between the
+ * committed golden api report (api/intentsolutions-core.api.md) and the
+ * freshly-generated one (api/temp/intentsolutions-core.api.md).
+ *
+ * Per iec-E07: produces migration notes that engineers paste into
+ * CHANGELOG.md / MIGRATING.md when bumping MAJOR.
+ *
+ * Usage:
+ *   pnpm run api:extract          # regenerates api/intentsolutions-core.api.md
+ *   pnpm run api:check            # validates against committed (CI gate)
+ *   pnpm run api:diff             # prints structured diff for migration notes
+ *
+ * Exit codes:
+ *   0 — no diff (no migration needed)
+ *   1 — diff exists (print structured output)
+ *   2 — golden snapshot missing (run api:extract first)
+ */
+
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const REPO_ROOT = process.cwd();
+const GOLDEN = join(REPO_ROOT, 'api', 'intentsolutions-core.api.md');
+const TEMP = join(REPO_ROOT, 'api', 'temp', 'intentsolutions-core.api.md');
+
+if (!existsSync(GOLDEN)) {
+  console.error(`api-diff: golden snapshot missing at ${GOLDEN}`);
+  console.error('Run `pnpm run api:extract` to generate it first.');
+  process.exit(2);
+}
+if (!existsSync(TEMP)) {
+  console.error(`api-diff: temp snapshot missing at ${TEMP}`);
+  console.error('Run `pnpm run api:check` to generate it.');
+  process.exit(2);
+}
+
+const golden = readFileSync(GOLDEN, 'utf-8');
+const temp = readFileSync(TEMP, 'utf-8');
+
+if (golden === temp) {
+  console.log('api-diff: NO CHANGES — golden snapshot matches current build.');
+  process.exit(0);
+}
+
+// Extract per-export entries — each export in api-extractor's markdown output
+// appears as a block starting with `// @public` or `// @internal`. The block
+// runs until the next `//` comment marker or blank line.
+interface ApiEntry {
+  /** Multi-line block as written by api-extractor (verbatim). */
+  block: string;
+  /** Primary identifier extracted from the block (best-effort regex). */
+  name: string;
+  /** What kind of export: 'type', 'interface', 'const', 'function', 'enum'. */
+  kind: string;
+}
+
+function parseEntries(md: string): Map<string, ApiEntry> {
+  const lines = md.split('\n');
+  const entries = new Map<string, ApiEntry>();
+
+  let currentBlock: string[] = [];
+  let inBlock = false;
+
+  for (const line of lines) {
+    if (
+      line.startsWith('// @public') ||
+      line.startsWith('// @internal') ||
+      line.startsWith('// @beta') ||
+      line.startsWith('// @alpha')
+    ) {
+      if (inBlock) {
+        recordBlock(currentBlock, entries);
+      }
+      currentBlock = [line];
+      inBlock = true;
+    } else if (inBlock) {
+      // Block continues until next blank line OR next /^export / followed by next /^export /
+      if (line.trim() === '' && currentBlock.length > 1) {
+        // End of block
+        recordBlock(currentBlock, entries);
+        currentBlock = [];
+        inBlock = false;
+      } else {
+        currentBlock.push(line);
+      }
+    }
+  }
+  if (inBlock && currentBlock.length > 0) {
+    recordBlock(currentBlock, entries);
+  }
+
+  return entries;
+}
+
+function recordBlock(block: string[], entries: Map<string, ApiEntry>): void {
+  const text = block.join('\n');
+  // Extract the export declaration line(s)
+  const exportLine = block.find((l) => l.trim().startsWith('export '));
+  if (!exportLine) return;
+
+  // Identify the kind + name
+  const patterns: { kind: string; regex: RegExp }[] = [
+    { kind: 'type', regex: /^export\s+type\s+(\w+)/ },
+    { kind: 'interface', regex: /^export\s+interface\s+(\w+)/ },
+    { kind: 'class', regex: /^export\s+class\s+(\w+)/ },
+    { kind: 'enum', regex: /^export\s+enum\s+(\w+)/ },
+    { kind: 'const', regex: /^export\s+const\s+(\w+)/ },
+    { kind: 'let', regex: /^export\s+let\s+(\w+)/ },
+    { kind: 'function', regex: /^export\s+function\s+(\w+)/ },
+    { kind: 'namespace', regex: /^export\s+namespace\s+(\w+)/ },
+  ];
+
+  for (const { kind, regex } of patterns) {
+    const match = regex.exec(exportLine.trim());
+    if (match?.[1]) {
+      entries.set(match[1], { block: text, name: match[1], kind });
+      return;
+    }
+  }
+}
+
+const goldenEntries = parseEntries(golden);
+const tempEntries = parseEntries(temp);
+
+const removed: ApiEntry[] = [];
+const added: ApiEntry[] = [];
+const changed: { name: string; before: string; after: string; kind: string }[] = [];
+
+for (const [name, entry] of goldenEntries) {
+  const newEntry = tempEntries.get(name);
+  if (!newEntry) {
+    removed.push(entry);
+  } else if (entry.block !== newEntry.block) {
+    changed.push({ name, before: entry.block, after: newEntry.block, kind: entry.kind });
+  }
+}
+
+for (const [name, entry] of tempEntries) {
+  if (!goldenEntries.has(name)) {
+    added.push(entry);
+  }
+}
+
+console.log('# Migration notes — public-API surface diff');
+console.log('');
+console.log(`Generated by \`pnpm run api:diff\` on ${new Date().toISOString()}`);
+console.log('');
+console.log(
+  `Comparing committed golden (\`api/intentsolutions-core.api.md\`) → current build (\`api/temp/intentsolutions-core.api.md\`).`,
+);
+console.log('');
+
+if (removed.length > 0) {
+  console.log('## ⚠ Removed exports (MAJOR-bump required)');
+  console.log('');
+  console.log(
+    `${removed.length} export(s) removed. Per per-repo blueprint § 6.6, removing any item from the public-API stability promise requires MAJOR bump + Class-2 ISEDC pair Decision Record.`,
+  );
+  console.log('');
+  for (const entry of removed) {
+    console.log(`### \`${entry.name}\` (was: \`${entry.kind}\`)`);
+    console.log('');
+    console.log('```ts');
+    console.log(entry.block);
+    console.log('```');
+    console.log('');
+  }
+}
+
+if (changed.length > 0) {
+  console.log('## ⚠ Modified exports (analyze per change)');
+  console.log('');
+  console.log(
+    `${changed.length} export(s) modified. Most modifications are BREAKING (MAJOR bump): field rename, type narrowing, enum value removed, signature change, generic constraint added. A few are NON-BREAKING (MINOR): adding an optional field, adding a new enum value to an open enum, JSDoc-only edits.`,
+  );
+  console.log('');
+  for (const item of changed) {
+    console.log(`### \`${item.name}\` (\`${item.kind}\`)`);
+    console.log('');
+    console.log('**Before:**');
+    console.log('');
+    console.log('```ts');
+    console.log(item.before);
+    console.log('```');
+    console.log('');
+    console.log('**After:**');
+    console.log('');
+    console.log('```ts');
+    console.log(item.after);
+    console.log('```');
+    console.log('');
+  }
+}
+
+if (added.length > 0) {
+  console.log('## ✓ Added exports (MINOR bump sufficient)');
+  console.log('');
+  console.log(
+    `${added.length} export(s) added. Per per-repo blueprint § 11.1, additive features land via MINOR bump (no consumer breakage).`,
+  );
+  console.log('');
+  for (const entry of added) {
+    console.log(`### \`${entry.name}\` (\`${entry.kind}\`)`);
+    console.log('');
+    console.log('```ts');
+    console.log(entry.block);
+    console.log('```');
+    console.log('');
+  }
+}
+
+console.log('## Summary');
+console.log('');
+console.log(`| Change class | Count | Bump implication |`);
+console.log(`|---|---|---|`);
+console.log(
+  `| Removed | ${removed.length} | MAJOR (+ Class-2 ISEDC if a § 6.6 stability promise item) |`,
+);
+console.log(`| Modified | ${changed.length} | Analyze case-by-case; default-assume MAJOR |`);
+console.log(`| Added | ${added.length} | MINOR |`);
+console.log('');
+
+const bumpClass =
+  removed.length > 0 || changed.length > 0 ? 'MAJOR' : added.length > 0 ? 'MINOR' : 'PATCH';
+console.log(`**Recommended bump: ${bumpClass}**`);
+
+process.exit(removed.length > 0 || changed.length > 0 || added.length > 0 ? 1 : 0);

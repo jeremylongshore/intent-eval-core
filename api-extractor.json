@@ -1,0 +1,80 @@
+/**
+ * api-extractor configuration for @intentsolutions/core.
+ *
+ * Tracks the public API surface of the MAIN ENTRY (`@intentsolutions/core`).
+ * Subpath exports (./schemas/v1, ./validators/v1, ./validators/v1/*) are
+ * NOT tracked here at v0.1 — they're tree-shakable per-file exports and
+ * their stability is governed by the per-entity validator naming
+ * convention (per per-repo blueprint § 6.6).
+ *
+ * Wire-up:
+ *   pnpm run build                  # produces dist/
+ *   pnpm run api:extract            # writes api/intentsolutions-core.api.md
+ *   pnpm run api:check              # CI gate — fails if api.md drifts
+ *
+ * Per iec-E07: any breaking change to the main entry's public API MUST be
+ * accompanied by a MAJOR version bump (per per-repo blueprint § 11.1).
+ * The committed api/intentsolutions-core.api.md IS the golden snapshot at
+ * v0.1.0; CI diffs the current build against it and refuses un-versioned
+ * breaking changes.
+ */
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
+
+  "mainEntryPointFilePath": "<projectFolder>/dist/index.d.ts",
+
+  "bundledPackages": [],
+
+  "compiler": {
+    "tsconfigFilePath": "<projectFolder>/tsconfig.json"
+  },
+
+  "apiReport": {
+    "enabled": true,
+    "reportFolder": "<projectFolder>/api/",
+    "reportTempFolder": "<projectFolder>/api/temp/",
+    "reportFileName": "intentsolutions-core.api.md",
+    "includeForgottenExports": false
+  },
+
+  "docModel": {
+    "enabled": false
+  },
+
+  "dtsRollup": {
+    "enabled": false
+  },
+
+  "tsdocMetadata": {
+    "enabled": false
+  },
+
+  "messages": {
+    "compilerMessageReporting": {
+      "default": {
+        "logLevel": "warning"
+      }
+    },
+
+    "extractorMessageReporting": {
+      "default": {
+        "logLevel": "warning"
+      },
+      "ae-missing-release-tag": {
+        "logLevel": "none"
+      },
+      "ae-forgotten-export": {
+        "logLevel": "none"
+      },
+      "ae-internal-missing-underscore": {
+        "logLevel": "none"
+      }
+    },
+
+    "tsdocMessageReporting": {
+      "default": {
+        "logLevel": "none"
+      }
+    }
+  }
+}
