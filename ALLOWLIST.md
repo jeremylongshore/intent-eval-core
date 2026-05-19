@@ -64,6 +64,7 @@ CODEOWNERS
 FORBIDDEN.md
 LICENSE
 README.md
+TEST_AUDIT.md
 eslint.config.js
 package.json
 pnpm-lock.yaml
