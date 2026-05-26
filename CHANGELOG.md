@@ -5,6 +5,51 @@ All notable changes to `@intentsolutions/core` are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versioning follows [SemVer 2.0.0](https://semver.org/).
 
+## [Unreleased]
+
+### Pending
+
+- Kernel v0.2.0 (`iec-E12`) — `EvidenceBundlePayload` shape + cross-field invariants (CISO-co-authored per `iec-E12a`); blocks on `iec-E12b` audit-harness second-emitter sketch
+- Evidence Bundle predicate compatibility policy (forward/backward/mixing/deprecation rules) MUST land before first prod-Rekor anchor — bd `bd_000-projects-uprg` (P0)
+- OTel semantic conventions pinned in `schemas/v1/otel-attributes.yaml` BEFORE v0.2.0 ships to prevent attribute drift across consumer emitters — bd `bd_000-projects-9pi3` (P0)
+
+## [0.1.1] — 2026-05-25
+
+Maintenance release. No new exported API surface — additions are CI/architecture posture, governance/documentation, and repo-scaffolding hygiene.
+
+### Added
+
+- **CI: SemVer regression suite** (`iec-E07`) — api-extractor golden snapshot + CI gate that fails on undocumented API drift + migration-notes generator. Downstream consumers can now trust that `0.x.y → 0.x.(y+1)` will NEVER silently rename or remove a public-surface export.
+- **Architecture: 4-axis boundary enforcement** (`iec-E11`) — `FORBIDDEN.md` + `ALLOWLIST.md` + `CODEOWNERS` + checker + CI. Codifies kernel anti-goals (no runtime, no judges, no execution) as enforced rules rather than aspirational prose.
+- **Repo scaffolding**: `SECURITY.md` (vulnerability-disclosure policy + threat model for kernel-of-contracts), `CONTRIBUTING.md` (dev setup + schema-as-canon discipline + architectural bindings), `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1).
+
+### Changed
+
+- **Documentation: per-repo blueprint** (`iec-E10`) — applies Blueprint C template to this repo; lands at `000-docs/`.
+- **Documentation: testing SOP + CI/CD bootstrap AAR** (`iec-E12` partial — ratify-and-close on testing scaffolding) — includes `TEST_AUDIT.md`.
+- **Documentation: IEP /appaudit baseline** — operator-grade snapshot of the IEP ecosystem as of 2026-05-20, filed at `000-docs/`.
+- **Documentation: post-v0.1.0 polish** — README install block, badges, status banners, `/validate-consistency` drift fixes.
+- **Documentation: v0.1.0 release AAR** — `/release` Phase 8 deliverable filed at `000-docs/001-AA-AACR-release-v0.1.0-2026-05-17.md`.
+
+### Security
+
+- No security fixes in this release. Routine sigstore-provenance discipline preserved (every release tarball signed; consumers verify with `npm audit signatures`).
+
+### Architectural bindings
+
+- [DR-010](https://github.com/jeremylongshore/intent-eval-lab/blob/main/000-docs/010-AT-DECR-isedc-council-session-4-widened-scope-2026-05-13.md) — ISEDC Session 4 widened-scope lock (BINDING)
+- [Blueprint A § 1.2 principle 10](https://github.com/jeremylongshore/intent-eval-lab/blob/main/000-docs/011-AT-ARCH-ecosystem-master-blueprint.md) — schema is canon; this release adds the SemVer-regression CI gate that enforces it
+- [Blueprint C](https://github.com/jeremylongshore/intent-eval-lab/blob/main/000-docs/013-AT-SPEC-repo-blueprint-template.md) — repo template applied via `iec-E10`
+
+### Quality posture (unchanged from v0.1.0)
+
+- 100% line/branch/function/statement coverage on consumer-facing code
+- 0 architecture violations across 8 forbidden dep-cruiser rules
+- 154+ vitest tests + ~80 tsd negative assertions
+- 31 ajv-based JSON Schema validation tests; 31 Zod validator tests
+- `@intentsolutions/audit-harness@1.1.4` wired (escape-scan + arch + harness-hash)
+- sigstore provenance attached to published tarball
+
 ## [0.1.0] — 2026-05-17
 
 First public release. The canonical contracts kernel for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab) — TypeScript types, JSON Schemas, Zod validators, and state machines for the 13 canonical entities.
