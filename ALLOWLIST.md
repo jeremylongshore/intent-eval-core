@@ -60,10 +60,13 @@ AGENTS.md
 ALLOWLIST.md
 CHANGELOG.md
 CLAUDE.md
+CODE_OF_CONDUCT.md
 CODEOWNERS
+CONTRIBUTING.md
 FORBIDDEN.md
 LICENSE
 README.md
+SECURITY.md
 TEST_AUDIT.md
 api-extractor.json
 eslint.config.js
@@ -86,10 +89,13 @@ Annotations (what each is):
 - `ALLOWLIST.md` — this file
 - `CHANGELOG.md` — Keep a Changelog
 - `CLAUDE.md` — Claude-Code-specific guidance
+- `CODE_OF_CONDUCT.md` — Contributor Covenant 2.1
 - `CODEOWNERS` — codeowner routing for PR review
+- `CONTRIBUTING.md` — contribution guidelines + architectural bindings
 - `FORBIDDEN.md` — boundary forbidden set
 - `LICENSE` — Apache 2.0
 - `README.md` — package overview + install
+- `SECURITY.md` — vulnerability-disclosure policy + threat model
 - `eslint.config.js` — ESLint flat config
 - `package.json` / `pnpm-lock.yaml` — npm manifest + lockfile
 - `tsconfig.json` / `tsconfig.build.json` — TypeScript configs
