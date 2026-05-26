@@ -7,7 +7,7 @@ Thank you for your interest in contributing to **`@intentsolutions/core`** — t
 ### Prerequisites
 
 - Node 20+ (CI runs on 20 and 22)
-- pnpm 10+
+- pnpm 9+
 - Git
 - GitHub account
 
@@ -35,7 +35,7 @@ pnpm exec audit-harness verify  # hash-pinned policy verification
 ### Reporting Bugs
 
 1. Search [existing issues](https://github.com/jeremylongshore/intent-eval-core/issues) first
-2. Open a bug report with: kernel version (`cat node_modules/@intentsolutions/core/package.json | jq .version`), Node version, OS, reproduction steps, and the failing schema or validator output
+2. Open a bug report with: kernel version (`cat package.json | jq .version`), Node version, OS, reproduction steps, and the failing schema or validator output
 3. For schema-validation regressions, include the offending JSON payload as a minimal repro
 
 ### Suggesting Enhancements
@@ -124,7 +124,7 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 - Follow the project's existing conventions (eslint enforces; `pnpm run lint` to check)
 - TypeScript strict mode + `verbatimModuleSyntax` + `isolatedModules`
 - No new runtime dependencies in the published package without explicit discussion (zero runtime deps is a kernel posture)
-- Zod is the only runtime dep allowed via peer dependency
+- Zod is the only runtime dep allowed via direct dependency
 - 2-space indent, double quotes (per existing files)
 
 ### License-aware contributions

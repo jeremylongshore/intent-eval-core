@@ -49,7 +49,7 @@ Email **security@intentsolutions.io** with:
 
 ### Schema-as-canon discipline
 
-Edits to `schemas/v1/*.schema.json` go through codegen — never hand-edit `_generated/*` files. The `pnpm run codegen:validators` step regenerates from the JSON Schema sources; the CI gate fails if generated files drift. **A PR that modifies generated code without re-running codegen IS a vulnerability** (it indicates the JSON Schema and the Zod validators are out of sync, weakening every downstream consumer's runtime check). Report such PRs as a High severity finding.
+Edits to `schemas/v1/*.schema.json` go through codegen — never hand-edit `src/validators/v1/_generated/*` files. The `pnpm run codegen:validators` step regenerates from the JSON Schema sources; the CI gate fails if generated files drift. **A PR that modifies generated code without re-running codegen IS a vulnerability** (it indicates the JSON Schema and the Zod validators are out of sync, weakening every downstream consumer's runtime check). Report such PRs as a High severity finding.
 
 ## Disclosure Process
 
