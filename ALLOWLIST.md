@@ -55,7 +55,10 @@ Files allowed at repo root (anything not in this list triggers a BLOCK on the Ax
 .npmrc
 .nvmrc
 .prettierignore
+.markdownlint-cli2.jsonc
 .prettierrc.json
+.vale
+.vale.ini
 AGENTS.md
 ALLOWLIST.md
 CHANGELOG.md
@@ -71,6 +74,7 @@ TEST_AUDIT.md
 api-extractor.json
 codecov.yml
 eslint.config.js
+lychee.toml
 package.json
 pnpm-lock.yaml
 tsconfig.build.json
