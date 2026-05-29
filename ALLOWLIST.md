@@ -69,6 +69,7 @@ README.md
 SECURITY.md
 TEST_AUDIT.md
 api-extractor.json
+codecov.yml
 eslint.config.js
 package.json
 pnpm-lock.yaml
