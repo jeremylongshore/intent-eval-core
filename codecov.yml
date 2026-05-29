@@ -1,0 +1,66 @@
+# Codecov configuration for jeremylongshore/intent-eval-core
+#
+# Posture:
+# - project target: auto (no regression vs current baseline) + 2% slack
+# - patch target: 40% (kernel already enforces 100% via vitest thresholds;
+#   40% is the Codecov-side floor for new-patch lines, consistent with the
+#   ccp template. The vitest gate is the harder constraint in practice.)
+# - if_ci_failed: success (Codecov outage must not red-X CI)
+# - only_pulls: true (don't gate bot-driven push streams to main)
+
+codecov:
+  require_ci_to_pass: false
+
+coverage:
+  precision: 2
+  round: down
+  range: '30...100'
+
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 2%
+        if_ci_failed: success
+        only_pulls: true
+    patch:
+      default:
+        target: 40%
+        threshold: 10%
+        if_ci_failed: success
+        only_pulls: true
+
+comment:
+  layout: 'condensed_header, diff, flags, files'
+  behavior: default
+  require_changes: true
+  require_base: false
+  require_head: true
+
+ignore:
+  # Documentation — never measured
+  - '**/*.md'
+  - '**/*.mdx'
+  - '000-docs/**'
+
+  # Test files — measurers, not measured
+  - 'src/**/*.{test,spec}.ts'
+  - 'src/**/__snapshots__/**'
+
+  # Codegen reference output — not the canonical API surface, not exported
+  - 'src/validators/v1/_generated/**'
+
+  # Standard build / generated / vendored
+  - '**/dist/**'
+  - '**/build/**'
+  - '**/coverage/**'
+  - '**/*.generated.*'
+  - '**/generated/**'
+  - '**/node_modules/**'
+
+  # Scripts (boundary enforcement tooling — not instrumented)
+  - 'scripts/**'
+
+flag_management:
+  default_rules:
+    carryforward: true
