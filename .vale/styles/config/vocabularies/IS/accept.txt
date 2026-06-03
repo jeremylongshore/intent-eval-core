@@ -124,3 +124,7 @@ Whop
 Wireshark
 YAML
 Zod
+appaudit
+nullable
+(?i)uri
+pre_registration_hash
