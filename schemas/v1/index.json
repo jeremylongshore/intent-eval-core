@@ -18,6 +18,22 @@
       "spec": "Blueprint B § 7.4",
       "signing_mode": "rekor_production"
     },
+    "retraction-v1": {
+      "path": "retraction.schema.json",
+      "title": "retraction/v1 predicate body",
+      "kind": "predicate",
+      "uri": "https://evals.intentsolutions.io/retraction/v1",
+      "spec": "amber-lighthouse Epic 2.1 / Epic 2.7 (B4 binding)",
+      "signing_mode": "sigstore_staging"
+    },
+    "dashboard-render-v1": {
+      "path": "dashboard-render.schema.json",
+      "title": "dashboard-render/v1 predicate body",
+      "kind": "predicate",
+      "uri": "https://evals.intentsolutions.io/dashboard-render/v1",
+      "spec": "amber-lighthouse Epic 2.1 / Epic 2.5 (B3 binding, sequenced)",
+      "signing_mode": "sigstore_staging"
+    },
     "eval-spec": {
       "path": "eval-spec.schema.json",
       "title": "EvalSpec",

@@ -5,6 +5,7 @@
 import { z } from 'zod';
 import {
   Rfc3339Schema,
+  Sha256PrefixedSchema,
   Sha256Schema,
   StorageKeySchema,
   SubjectNameSchema,
@@ -43,6 +44,10 @@ export const EvidenceBundleSchema = z
     rekor_log_indices: z.array(z.number().int().nonnegative()),
     verification_status: VerificationStatusSchema,
     verification_last_checked_at: Rfc3339Schema,
+    // Pre-registration commitment hash (D2 binding, v0.2.0 additive). Optional
+    // + nullable so v0.1.0 bundles (which never set it) still parse; cross-field
+    // invariants that govern when it MUST be non-null land in iec-E12.
+    pre_registration_hash: Sha256PrefixedSchema.nullable().optional(),
   })
   .strict();
 

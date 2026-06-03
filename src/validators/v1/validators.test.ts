@@ -16,6 +16,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   CostRecordSchema,
+  DashboardRenderV1Schema,
   EvalRunSchema,
   EvalSpecSchema,
   EvidenceBundleSchema,
@@ -24,6 +25,7 @@ import {
   JudgeDecisionSchema,
   MatcherMapSchema,
   RegressionPackSchema,
+  RetractionV1Schema,
   RolloutGateSchema,
   RuntimeReceiptSchema,
   SessionTraceSchema,
@@ -179,6 +181,122 @@ describe('Zod validators — conditional advisory_severity rule (Blueprint B § 
       gate_reasons: [],
     });
     expect(result.success).toBe(true);
+  });
+});
+
+describe('Zod validators — v0.2.0 additive: retraction/v1 (B4 binding)', () => {
+  it('valid retraction parses', () => {
+    expect(() => RetractionV1Schema.parse(loadJson('retraction.valid.json'))).not.toThrow();
+  });
+
+  it('out-of-set reason_class → REJECT (closed enum, GC refusal binding)', () => {
+    const result = RetractionV1Schema.safeParse(
+      loadJson('retraction.invalid-bad-reason-class.json'),
+    );
+    expect(result.success).toBe(false);
+  });
+
+  it('all six reason_class values accepted', () => {
+    const base = loadJson('retraction.valid.json') as Record<string, unknown>;
+    for (const cls of [
+      'partner-request',
+      'methodology-error',
+      'data-quality',
+      'consent-withdrawn',
+      'legal-hold',
+      'pre-publication-recall',
+    ]) {
+      const result = RetractionV1Schema.safeParse({ ...base, reason_class: cls });
+      expect(result.success, `reason_class=${cls}`).toBe(true);
+    }
+  });
+
+  it('empty retracted_subject → REJECT (at-least-one-field refine)', () => {
+    const base = loadJson('retraction.valid.json') as Record<string, unknown>;
+    const result = RetractionV1Schema.safeParse({ ...base, retracted_subject: {} });
+    expect(result.success).toBe(false);
+  });
+
+  it('missing reason_class → REJECT (required)', () => {
+    const base = loadJson('retraction.valid.json') as Record<string, unknown>;
+    const { reason_class, ...withoutClass } = base;
+    void reason_class;
+    const result = RetractionV1Schema.safeParse(withoutClass);
+    expect(result.success).toBe(false);
+  });
+
+  it('reason (free text) is optional', () => {
+    const base = loadJson('retraction.valid.json') as Record<string, unknown>;
+    const { reason, ...withoutReason } = base;
+    void reason;
+    const result = RetractionV1Schema.safeParse(withoutReason);
+    expect(result.success).toBe(true);
+  });
+});
+
+describe('Zod validators — v0.2.0 additive: dashboard-render/v1 (B3 binding)', () => {
+  it('valid dashboard-render parses', () => {
+    expect(() =>
+      DashboardRenderV1Schema.parse(loadJson('dashboard-render.valid.json')),
+    ).not.toThrow();
+  });
+
+  it('empty input_bundles → REJECT (min 1 input)', () => {
+    const result = DashboardRenderV1Schema.safeParse(
+      loadJson('dashboard-render.invalid-empty-inputs.json'),
+    );
+    expect(result.success).toBe(false);
+  });
+
+  it('input_bundles entry with neither bundle_id nor content_hash → REJECT', () => {
+    const base = loadJson('dashboard-render.valid.json') as Record<string, unknown>;
+    const result = DashboardRenderV1Schema.safeParse({ ...base, input_bundles: [{}] });
+    expect(result.success).toBe(false);
+  });
+
+  it('missing rendered_artifact → REJECT (required)', () => {
+    const base = loadJson('dashboard-render.valid.json') as Record<string, unknown>;
+    const { rendered_artifact, ...without } = base;
+    void rendered_artifact;
+    const result = DashboardRenderV1Schema.safeParse(without);
+    expect(result.success).toBe(false);
+  });
+
+  it('renderer not in <kebab-slug>@<semver> form → REJECT', () => {
+    const base = loadJson('dashboard-render.valid.json') as Record<string, unknown>;
+    const result = DashboardRenderV1Schema.safeParse({ ...base, renderer: 'not a runner id' });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('Zod validators — v0.2.0 additive: EvidenceBundle.pre_registration_hash (D2 binding)', () => {
+  it('accepts a sha256-prefixed hex string', () => {
+    const base = loadJson('evidence-bundle.valid.json') as Record<string, unknown>;
+    const result = EvidenceBundleSchema.safeParse({
+      ...base,
+      pre_registration_hash: 'sha256:' + '7'.repeat(64),
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts null (not pre-registered)', () => {
+    const base = loadJson('evidence-bundle.valid.json') as Record<string, unknown>;
+    const result = EvidenceBundleSchema.safeParse({ ...base, pre_registration_hash: null });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts absence (v0.1 bundles stay valid — additive/optional)', () => {
+    const result = EvidenceBundleSchema.safeParse(loadJson('evidence-bundle.valid.json'));
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects a malformed hash (must be sha256:<64-hex> or null)', () => {
+    const base = loadJson('evidence-bundle.valid.json') as Record<string, unknown>;
+    const result = EvidenceBundleSchema.safeParse({
+      ...base,
+      pre_registration_hash: 'not-a-hash',
+    });
+    expect(result.success).toBe(false);
   });
 });
 

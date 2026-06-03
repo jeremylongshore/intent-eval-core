@@ -68,9 +68,11 @@ const ENTITY_SCHEMAS = [
 ] as const;
 
 describe('schemas/v1 — structural integrity', () => {
-  it('ships exactly 13 entity schemas + 1 predicate + 1 common + 1 index = 16 files', () => {
+  it('ships exactly 13 entity schemas + 3 predicates + 1 common + 1 index = 18 files', () => {
+    // v0.2.0 added retraction/v1 + dashboard-render/v1 predicate schemas
+    // alongside the v0.1 gate-result/v1 (16 → 18 files).
     const files = readdirSync(SCHEMAS_DIR).filter((f) => f.endsWith('.json'));
-    expect(files).toHaveLength(16);
+    expect(files).toHaveLength(18);
   });
 
   it('every entity schema is referenced in index.json', () => {
@@ -99,6 +101,35 @@ describe('schemas/v1 — structural integrity', () => {
     const s = loadJson(join(SCHEMAS_DIR, 'gate-result.schema.json'));
     expect(s['$id']).toBe('https://evals.intentsolutions.io/gate-result/v1.schema.json');
     expect(JSON.stringify(s)).not.toContain('labs.intentsolutions.io');
+  });
+
+  it.each([
+    ['retraction.schema.json', 'https://evals.intentsolutions.io/retraction/v1.schema.json'],
+    [
+      'dashboard-render.schema.json',
+      'https://evals.intentsolutions.io/dashboard-render/v1.schema.json',
+    ],
+  ])('%s predicate URI lives at evals.intentsolutions.io (NOT labs)', (file, id) => {
+    // CISO binding (DR-004 + DR-010): predicate URIs NEVER on labs.*
+    const s = loadJson(join(SCHEMAS_DIR, file));
+    expect(s['$id']).toBe(id);
+    expect(JSON.stringify(s)).not.toContain('labs.intentsolutions.io');
+  });
+
+  it.each(['retraction.schema.json', 'dashboard-render.schema.json'])(
+    '%s is closed-world (additionalProperties: false) + declares draft 2020-12',
+    (file) => {
+      const s = loadJson(join(SCHEMAS_DIR, file));
+      expect(s['additionalProperties']).toBe(false);
+      expect(s['$schema']).toBe('https://json-schema.org/draft/2020-12/schema');
+    },
+  );
+
+  it('index.json catalogs 3 predicate schemas (gate-result + retraction + dashboard-render)', () => {
+    const idx = loadJson(join(SCHEMAS_DIR, 'index.json'));
+    const schemas = idx['schemas'] as Record<string, { kind: string }>;
+    const predicateEntries = Object.values(schemas).filter((s) => s.kind === 'predicate');
+    expect(predicateEntries).toHaveLength(3);
   });
 });
 
@@ -199,6 +230,97 @@ describe('schemas/v1 — negative fixtures REJECT', () => {
   it('eval-spec with aggregation_rule=plurality → REJECT (not in closed enum)', () => {
     const fixture = loadJson(join(FIXTURES_DIR, 'eval-spec.invalid-bad-aggregation.json'));
     expect(validateSpec(fixture)).toBe(false);
+  });
+});
+
+describe('schemas/v1 — v0.2.0 additive predicates (retraction/v1 + dashboard-render/v1)', () => {
+  let ajv: AjvInstance;
+  let validateRetraction: (data: unknown) => boolean;
+  let validateDashboardRender: (data: unknown) => boolean;
+  let validateBundle: (data: unknown) => boolean;
+
+  beforeAll(() => {
+    ajv = buildAjv();
+    const common = loadJson(join(SCHEMAS_DIR, '_common.schema.json'));
+    ajv.addSchema(
+      common,
+      'https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json',
+    );
+    ajv.addSchema(common, 'https://evals.intentsolutions.io/_common.schema.json');
+    validateRetraction = ajv.compile(loadJson(join(SCHEMAS_DIR, 'retraction.schema.json')));
+    validateDashboardRender = ajv.compile(
+      loadJson(join(SCHEMAS_DIR, 'dashboard-render.schema.json')),
+    );
+    validateBundle = ajv.compile(loadJson(join(SCHEMAS_DIR, 'evidence-bundle.schema.json')));
+  });
+
+  it('retraction.valid.json validates', () => {
+    const ok = validateRetraction(loadJson(join(FIXTURES_DIR, 'retraction.valid.json')));
+    expect(ok).toBe(true);
+  });
+
+  it('retraction with out-of-set reason_class → REJECT (closed enum, GC binding)', () => {
+    const ok = validateRetraction(
+      loadJson(join(FIXTURES_DIR, 'retraction.invalid-bad-reason-class.json')),
+    );
+    expect(ok).toBe(false);
+  });
+
+  it('retraction missing reason_class → REJECT (required)', () => {
+    const fix = loadJson(join(FIXTURES_DIR, 'retraction.valid.json'));
+    const bad = JSON.parse(JSON.stringify(fix)) as Record<string, unknown>;
+    delete bad['reason_class'];
+    expect(validateRetraction(bad)).toBe(false);
+  });
+
+  it('retraction with empty retracted_subject → REJECT (minProperties: 1)', () => {
+    const fix = loadJson(join(FIXTURES_DIR, 'retraction.valid.json'));
+    const bad = JSON.parse(JSON.stringify(fix)) as Record<string, unknown>;
+    bad['retracted_subject'] = {};
+    expect(validateRetraction(bad)).toBe(false);
+  });
+
+  it('dashboard-render.valid.json validates', () => {
+    const ok = validateDashboardRender(loadJson(join(FIXTURES_DIR, 'dashboard-render.valid.json')));
+    expect(ok).toBe(true);
+  });
+
+  it('dashboard-render with empty input_bundles → REJECT (minItems: 1)', () => {
+    const ok = validateDashboardRender(
+      loadJson(join(FIXTURES_DIR, 'dashboard-render.invalid-empty-inputs.json')),
+    );
+    expect(ok).toBe(false);
+  });
+
+  it('dashboard-render missing rendered_artifact → REJECT (required)', () => {
+    const fix = loadJson(join(FIXTURES_DIR, 'dashboard-render.valid.json'));
+    const bad = JSON.parse(JSON.stringify(fix)) as Record<string, unknown>;
+    delete bad['rendered_artifact'];
+    expect(validateDashboardRender(bad)).toBe(false);
+  });
+
+  it('EvidenceBundle WITH pre_registration_hash (sha256:<hex>) validates', () => {
+    const ok = validateBundle(
+      loadJson(join(FIXTURES_DIR, 'evidence-bundle.with-prereg.valid.json')),
+    );
+    expect(ok).toBe(true);
+  });
+
+  it('EvidenceBundle WITHOUT pre_registration_hash still validates (additive/optional)', () => {
+    const ok = validateBundle(loadJson(join(FIXTURES_DIR, 'evidence-bundle.valid.json')));
+    expect(ok).toBe(true);
+  });
+
+  it('EvidenceBundle with pre_registration_hash: null validates (nullable)', () => {
+    const fix = loadJson(join(FIXTURES_DIR, 'evidence-bundle.valid.json'));
+    const withNull = { ...fix, pre_registration_hash: null };
+    expect(validateBundle(withNull)).toBe(true);
+  });
+
+  it('EvidenceBundle with malformed pre_registration_hash → REJECT (must be sha256:<hex> or null)', () => {
+    const fix = loadJson(join(FIXTURES_DIR, 'evidence-bundle.valid.json'));
+    const bad = { ...fix, pre_registration_hash: 'not-a-hash' };
+    expect(validateBundle(bad)).toBe(false);
   });
 });
 

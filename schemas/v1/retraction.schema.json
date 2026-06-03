@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evals.intentsolutions.io/retraction/v1.schema.json",
+  "title": "retraction/v1 — in-toto predicate body for retracting a prior attestation",
+  "description": "Predicate body of an in-toto Statement v1 whose predicateType is https://evals.intentsolutions.io/retraction/v1. A retraction does NOT delete the original attestation (it remains in the transparency log); it is an APPEND-ONLY signed record stating that the platform has chosen not to surface a prior subject and why. The dashboard renders a tombstone at the deep link per the retraction-protocol binding. The `reason_class` enum is CLOSED — open-text reasons are rejected by the schema (GC refusal binding). This schema validates ONLY the predicate body — the enclosing in-toto Statement envelope (_type, subject, predicateType) is validated separately. Each row independently verifiable; NO top-level bundle signature per Blueprint B § 7 line 754.\n\nADDITIVE in kernel v0.2.0: net-new predicate URI; no v0.1 contract changes. Per § 7.2 backward-compat, adding a predicate URI is allowed; the body normative spec lands here. Runs in sigstore_staging until production-Rekor unlock per DR-010 Q3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["retracted_subject", "reason_class", "retracted_at"],
+  "properties": {
+    "retracted_subject": {
+      "type": "object",
+      "description": "Reference to the subject being retracted — the prior EvidenceBundle / in-toto Statement. At least one of bundle_id or storage_key MUST be present so the retraction is resolvable to a concrete artifact.",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "bundle_id": {
+          "$ref": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json#/$defs/uuidv7",
+          "description": "UUIDv7 of the EvidenceBundle being retracted (FK → EvidenceBundle.id)."
+        },
+        "storage_key": {
+          "$ref": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json#/$defs/storageKey",
+          "description": "Content-addressed object-storage key of the retracted bundle payload (EvidenceBundle.storage_key)."
+        },
+        "content_hash": {
+          "$ref": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json#/$defs/sha256Prefixed",
+          "description": "sha256-prefixed digest of the retracted artifact, pinning exactly which content is retracted even if a storage backend re-keys."
+        }
+      }
+    },
+    "reason_class": {
+      "type": "string",
+      "description": "CLOSED-SET reason class for the retraction (GC refusal binding — open text is rejected). Adding a value is a Class-1 ISEDC matter.",
+      "enum": [
+        "partner-request",
+        "methodology-error",
+        "data-quality",
+        "consent-withdrawn",
+        "legal-hold",
+        "pre-publication-recall"
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "description": "OPTIONAL human-readable free-text elaboration. The machine-actionable retraction class is carried by reason_class; this is operator context only and MUST NOT be parsed for decisions."
+    },
+    "retracted_at": {
+      "$ref": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json#/$defs/rfc3339",
+      "description": "RFC 3339 UTC timestamp at which the retraction took effect."
+    },
+    "retracted_by": {
+      "$ref": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json#/$defs/actorIdentity",
+      "description": "OPTIONAL actor identity (operator email / service account) that authored the retraction, for audit-trail attribution."
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "rendered_artifact": {
+    "uri": "/results/audit-harness/escape-scan.html",
+    "content_hash": "sha256:abababababababababababababababababababababababababababababababab",
+    "media_type": "text/html"
+  },
+  "input_bundles": [
+    {
+      "bundle_id": "0192cae6-000b-7000-8000-000000000000",
+      "content_hash": "sha256:3939393939393939393939393939393939393939393939393939393939393939"
+    }
+  ],
+  "rendered_at": "2026-06-01T12:05:00Z",
+  "renderer": "intent-eval-dashboard@0.2.0",
+  "renderer_config_hash": "sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd"
+}

@@ -1,0 +1,8 @@
+{
+  "rendered_artifact": {
+    "content_hash": "sha256:abababababababababababababababababababababababababababababababab"
+  },
+  "input_bundles": [],
+  "rendered_at": "2026-06-01T12:05:00Z",
+  "renderer": "intent-eval-dashboard@0.2.0"
+}

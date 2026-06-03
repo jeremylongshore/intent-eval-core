@@ -94,6 +94,44 @@ export interface Coverage {
 }
 
 // @public
+export const DASHBOARD_RENDER_V1_URI: "https://evals.intentsolutions.io/dashboard-render/v1";
+
+// @public
+export interface DashboardInputBundle {
+    readonly bundle_id?: Uuidv7;
+    readonly content_hash?: Sha256Prefixed;
+}
+
+// @public
+export interface DashboardRenderV1 {
+    readonly input_bundles: readonly DashboardInputBundle[];
+    readonly rendered_artifact: RenderedArtifact;
+    readonly rendered_at: Rfc3339;
+    readonly renderer: string;
+    readonly renderer_config_hash?: Sha256Prefixed;
+}
+
+// @public
+export interface DashboardRenderV1Statement {
+    // (undocumented)
+    readonly predicate: DashboardRenderV1;
+    // (undocumented)
+    readonly predicateType: DashboardRenderV1Uri;
+    // (undocumented)
+    readonly subject: readonly {
+        readonly name: string;
+        readonly digest: {
+            readonly sha256: string;
+        };
+    }[];
+    // (undocumented)
+    readonly _type: 'https://in-toto.io/Statement/v1';
+}
+
+// @public (undocumented)
+export type DashboardRenderV1Uri = typeof DASHBOARD_RENDER_V1_URI;
+
+// @public
 export interface DsseEnvelope {
     readonly payload: string;
     // (undocumented)
@@ -183,6 +221,7 @@ export interface EvidenceBundle {
     readonly created_at: Rfc3339;
     readonly eval_run_id: Uuidv7;
     readonly id: Uuidv7;
+    readonly pre_registration_hash?: Sha256Prefixed | null;
     readonly predicate_uri_set: readonly (KnownPredicateUri | (string & {}))[];
     readonly rekor_log_indices: readonly number[];
     readonly row_count: number;
@@ -402,6 +441,8 @@ export type OtelSpanId = Brand<string, 'OtelSpanId'>;
 // @public
 export const PREDICATE_URIS: {
     readonly GATE_RESULT_V1: "https://evals.intentsolutions.io/gate-result/v1";
+    readonly RETRACTION_V1: "https://evals.intentsolutions.io/retraction/v1";
+    readonly DASHBOARD_RENDER_V1: "https://evals.intentsolutions.io/dashboard-render/v1";
     readonly VALIDATION_RESULT_V1: "https://evals.intentsolutions.io/validation-result/v1";
     readonly EVAL_VERDICT_V1: "https://evals.intentsolutions.io/eval-verdict/v1";
     readonly COST_ATTRIBUTION_V1: "https://evals.intentsolutions.io/cost-attribution/v1";
@@ -436,7 +477,56 @@ export type RegressionPackState = 'draft' | 'committed' | 'superseded';
 export const regressionPackTransitions: TransitionMap<RegressionPackState>;
 
 // @public
+export interface RenderedArtifact {
+    readonly content_hash: Sha256Prefixed;
+    readonly media_type?: string;
+    readonly uri?: string;
+}
+
+// @public
 export type ReplayFidelityLevel = 'RF-0' | 'RF-1' | 'RF-2' | 'RF-3' | 'RF-4';
+
+// @public
+export interface RetractedSubject {
+    readonly bundle_id?: Uuidv7;
+    readonly content_hash?: Sha256Prefixed;
+    readonly storage_key?: StorageKey;
+}
+
+// @public
+export const RETRACTION_V1_URI: "https://evals.intentsolutions.io/retraction/v1";
+
+// @public
+export type RetractionReasonClass = 'partner-request' | 'methodology-error' | 'data-quality' | 'consent-withdrawn' | 'legal-hold' | 'pre-publication-recall';
+
+// @public
+export interface RetractionV1 {
+    readonly reason?: string;
+    readonly reason_class: RetractionReasonClass;
+    readonly retracted_at: Rfc3339;
+    readonly retracted_by?: string;
+    readonly retracted_subject: RetractedSubject;
+}
+
+// @public
+export interface RetractionV1Statement {
+    // (undocumented)
+    readonly predicate: RetractionV1;
+    // (undocumented)
+    readonly predicateType: RetractionV1Uri;
+    // (undocumented)
+    readonly subject: readonly {
+        readonly name: string;
+        readonly digest: {
+            readonly sha256: string;
+        };
+    }[];
+    // (undocumented)
+    readonly _type: 'https://in-toto.io/Statement/v1';
+}
+
+// @public (undocumented)
+export type RetractionV1Uri = typeof RETRACTION_V1_URI;
 
 // @public
 export type Rfc3339 = Brand<string, 'Rfc3339'>;
