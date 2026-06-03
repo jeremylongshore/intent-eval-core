@@ -9,7 +9,7 @@ inherits_from:
   - intent-eval-lab/000-docs/011-AT-ARCH-ecosystem-master-blueprint.md (Blueprint A)
   - intent-eval-core/000-docs/002-AT-ARCH-repo-blueprint-2026-05-18.md (per-repo blueprint § 3.4 anti-goals)
 related_drs:
-  - intent-eval-lab/000-docs/010-AT-DECR-isedc-council-session-4-widened-scope-2026-05-13.md (DR-010)
+  - "`intent-eval-lab/000-docs/010-AT-DECR-isedc-council-session-4-widened-scope-2026-05-13.md` (DR-010)"
 related_glossary:
   - intent-eval-lab/000-docs/014-DR-GLOS-canonical-glossary.md
 filing_standard: Document Filing Standard v4.3

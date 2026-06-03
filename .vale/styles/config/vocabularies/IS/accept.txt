@@ -4,6 +4,11 @@ advisory_severity
 agentic
 aggregation_rule
 ajv
+binding_authority
+filing_standard
+forward_refs
+inherits_from
+related_glossary
 Anthropic
 APIs
 arktype
@@ -37,7 +42,7 @@ enum
 enums
 esbuild
 ESLint
-Eval
+(?i)eval
 FKs
 franca
 frontmatter
@@ -83,8 +88,8 @@ regen
 Rekor
 Renovate
 repath
-repo
-repos
+(?i)repo
+(?i)repos
 REQs
 rollups
 RTM

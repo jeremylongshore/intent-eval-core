@@ -10,8 +10,8 @@ inherits_from:
   - intent-eval-lab/000-docs/012-AT-ARCH-platform-runtime-blueprint.md (Blueprint B)
   - intent-eval-lab/000-docs/013-AT-SPEC-repo-blueprint-template.md (Blueprint C — this template)
 related_drs:
-  - intent-eval-lab/000-docs/010-AT-DECR-isedc-council-session-4-widened-scope-2026-05-13.md (DR-010)
-  - intent-eval-lab/000-docs/004-AT-DECR-isedc-council-record-2026-05-10.md (DR-004)
+  - "`intent-eval-lab/000-docs/010-AT-DECR-isedc-council-session-4-widened-scope-2026-05-13.md` (DR-010)"
+  - "`intent-eval-lab/000-docs/004-AT-DECR-isedc-council-record-2026-05-10.md` (DR-004)"
 related_glossary:
   - intent-eval-lab/000-docs/014-DR-GLOS-canonical-glossary.md
 filing_standard: Document Filing Standard v4.3

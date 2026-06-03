@@ -6,7 +6,7 @@ authors:
 status: AAR (informational)
 binding_authority: iec-E12
 related_drs:
-  - intent-eval-lab/000-docs/010-AT-DECR-isedc-council-session-4-widened-scope-2026-05-13.md (DR-010)
+  - "`intent-eval-lab/000-docs/010-AT-DECR-isedc-council-session-4-widened-scope-2026-05-13.md` (DR-010)"
 filing_standard: Document Filing Standard v4.3
 ---
 
