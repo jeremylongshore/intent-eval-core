@@ -68,7 +68,10 @@ function parseForbidden(): Forbidden {
 
   function extractBlocksBetween(start: number, end: number): string[] {
     const slice = lines.slice(start, end).join('\n');
-    return [...slice.matchAll(/```\n([\s\S]*?)\n```/g)].map((m) => m[1] ?? '');
+    // Accept an optional language tag on the opening fence (```text, ```bash,
+    // …) — markdownlint MD040 requires one, so ALLOWLIST.md/FORBIDDEN.md fences
+    // are language-tagged. A bare-``` regex silently extracts nothing.
+    return [...slice.matchAll(/```[\w-]*\n([\s\S]*?)\n```/g)].map((m) => m[1] ?? '');
   }
 
   const axis1Blocks = extractBlocksBetween(
@@ -153,7 +156,7 @@ function parseAllowlist(): Allowlist {
       }
     } else if (section.startsWith('Top-level files allowlist')) {
       // The files section uses a fenced block
-      const blockMatch = /```\n([\s\S]*?)\n```/.exec(section);
+      const blockMatch = /```[\w-]*\n([\s\S]*?)\n```/.exec(section);
       if (blockMatch?.[1]) {
         for (const line of blockMatch[1].split('\n')) {
           const trimmed = line.trim();

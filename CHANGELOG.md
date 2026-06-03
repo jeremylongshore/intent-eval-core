@@ -9,9 +9,36 @@ versioning follows [SemVer 2.0.0](https://semver.org/).
 
 ### Pending
 
-- Kernel v0.2.0 (`iec-E12`) — `EvidenceBundlePayload` shape + cross-field invariants (CISO-co-authored per `iec-E12a`); blocks on `iec-E12b` audit-harness second-emitter sketch
+- `iec-E12` reconciliation — `EvidenceBundlePayload` shape + cross-field invariants (CISO-co-authored per `iec-E12a`); blocks on `iec-E12b` audit-harness second-emitter sketch. **The v0.2.0 npm publish + git tag are HELD until this lands** so the additive surface below and the iec-E12 cross-field invariants release together as one coordinated v0.2.0.
 - Evidence Bundle predicate compatibility policy (forward/backward/mixing/deprecation rules) MUST land before first prod-Rekor anchor — bd `bd_000-projects-uprg` (P0)
 - OTel semantic conventions pinned in `schemas/v1/otel-attributes.yaml` BEFORE v0.2.0 ships to prevent attribute drift across consumer emitters — bd `bd_000-projects-9pi3` (P0)
+
+## [0.2.0] — UNRELEASED (additive surface landed; publish held pending iec-E12)
+
+Purely **additive** schema-evolution release (amber-lighthouse Epic 2.1 / bead `ied-schema-evolution`). No v0.1 contract is changed, renamed, or removed — every v0.1.0 / v0.1.1 EvidenceBundle and gate-result/v1 row remains valid against v0.2.0. SemVer MINOR.
+
+**Release coordination:** the version bump + this changelog entry land in the schema-evolution PR, but the npm publish and the `v0.2.0` git tag are HELD until `iec-E12` (which adds `EvidenceBundlePayload` cross-field invariants to the same v0.2.0 line) reconciles, so both bodies of work ship as one coordinated v0.2.0.
+
+### Added — public surface
+
+- **`EvidenceBundle.pre_registration_hash?: Sha256Prefixed | null`** (D2 binding) — optional + nullable pre-registration commitment hash. `sha256:<hex>` when the run was pre-registered, `null` when it was not, absent ≡ `null` (v0.1 producers stay valid). Lets the lab-reports dashboard render pre-registered null results with the same visual weight as positive results. Added consistently across the TS interface, the JSON Schema (`schemas/v1/evidence-bundle.schema.json`), and the Zod validator (`validators/v1/evidence-bundle`).
+- **`retraction/v1` predicate body** (B4 binding) — predicate URI `https://evals.intentsolutions.io/retraction/v1`. Append-only signed record that the platform has chosen NOT to surface a prior subject, with a CLOSED-SET `reason_class` enum (`partner-request | methodology-error | data-quality | consent-withdrawn | legal-hold | pre-publication-recall`; open text rejected — GC refusal binding), a resolvable `retracted_subject` reference, optional free-text `reason`, and `retracted_at`. New JSON Schema (`schemas/v1/retraction.schema.json`), TS types (`RetractionV1`, `RetractionReasonClass`, `RetractedSubject`, `RetractionV1Statement`, `RETRACTION_V1_URI`), and Zod validator (`validators/v1/retraction-v1`).
+- **`dashboard-render/v1` predicate body** (B3 binding, sequenced) — predicate URI `https://evals.intentsolutions.io/dashboard-render/v1`. Attests that a rendered dashboard HTML artifact (`rendered_artifact` with `content_hash`) was produced from a content-addressed set of evidence inputs (`input_bundles`, non-empty), plus `rendered_at` and a `<kebab-slug>@<semver>` `renderer` identity. Enables sign-your-own-homework reproduction. New JSON Schema (`schemas/v1/dashboard-render.schema.json`), TS types (`DashboardRenderV1`, `RenderedArtifact`, `DashboardInputBundle`, `DashboardRenderV1Statement`, `DASHBOARD_RENDER_V1_URI`), and Zod validator (`validators/v1/dashboard-render-v1`).
+- **`PREDICATE_URIS` registry** extended with `RETRACTION_V1` + `DASHBOARD_RENDER_V1` constants; both predicate schemas registered in `schemas/v1/index.json` with `signing_mode: sigstore_staging` (they run in staging until production-Rekor unlock per DR-010 Q3).
+
+### Predicate URI discipline
+
+All three predicate URIs in this release live at `evals.intentsolutions.io` and NEVER at `labs.intentsolutions.io` (CISO binding, DR-004 + DR-010). Enforced by schema tests + the boundary checker's URL-pattern axis.
+
+### Breaking changes
+
+- None. Purely additive (the field is optional+nullable; the predicates are net-new URIs per § 7.2 backward-compat).
+
+### Architectural bindings
+
+- amber-lighthouse plan Epic 2.1 (`ied-schema-evolution`) — D2 / B3 / B4 bindings
+- DR-010 (ISEDC Session 4 widened-scope lock) — predicate-URI host discipline, sigstore_staging default
+- Blueprint B § 7 — in-toto + DSSE predicate-body wrapping; § 7.2 backward-compat (adding a predicate URI is allowed)
 
 ## [0.1.1] — 2026-05-25
 

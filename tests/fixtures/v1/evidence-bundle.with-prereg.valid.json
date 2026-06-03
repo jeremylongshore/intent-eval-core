@@ -1,0 +1,19 @@
+{
+  "id": "0192cae6-000b-7000-8000-000000000001",
+  "eval_run_id": "0192cae6-0004-7000-8000-000000000000",
+  "created_at": "2026-05-17T00:00:10Z",
+  "predicate_uri_set": ["https://evals.intentsolutions.io/gate-result/v1"],
+  "row_count": 1,
+  "subject_set": [
+    {
+      "name": "audit-harness:ci:escape-scan",
+      "digest": { "sha256": "3939393939393939393939393939393939393939393939393939393939393939" }
+    }
+  ],
+  "storage_key": "s3://intent-eval-platform/bundles/0192cae6-000b",
+  "signing_mode": "rekor_production",
+  "rekor_log_indices": [42],
+  "verification_status": "verified",
+  "verification_last_checked_at": "2026-05-17T00:00:10Z",
+  "pre_registration_hash": "sha256:7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c"
+}

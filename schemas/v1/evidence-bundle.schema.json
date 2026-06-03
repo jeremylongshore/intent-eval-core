@@ -63,6 +63,10 @@
       "type": "string",
       "enum": ["verified", "unverified", "failed"]
     },
-    "verification_last_checked_at": { "$ref": "_common.schema.json#/$defs/rfc3339" }
+    "verification_last_checked_at": { "$ref": "_common.schema.json#/$defs/rfc3339" },
+    "pre_registration_hash": {
+      "description": "Pre-registration commitment hash (D2 binding, v0.2.0 additive). `sha256:<hex>` digest of the pre-registration commitment artifact when the run was pre-registered, or null when it was not. ADDITIVE + OPTIONAL — every v0.1.0 bundle stays valid (absent ≡ null). Cross-field invariants governing when this MUST be non-null land in iec-E12; this is the field surface only.",
+      "oneOf": [{ "$ref": "_common.schema.json#/$defs/sha256Prefixed" }, { "type": "null" }]
+    }
   }
 }

@@ -27,6 +27,47 @@ export default z
       .describe("Populated when signing_mode='rekor_production'; empty otherwise."),
     verification_status: z.enum(['verified', 'unverified', 'failed']),
     verification_last_checked_at: z.any(),
+    pre_registration_hash: z
+      .any()
+      .superRefine((x, ctx) => {
+        const schemas = [z.any(), z.null()];
+        const { errors, failed } = schemas.reduce<{
+          errors: z.core.$ZodIssue[];
+          failed: number;
+        }>(
+          ({ errors, failed }, schema) =>
+            ((result) =>
+              result.error
+                ? {
+                    errors: [...errors, ...result.error.issues],
+                    failed: failed + 1,
+                  }
+                : { errors, failed })(schema.safeParse(x)),
+          { errors: [], failed: 0 },
+        );
+        const passed = schemas.length - failed;
+        if (passed !== 1) {
+          ctx.addIssue(
+            errors.length
+              ? {
+                  path: [],
+                  code: 'invalid_union',
+                  errors: [errors],
+                  message: 'Invalid input: Should pass single schema. Passed ' + passed,
+                }
+              : {
+                  path: [],
+                  code: 'custom',
+                  errors: [errors],
+                  message: 'Invalid input: Should pass single schema. Passed ' + passed,
+                },
+          );
+        }
+      })
+      .describe(
+        'Pre-registration commitment hash (D2 binding, v0.2.0 additive). `sha256:<hex>` digest of the pre-registration commitment artifact when the run was pre-registered, or null when it was not. ADDITIVE + OPTIONAL — every v0.1.0 bundle stays valid (absent ≡ null). Cross-field invariants governing when this MUST be non-null land in iec-E12; this is the field surface only.',
+      )
+      .optional(),
   })
   .strict()
   .describe(

@@ -23,6 +23,8 @@ Naming: `NNN-CC-ABCD-description-YYYY-MM-DD.md` where:
 | 002 | [Per-repo blueprint (applies Blueprint C)](002-AT-ARCH-repo-blueprint-2026-05-18.md) | 2026-05-18 | AT-ARCH | NORMATIVE (binding authority for this repo) |
 | 003 | [Core repo boundary doctrine](003-AT-STND-core-repo-boundaries-2026-05-18.md) | 2026-05-18 | AT-STND | NORMATIVE (boundary enforcement; pairs with FORBIDDEN.md + ALLOWLIST.md + scripts/check-boundaries.ts) |
 | 004 | [Testing SOP + CI/CD bootstrap AAR](004-AT-AAR-testing-cicd-bootstrap-2026-05-19.md) | 2026-05-19 | AT-AAR | informational (iec-E12 ratify-and-close) |
+| 005 | [appaudit DevOps playbook](005-AA-AUDT-appaudit-devops-playbook.md) | 2026-05-20 | AA-AUDT | informational |
+| 006 | [v0.2.0 additive schema evolution AAR](006-AA-AACR-v0.2.0-additive-schema-evolution-2026-06-03.md) | 2026-06-03 | AA-AACR | additive surface landed; publish held pending iec-E12 |
 
 ## Cross-repo authority chain
 

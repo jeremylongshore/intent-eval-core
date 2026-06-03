@@ -5,10 +5,15 @@
 import { expectAssignable, expectError } from 'tsd';
 import type {
   AdvisorySeverity,
+  DashboardRenderV1,
   GateDecision,
   GateResultV1,
   ReplayFidelityLevel,
+  RetractionReasonClass,
+  RetractionV1,
+  Sha256Prefixed,
   SubjectSide,
+  Uuidv7,
 } from '../dist/index.js';
 
 // ─── GateDecision (§ 7.4 line 800) ─────────────────────────────────────
@@ -91,4 +96,50 @@ expectError<GateResultV1>({
 expectError<GateResultV1>({
   ...minimal,
   replay_fidelity_level: 'RF-5',
+});
+
+// ─── retraction/v1 (v0.2.0 additive, B4 binding) ───────────────────────
+
+// reason_class is the closed 6-element set
+expectAssignable<RetractionReasonClass>('partner-request');
+expectAssignable<RetractionReasonClass>('pre-publication-recall');
+expectError<RetractionReasonClass>('we-changed-our-mind'); // open text not allowed
+expectError<RetractionReasonClass>('Partner-Request'); // case-sensitive
+
+const retraction: RetractionV1 = {
+  retracted_subject: { bundle_id: 'x' as Uuidv7 },
+  reason_class: 'partner-request',
+  retracted_at: '2026-06-01T12:00:00Z' as RetractionV1['retracted_at'],
+};
+expectAssignable<RetractionV1>(retraction);
+
+// missing reason_class → error
+expectError<RetractionV1>({
+  retracted_subject: {},
+  retracted_at: '2026-06-01T12:00:00Z',
+});
+
+// out-of-set reason_class → error
+expectError<RetractionV1>({
+  ...retraction,
+  reason_class: 'whatever',
+});
+
+// ─── dashboard-render/v1 (v0.2.0 additive, B3 binding) ─────────────────
+
+const render: DashboardRenderV1 = {
+  rendered_artifact: {
+    content_hash: 'sha256:0'.repeat(8) as Sha256Prefixed,
+  },
+  input_bundles: [{ bundle_id: 'x' as Uuidv7 }],
+  rendered_at: '2026-06-01T12:05:00Z' as DashboardRenderV1['rendered_at'],
+  renderer: 'intent-eval-dashboard@0.2.0',
+};
+expectAssignable<DashboardRenderV1>(render);
+
+// missing rendered_artifact → error
+expectError<DashboardRenderV1>({
+  input_bundles: [],
+  rendered_at: '2026-06-01T12:05:00Z',
+  renderer: 'intent-eval-dashboard@0.2.0',
 });

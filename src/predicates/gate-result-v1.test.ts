@@ -25,15 +25,11 @@ describe('gate-result/v1 — closed enums (Blueprint B § 7.4)', () => {
   });
 
   it('ReplayFidelityLevel is RF-0..RF-4', () => {
-    expectTypeOf<ReplayFidelityLevel>().toEqualTypeOf<
-      'RF-0' | 'RF-1' | 'RF-2' | 'RF-3' | 'RF-4'
-    >();
+    expectTypeOf<ReplayFidelityLevel>().toEqualTypeOf<'RF-0' | 'RF-1' | 'RF-2' | 'RF-3' | 'RF-4'>();
   });
 
   it('SubjectSide is the closed 5-element § 7.3 enum', () => {
-    expectTypeOf<SubjectSide>().toEqualTypeOf<
-      'client' | 'server' | 'ci' | 'sandbox' | 'local'
-    >();
+    expectTypeOf<SubjectSide>().toEqualTypeOf<'client' | 'server' | 'ci' | 'sandbox' | 'local'>();
   });
 });
 
@@ -73,6 +69,13 @@ describe('gate-result/v1 — predicate URI constants', () => {
     }
   });
 
+  it('PREDICATE_URIS includes the v0.2.0 additive URIs (retraction + dashboard-render)', () => {
+    expect(PREDICATE_URIS.RETRACTION_V1).toBe('https://evals.intentsolutions.io/retraction/v1');
+    expect(PREDICATE_URIS.DASHBOARD_RENDER_V1).toBe(
+      'https://evals.intentsolutions.io/dashboard-render/v1',
+    );
+  });
+
   it('KnownPredicateUri is the literal union of all known URIs', () => {
     const uri: KnownPredicateUri = PREDICATE_URIS.EVAL_VERDICT_V1;
     expect(typeof uri).toBe('string');
@@ -90,8 +93,10 @@ describe('gate-result/v1 — predicate body shape (Blueprint B § 7.4)', () => {
       coverage: { dimensions_evaluated: ['credential-leak'], dimensions_skipped: [] },
       policy_ref: 'sha256:abc:tests/TESTING.md',
       // Real callers will brand these via the validator layer; tests use casts.
-      policy_hash: 'sha256:0000000000000000000000000000000000000000000000000000000000000000' as GateResultV1['policy_hash'],
-      input_hash: 'sha256:1111111111111111111111111111111111111111111111111111111111111111' as GateResultV1['input_hash'],
+      policy_hash:
+        'sha256:0000000000000000000000000000000000000000000000000000000000000000' as GateResultV1['policy_hash'],
+      input_hash:
+        'sha256:1111111111111111111111111111111111111111111111111111111111111111' as GateResultV1['input_hash'],
       evaluated_at: '2026-05-16T17:00:00Z' as GateResultV1['evaluated_at'],
       runner: 'audit-harness@0.3.0',
       commit_sha: '6eebe2f',
@@ -108,8 +113,10 @@ describe('gate-result/v1 — predicate body shape (Blueprint B § 7.4)', () => {
       gate_reasons: ['bias.count.over.threshold'],
       coverage: { dimensions_evaluated: ['lexical-bias'], dimensions_skipped: ['semantic-bias'] },
       policy_ref: 'sha256:def:tests/TESTING.md',
-      policy_hash: 'sha256:2222222222222222222222222222222222222222222222222222222222222222' as GateResultV1['policy_hash'],
-      input_hash: 'sha256:3333333333333333333333333333333333333333333333333333333333333333' as GateResultV1['input_hash'],
+      policy_hash:
+        'sha256:2222222222222222222222222222222222222222222222222222222222222222' as GateResultV1['policy_hash'],
+      input_hash:
+        'sha256:3333333333333333333333333333333333333333333333333333333333333333' as GateResultV1['input_hash'],
       evaluated_at: '2026-05-16T17:01:00Z' as GateResultV1['evaluated_at'],
       runner: 'audit-harness@0.3.0',
       commit_sha: '6eebe2f',
@@ -143,8 +150,10 @@ describe('gate-result/v1 — predicate body shape (Blueprint B § 7.4)', () => {
         dimensions_skipped: ['typescript-only-gate'],
       },
       policy_ref: 'sha256:abc:tests/TESTING.md',
-      policy_hash: 'sha256:0000000000000000000000000000000000000000000000000000000000000000' as GateResultV1['policy_hash'],
-      input_hash: 'sha256:1111111111111111111111111111111111111111111111111111111111111111' as GateResultV1['input_hash'],
+      policy_hash:
+        'sha256:0000000000000000000000000000000000000000000000000000000000000000' as GateResultV1['policy_hash'],
+      input_hash:
+        'sha256:1111111111111111111111111111111111111111111111111111111111111111' as GateResultV1['input_hash'],
       evaluated_at: '2026-05-16T17:02:00Z' as GateResultV1['evaluated_at'],
       runner: 'audit-harness@0.3.0',
       commit_sha: '6eebe2f',

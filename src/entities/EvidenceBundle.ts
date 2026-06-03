@@ -12,7 +12,7 @@
  * lifecycle, though replays produce new ones).
  */
 
-import type { Rfc3339, StorageKey, Uuidv7 } from '../primitives.js';
+import type { Rfc3339, Sha256Prefixed, StorageKey, Uuidv7 } from '../primitives.js';
 import type { InTotoSubject, KnownPredicateUri } from '../predicates/index.js';
 import type { TransitionMap } from '../state-machines/types.js';
 
@@ -110,4 +110,26 @@ export interface EvidenceBundle {
 
   /** RFC 3339 UTC timestamp of the most-recent verification. */
   readonly verification_last_checked_at: Rfc3339;
+
+  /**
+   * Pre-registration commitment hash (D2 binding, v0.2.0 additive).
+   *
+   * When a bundle's eval set + methodology were pre-registered (committed to)
+   * BEFORE the run, this carries the `sha256:<hex>` digest of that
+   * pre-registration commitment artifact. `null` when the run was NOT
+   * pre-registered. Omitting the field entirely is equivalent to `null`
+   * (forward-compat with v0.1 producers that never set it).
+   *
+   * This field exists so the lab-reports dashboard can render pre-registered
+   * null results with the SAME visual weight as positive results (the
+   * pre-registration rendering-symmetry binding) — a present, non-null hash
+   * proves the result arm was committed-to before the data was seen.
+   *
+   * ADDITIVE in v0.2.0: optional + nullable, so every v0.1.0 EvidenceBundle
+   * remains valid against the v0.2.0 schema. The cross-field invariants that
+   * govern when this field MUST be present (vs MAY be null) land separately in
+   * `iec-E12` (`EvidenceBundlePayload` shape + cross-field invariants); this
+   * PR only introduces the field surface.
+   */
+  readonly pre_registration_hash?: Sha256Prefixed | null;
 }

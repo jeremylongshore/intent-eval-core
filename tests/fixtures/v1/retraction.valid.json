@@ -1,0 +1,11 @@
+{
+  "retracted_subject": {
+    "bundle_id": "0192cae6-000b-7000-8000-000000000000",
+    "storage_key": "s3://intent-eval-platform/bundles/0192cae6-000b",
+    "content_hash": "sha256:3939393939393939393939393939393939393939393939393939393939393939"
+  },
+  "reason_class": "partner-request",
+  "reason": "Partner asked us to stop surfacing this result pending internal review.",
+  "retracted_at": "2026-06-01T12:00:00Z",
+  "retracted_by": "ops@intentsolutions.io"
+}
