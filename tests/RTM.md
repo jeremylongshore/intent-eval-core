@@ -22,7 +22,7 @@ Requirements for `intent-eval-core` are derived from Phase A foundation docs on 
 ## Requirements
 
 | REQ-ID | Source | MoSCoW | Description | Covering tests |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | REQ-IEC-001 | Blueprint B § 2 | MUST | All 13 canonical entities have TS interface definitions | All `src/entities/*.ts` + index re-exports; `src/index.test.ts` covers literal unions + FKs |
 | REQ-IEC-002 | Blueprint B § 7.4 | MUST | `gate-result/v1` predicate body normative shape (12 required + 5 optional fields) | `src/predicates/gate-result-v1.test.ts` + `src/integration.test.ts` |
 | REQ-IEC-003 | Blueprint B § 7.3 line 779 | MUST | Subject naming regex enforced | `gate-result-v1.test.ts` § "subject naming" |
@@ -55,7 +55,7 @@ None identified at v0.0.0.
 ## Uncovered requirements
 
 | REQ-ID | Severity | Reason |
-|---|---|---|
+| --- | --- | --- |
 | none at v0.0.0 | — | All MUSTs covered; SHOULDs covered; COULDs explicitly tracked as deferrals in bd |
 
 ## Engineer overrides

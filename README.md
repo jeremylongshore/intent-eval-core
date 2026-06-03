@@ -61,7 +61,7 @@ Every validator in the platform — `audit-harness` deterministic gates, `j-rig`
 This package is bound by the Intent Eval Platform's Phase A foundation, all on `main` of `intent-eval-lab`:
 
 | Document | Role |
-|---|---|
+| --- | --- |
 | **DR-010** — ISEDC Session 4 widened-scope lock | Governance, TS-primary signing surfaces, unification thesis (every validator emits Evidence Bundle) |
 | **Blueprint A** — Ecosystem Master Blueprint | 12 binding principles, 5-repo taxonomy, anti-goals |
 | **Blueprint B** — Platform Runtime Blueprint | 13-entity canonical domain model, `gate-result/v1` predicate contract |

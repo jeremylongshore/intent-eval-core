@@ -3,7 +3,7 @@
 ## Supported Versions
 
 | Version | Supported |
-|---------|-----------|
+| --- | --- |
 | latest (v0.1.x) | Yes |
 | < latest | Best effort |
 
@@ -11,7 +11,7 @@
 
 **Please do NOT open public issues for security concerns.**
 
-Email **security@intentsolutions.io** with:
+Email **<security@intentsolutions.io>** with:
 
 - Type of issue (e.g., schema-validation bypass, branded-type forgery, supply-chain vulnerability in dependencies, sigstore signature forgery, codegen drift bypass)
 - Full paths of related source files
@@ -24,7 +24,7 @@ Email **security@intentsolutions.io** with:
 ### Response Timeline
 
 | Stage | Timeframe |
-|-------|-----------|
+| --- | --- |
 | Acknowledgment | 24 hours |
 | Initial assessment | 48 hours |
 | Status update | 5 business days |
@@ -33,7 +33,7 @@ Email **security@intentsolutions.io** with:
 ### Severity Levels
 
 | Severity | CVSS | Examples | Target Resolution |
-|----------|------|---------|-------------------|
+| --- | --- | --- | --- |
 | Critical | 9.0–10.0 | Schema-validation bypass that lets a forged Evidence Bundle row pass a downstream gate; arbitrary code execution via crafted Zod schema | 24 hours |
 | High | 7.0–8.9 | Branded-type forgery (e.g., constructing a `Sha256` from an unhashed string); signature-mode escalation in `gate-result/v1`; type-narrowing bypass | 7 days |
 | Medium | 4.0–6.9 | Denial of service via malformed JSON Schema; partial codegen-drift bypass; non-exploitable parser issues | 30 days |
@@ -53,7 +53,7 @@ Edits to `schemas/v1/*.schema.json` go through codegen — never hand-edit `src/
 
 ## Disclosure Process
 
-1. **Report** — You email the details to security@intentsolutions.io
+1. **Report** — You email the details to <security@intentsolutions.io>
 2. **Triage** — We assess severity and impact
 3. **Fix** — We develop and test a patch
 4. **Notify** — We inform affected consumer repos (4 sibling IEP repos + downstream Intent Solutions consumers) via the npm advisory feed + a CHANGELOG entry tagged `SECURITY`
@@ -81,6 +81,6 @@ We appreciate responsible disclosure. Reporters who follow this policy will rece
 
 ## Contact
 
-- **Security reports**: security@intentsolutions.io
-- **General inquiries**: jeremy@intentsolutions.io
+- **Security reports**: <security@intentsolutions.io>
+- **General inquiries**: <jeremy@intentsolutions.io>
 - **Response time**: 24 hours for initial acknowledgment

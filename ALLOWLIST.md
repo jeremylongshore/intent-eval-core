@@ -11,7 +11,7 @@
 **Hard cap: ≤8 entries.** Each entry must have a documented rationale that ties to a Blueprint A / Blueprint B / per-repo blueprint § 6.6 stability promise. Adding a 9th runtime dep requires a Class-2 ISEDC pair Decision Record per the per-repo blueprint § 11 release strategy.
 
 | Package | Range | Rationale | Promised by |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `zod` | `^4.4.3` | Runtime validators (validators subpath only — opt-in). The kernel ships pure types in its main entry; consumers who need runtime validation import from `./validators/v1` which loads zod. Tree-shakable per-file subpath exports mean types-only consumers pay zero zod bundle cost. | Per-repo blueprint § 4.5 (External dependencies); enforced by `.dependency-cruiser.cjs` `validators-only-import-zod` rule |
 
 **Current count: 1 / 8.** 7 slots remaining; each addition requires a PR landing the dep AND updating this table AND surviving boundary-check CI.
@@ -21,7 +21,7 @@
 DevDeps don't count against the runtime cap — they don't ship in the published tarball — but they ARE subject to FORBIDDEN.md Axis 1 (forbidden patterns) and Axis 4 (forbidden categories). A devDep matching a forbidden pattern requires an explicit waiver here with rationale.
 
 | Package | Range | Purpose | Why permitted (in case it matches a forbidden pattern) |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `@eslint/js` | `^9.17.0` | ESLint flat-config recommended rules | n/a — no forbidden-pattern match |
 | `@intentsolutions/audit-harness` | `^0.1.0` | IS Testing SOP enforcement (escape-scan, arch-check, harness-hash, gherkin-lint, CRAP, bias-count) | n/a — Intent Solutions internal tooling, sibling repo |
 | `@types/node` | `^22.10.0` | TypeScript types for Node.js | n/a |
@@ -48,7 +48,7 @@ DevDeps don't count against the runtime cap — they don't ship in the published
 
 Files allowed at repo root (anything not in this list triggers a BLOCK on the Axis 3 directory check, extended to files):
 
-```
+```text
 .dependency-cruiser.cjs
 .gitignore
 .harness-hash

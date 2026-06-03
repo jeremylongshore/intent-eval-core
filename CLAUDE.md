@@ -20,7 +20,7 @@ The role separation is **binding** (Blueprint A § anti-goals). Adding execution
 Phase A foundation is on `main` of [`intent-eval-lab`](https://github.com/jeremylongshore/intent-eval-lab). Every decision in this repo must be consistent with:
 
 | Source | Path on intent-eval-lab | Role |
-|---|---|---|
+| --- | --- | --- |
 | **DR-010** | `000-docs/010-AT-DECR-isedc-council-session-4-widened-scope-2026-05-13.md` | Governance lock; TS-primary signing surfaces; unification thesis (every validator emits Evidence Bundle) |
 | **Blueprint A** | `000-docs/011-AT-ARCH-ecosystem-master-blueprint.md` | 12 binding principles, 5-repo taxonomy, anti-goals |
 | **Blueprint B** | `000-docs/012-AT-ARCH-platform-runtime-blueprint.md` | 13-entity canonical domain model; **NORMATIVE** `gate-result/v1` predicate spec (§ 7) |
@@ -34,7 +34,7 @@ If a change in this repo would require a change in any of the above, **stop** �
 When sources disagree, the higher tier wins:
 
 | Tier | Source | Authority |
-|---|---|---|
+| --- | --- | --- |
 | **1** | bd workspace `~/000-projects/.beads/` (prefix `iec-`) | task state, dependencies, sub-bead clusters |
 | **2** | DR-010 | governance bindings, override addenda § 13.5 + § 13.6 |
 | **3** | Blueprint A | ecosystem principles, repo taxonomy, anti-goals |
@@ -62,7 +62,7 @@ pnpm run format:check     # prettier --check .
 
 ## Project structure
 
-```
+```text
 intent-eval-core/
 ├── src/
 │   ├── index.ts            ← public surface (currently empty by design)
@@ -93,9 +93,9 @@ Canonical bd workspace is **`~/000-projects/.beads/`** (umbrella, prefix `iec-`)
 Three-layer mirror (per umbrella `CLAUDE.md`):
 
 | Layer | Where |
-|---|---|
+| --- | --- |
 | Bead | `~/000-projects/.beads/` (canonical state) |
-| GitHub issue | https://github.com/jeremylongshore/intent-eval-core/issues — one per epic (label `epic`); sub-beads share the parent issue |
+| GitHub issue | <https://github.com/jeremylongshore/intent-eval-core/issues> — one per epic (label `epic`); sub-beads share the parent issue |
 | Plane | **Intent Eval Core — Kernel** sub-module under LAB project |
 
 Use `bd-sync link/note/close` for every state change. After bulk operations, apply the JSONL workaround from umbrella CLAUDE.md (tracked at `bd_000-projects-ufc`; upstream issues #3848 + #3970).
@@ -121,7 +121,7 @@ Use `bd-sync link/note/close` for every state change. After bulk operations, app
 These are the kernel's NORMATIVE boundaries. Each is enforced architecturally — not just documented. The full boundary doctrine is at [`000-docs/003-AT-STND-core-repo-boundaries-2026-05-18.md`](000-docs/003-AT-STND-core-repo-boundaries-2026-05-18.md). The machine-readable enumeration is at [`FORBIDDEN.md`](FORBIDDEN.md). The allowlist counterpart is at [`ALLOWLIST.md`](ALLOWLIST.md). The unified checker is at [`scripts/check-boundaries.ts`](scripts/check-boundaries.ts) (`pnpm run boundaries`).
 
 | Anti-goal | What it prevents | Enforcement |
-|---|---|---|
+| --- | --- | --- |
 | **NOT a runtime** | Adding orchestration / agents / job queues / schedulers to the kernel | FORBIDDEN.md Axis 1 (npm packages) + Axis 2 (src/runtime/, src/orchestrator/) + Axis 3 (services/, workers/) |
 | **NOT a judge** | Adding LLM-judge logic or behavioral evaluation primitives | FORBIDDEN.md Axis 1 (LLM provider adapters) + Axis 2 (src/judges/, src/agents/) |
 | **NOT a harness** | Adding deterministic gate logic (that belongs in audit-harness) | FORBIDDEN.md Axis 2 (src/adapters/, src/optimization/) + dep-cruiser `validators-only-import-zod` |
@@ -133,6 +133,7 @@ These are the kernel's NORMATIVE boundaries. Each is enforced architecturally �
 **Override process for everything except CISO-binding URL patterns**: file a bead in `iec-` prefix, reference it in PR body as `boundary-override: bd_000-projects-<id>`. See doctrine § 3 for details. Class-2 ISEDC review is required for major-boundary crossings.
 
 **No override exists** for:
+
 - Predicate URIs at `labs.intentsolutions.io` (CISO binding)
 - Partner names in public-facing artifacts without explicit written consent (DR-004 S1Q2 + DR-010 § 10)
 - Customer-signal gates as Phase B unblockers (DR-010 § 13.5 — removed permanently)

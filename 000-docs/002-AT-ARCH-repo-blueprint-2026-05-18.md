@@ -17,16 +17,16 @@ related_glossary:
 filing_standard: Document Filing Standard v4.3
 ---
 
-# Repo Blueprint — `intent-eval-core`
+## Repo Blueprint — `intent-eval-core`
 
 ## § 1 — Repo identity
 
 | Field | Value |
-|---|---|
+| --- | --- |
 | **Repo name** | `intent-eval-core` (matches `gh repo view jeremylongshore/intent-eval-core` and local working-dir name) |
 | **Type** | `kernel` |
 | **Owner** | `@jeremylongshore` (per `CODEOWNERS`) |
-| **Maturity** | `v0.x experimental` — first public release `@intentsolutions/core@0.1.0` shipped 2026-05-17 with sigstore provenance |
+| **Maturity** | `v0.x experimental` — first public release `@intentsolutions/core@0.1.0` shipped 2026-05-17 with Sigstore provenance |
 | **Ecosystem role** | Canonical contracts kernel for the Intent Eval Platform — TypeScript types, JSON Schemas, Zod runtime validators, and state machines for the 13 canonical domain entities defined in Blueprint B § 2 |
 | **Bead prefix** | `iec-` (per Blueprint A § 2.1 taxonomy) |
 | **Plane module** | `LAB → Intent Eval Core — Kernel` (module UUID `5abf1653-c9ba-4029-8c04-76f148eb78f5`) |
@@ -34,7 +34,7 @@ filing_standard: Document Filing Standard v4.3
 ### § 1.1 Dependencies (peer repos consumed)
 
 | Peer repo | Consumed at | Pinned range | Cited blueprint path |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `intent-eval-lab` | docs / spec authority | N/A — read-only spec citation | `intent-eval-lab/000-docs/011-AT-ARCH-...md` (Blueprint A), `.../012-AT-ARCH-...md` (Blueprint B), `.../014-DR-GLOS-...md` (Glossary) |
 | `@intentsolutions/audit-harness` | test (dev-only) | `^0.1.0` | sibling repo `audit-harness/`; per-repo blueprint forthcoming (`iah-E01`) |
 | `zod` (third-party) | runtime — validators subpath only | `^4.4.3` | npm registry (see § 4.5) |
@@ -97,13 +97,13 @@ The boundary at which this repo hands off to peer repos: the kernel **defines** 
 - **Runtime execution** — the kernel will never ship an EvalRun executor. EvalRun execution belongs in a future runtime package; importing execution code here would violate Blueprint A § 3 anti-goal "NOT a generalized autonomous agent platform."
 - **LLM provider adapters** — the kernel will never invoke Anthropic, OpenAI, etc. Provider invocation lives in `j-rig` and `audit-harness`. The kernel defines `ToolInvocation` shape; it does not invoke tools.
 - **Policy logic** — translating verdicts to ship/no-ship decisions lives in `@j-rig/rollout-gate` per Blueprint B § 7.6 architectural separation (predicate URI is immutable; policy evolves per-team). The kernel ships `RolloutGateDecision` enum + the gate-result/v1 schema; it never ships a policy applier.
-- **DSSE signature verification logic** — cryptographic verification belongs in a sigstore client package downstream of the kernel. The kernel types the envelope; it does not verify.
+- **DSSE signature verification logic** — cryptographic verification belongs in a Sigstore client package downstream of the kernel. The kernel types the envelope; it does not verify.
 - **Storage backends** — the kernel defines `StorageKey` as an opaque brand; storage adapters (S3, GCS, Rekor) live in runtime packages.
 
 ### § 3.3 Deferred (FUTURE flag required)
 
 | Deferred item | Earliest milestone | FUTURE.md reference |
-|---|---|---|
+| --- | --- | --- |
 | Pydantic codegen + Python distribution | v0.3 (after Phase B kickoff) | `iec-E08` bead; will land in repo `FUTURE.md` when promoted |
 | Rust crate distribution | v0.4+ (after Pydantic ships) | not yet beaded — surface via Class-2 governance when triggered |
 | `assertion-class` enum for `EvalSpec.assertions` | TBD — Class-2 ISEDC pair DR required | `iec-deferral-A` bead (`bd_000-projects-gzgj`) |
@@ -131,7 +131,7 @@ Scope-creep into any anti-goal above triggers ISEDC re-convene per Blueprint A �
 
 ### § 4.1 Module layout
 
-```
+```text
 intent-eval-core/
 ├── src/
 │   ├── primitives.ts                 — 10 branded primitive types (TS-only, no runtime cost)
@@ -180,7 +180,7 @@ intent-eval-core/
 
 The kernel is a pure-types library with an opt-in runtime validator subpath. There is no request → response path, no daemon, no orchestration. The "flow" is the consumer's import path:
 
-```
+```text
 consumer source code
         │
         │ import type { EvalSpec, GateResultV1, Uuidv7 } from '@intentsolutions/core'
@@ -212,10 +212,10 @@ consumer source code (non-TS, e.g., Python via Pydantic codegen)
 ### § 4.3 Runtime boundaries
 
 | Concern | Value |
-|---|---|
+| --- | --- |
 | **Process model** | Library — runs in whatever process the consumer is in. No long-running daemon. No GitHub Action runtime in the kernel itself (the kernel is consumed BY runtime packages and Actions, not vice versa). |
 | **IPC** | N/A — library import only. No inter-process communication. |
-| **External services consumed** | None at runtime. The kernel does NOT invoke npm registry, GitHub, Rekor, sigstore, provider APIs, or any other external service from consumer code. (devtime: `@intentsolutions/audit-harness` runs gates against the source tree; CI runs the release workflow which calls `npm publish` — but neither is consumer-visible.) |
+| **External services consumed** | None at runtime. The kernel does NOT invoke npm registry, GitHub, Rekor, Sigstore, provider APIs, or any other external service from consumer code. (devtime: `@intentsolutions/audit-harness` runs gates against the source tree; CI runs the release workflow which calls `npm publish` — but neither is consumer-visible.) |
 | **Process isolation guarantees** | Pure-types main entry has no I/O surface — cannot leak credentials, cannot read filesystem, cannot make network calls. The validators subpath has the same I/O isolation (Zod parsers are pure functions). Credential-broker boundary per Blueprint B § 4.1 is N/A: the kernel does not handle credentials. |
 
 ### § 4.4 Storage needs
@@ -225,8 +225,8 @@ consumer source code (non-TS, e.g., Python via Pydantic codegen)
 ### § 4.5 External dependencies (cite by version)
 
 | Dependency | Range | Purpose | Notes |
-|---|---|---|---|
-| `zod` | `^4.4.3` | Runtime validators (validators subpath only — opt-in) | Peer-dep-style: only loaded if consumer imports from `./validators/v1`. Pure-types main entry never references zod. |
+| --- | --- | --- | --- |
+| `zod` | `^4.4.3` | Runtime validators (validators subpath only — opt-in) | Peer-dep-style: only loaded if consumer imports from `./validators/v1`. Pure-types main entry never references `zod`. |
 | `@intentsolutions/audit-harness` | `^0.1.0` | Dev-time only — IS Testing SOP gates | NOT in published tarball. |
 | `typescript` | `^5.7.2` | Dev-time only — build + typecheck | NOT in published tarball. |
 | `vitest` | `^2.1.8` | Dev-time only — test runner | NOT in published tarball; produces 2 dev-only moderate vulnerabilities (vite + esbuild transitive) flagged but not in consumer surface. |
@@ -250,7 +250,7 @@ Strict SemVer per Blueprint A § 4.2. MAJOR bumps to `zod` (the only runtime dep
 ## § 5 — Canonical entities used
 
 | Entity | Direction | Blueprint B Ref | Attributes implemented | Glossary ref |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | `EvalSpec` | **defines (source-of-truth)** | § 2.1 | TS interface + JSON Schema (draft 2020-12) + Zod validator with branded primitives; state machine `draft→published→deprecated` (reversible) | `014 § 2.1` |
 | `EvalRun` | defines | § 2.2 + § 3.1 | TS interface + JSON Schema + Zod; 7-state machine with 3 terminals; `EvalRunTerminalReason` 8-element enum | `014 § 2.2` |
 | `MatcherMap` | defines | § 2.3 | TS interface + JSON Schema + Zod; `MmClass` MM-1..MM-6 closed enum; discriminated `MatcherInputPattern` (regex / json-schema / structural); open-extension `MatcherExpectedBehavior` with `extension: true` marker | `014 § 2.3` |
@@ -290,7 +290,7 @@ The kernel ships no consumer-facing config files. Internal dev configs (`tsconfi
 ### § 6.4 Output formats
 
 | Output | Shape | Reference |
-|---|---|---|
+| --- | --- | --- |
 | Evidence Bundle row (when emitted by a kernel consumer) | in-toto Statement v1 over DSSE with `predicateType = https://evals.intentsolutions.io/gate-result/v1`; predicate body per Blueprint B § 7.4 | Blueprint B § 7; kernel ships `GateResultV1Statement` + `DsseEnvelope` interfaces and `GateResultV1Schema` Zod parser |
 
 **Note**: The kernel itself emits no rows. It defines the shape and exports the type + schema + validator. Consumer repos (`audit-harness`, `j-rig`, `intent-rollout-gate`) emit signed rows that satisfy the kernel's schema. Do NOT redefine the predicate body locally per Blueprint C § 6.4 guidance.
@@ -301,7 +301,7 @@ The kernel does not emit OTel events itself (no runtime). It defines the `Sessio
 
 ### § 6.6 Public-API stability promise
 
-The following surface elements are stable within minor versions (0.X.* → 0.X+1.* additive only; 0.X+1.0 may NOT break consumers of 0.X.*):
+The following surface elements are stable within minor versions (0.X.*→ 0.X+1.* additive only; 0.X+1.0 may NOT break consumers of 0.X.*):
 
 - **Entity TypeScript interface field names + types** for all 13 entities at the canonical module entry (`@intentsolutions/core`).
 - **`gate-result/v1` predicate body required + optional field names + types + enums** — this is the most version-sensitive surface in the kernel; the URI `https://evals.intentsolutions.io/gate-result/v1` is **immutable** per Blueprint B § 7.2 backward-compat policy.
@@ -333,7 +333,7 @@ Enforcement command: `pnpm exec audit-harness escape-scan --staged` (NEVER `~/.c
 ### § 7.2 L1–L2 — static analysis
 
 | Tool | Command | Notes |
-|---|---|---|
+| --- | --- | --- |
 | ESLint 9 flat config | `pnpm run lint` | typed lint via `projectService`; type-imports enforced; `no-explicit-any: error` |
 | Prettier 3 | `pnpm run format:check` | 100col, single quote, trailing commas |
 | TypeScript 5 strict | `pnpm run typecheck` | strict + every additional strict flag (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`, `noImplicitOverride`, `noPropertyAccessFromIndexSignature`) |
@@ -342,7 +342,7 @@ Enforcement command: `pnpm exec audit-harness escape-scan --staged` (NEVER `~/.c
 ### § 7.3 L3 — unit tests
 
 | Framework | Coverage floor | Mutation kill rate | CI gate |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `vitest@2` (in-process + `expectTypeOf` type-level) | **100%** lines / branches / functions / statements (enforced in `vitest.config.ts`) | N/A — WAIVED for pure-type library; see § 7.7 | `pnpm run test` + `pnpm run test:coverage` |
 | `tsd@0.33` (second-opinion separate-process type-test) | ~80 negative assertions against published `dist/` | N/A | `pnpm run test:types` (runs in CI after `pnpm run build`) |
 
@@ -364,7 +364,7 @@ Enforcement command: `pnpm exec audit-harness escape-scan --staged` (NEVER `~/.c
 **WAIVED.** Library, not service — no user journeys to acceptance-test. Consumers own their own Gherkin scenarios; the kernel's traceability artifacts (`tests/RTM.md`, `tests/PERSONAS.md`, `tests/JOURNEYS.md`) document the kernel's contracts but are not Gherkin features.
 
 | Gherkin scope | Lint | RTM path | Personas path | Journeys path |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | N/A — no .feature files | N/A | `tests/RTM.md` (24 REQs) | `tests/PERSONAS.md` (4 downstream-consumer personas) | `tests/JOURNEYS.md` (3 type-level journeys) |
 
 ### § 7.7 L7 — chaos / property / fuzz
@@ -392,12 +392,12 @@ Enforcement command: `pnpm exec audit-harness escape-scan --staged` (NEVER `~/.c
 ### § 7.9 Fixtures
 
 | Location | Naming convention | Vendor-generic discipline |
-|---|---|---|
+| --- | --- | --- |
 | `tests/fixtures/v1/` | `<entity>.valid.json` (positive) / `<entity>.invalid-<reason>.json` (negative) | All fixtures vendor-generic. Identifiers use placeholder UUIDv7s, slug names, and example emails (`jeremy@intentsolutions.io` is the only real identifier in fixtures, used per-DCO). Partner-name grep guard runs on `tests/fixtures/**` in CI per the umbrella `.github/workflows/partner-name-guard.yml` pattern. |
 
 ### § 7.10 Golden files
 
-**N/A** — no snapshot testing at v0.1. If JSON Schema generation against generated `_generated/` Zod files becomes a thing in a future minor release (the inverse direction: schema → zod codegen → JSON snapshot), add snapshot discipline + a mass-regenerate CI refusal at that point.
+**N/A** — no snapshot testing at v0.1. If JSON Schema generation against generated `_generated/` Zod files becomes a thing in a future minor release (the inverse direction: schema → `zod` codegen → JSON snapshot), add snapshot discipline + a mass-regenerate CI refusal at that point.
 
 ---
 
@@ -408,7 +408,7 @@ Enforcement command: `pnpm exec audit-harness escape-scan --staged` (NEVER `~/.c
 The kernel does not handle secrets. The broker pattern per Blueprint B § 4.1 does NOT apply because there are no credentials in the kernel's surface area.
 
 | Secret class | Storage | Broker | Repo-specific |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `NPM_TOKEN` (release-only) | GitHub Actions secret on `jeremylongshore/intent-eval-core` | N/A — used directly by `pnpm publish --provenance` step in release workflow | Sourced from `~/.npmrc` per local-engineer tooling; uploaded to GH secrets via `gh secret set NPM_TOKEN` |
 
 SOPS+age standard does NOT apply: no `.env.sops` exists in this repo because no consumer-runtime secrets exist. (The repo's CI uses standard GitHub Actions secret injection for `NPM_TOKEN` — that's a CI infrastructure concern, not a consumer-runtime credential surface.)
@@ -418,7 +418,7 @@ SOPS+age standard does NOT apply: no `.env.sops` exists in this repo because no 
 **N/A — no user-code execution path.** The kernel does not execute user-supplied artifacts (skills, prompts, MCP servers, evaluation targets). It ships type definitions, schemas, and validator functions; the validators are pure functions over data structures and cannot escape their inputs.
 
 | Concern | Default | Repo override |
-|---|---|---|
+| --- | --- | --- |
 | Filesystem | N/A — no FS access at runtime | N/A |
 | Network egress | N/A — no network access at runtime | N/A |
 | Wall-clock ceiling | N/A — synchronous pure functions, no long-running operations | N/A |
@@ -439,8 +439,8 @@ Removing or weakening this section is itself a Class-1 ISEDC trigger per DR-010 
 ### § 8.4 Audit logging
 
 | What is logged | Append-only | Signing | Retention |
-|---|---|---|---|
-| `pnpm publish` release events | yes — npm registry append-only history | sigstore provenance attached to published tarball (verifiable via `npm audit signatures @intentsolutions/core`) | Indefinite per npm registry retention policy |
+| --- | --- | --- | --- |
+| `pnpm publish` release events | yes — npm registry append-only history | Sigstore provenance attached to published tarball (verifiable via `npm audit signatures @intentsolutions/core`) | Indefinite per npm registry retention policy |
 | GitHub Actions CI run logs | yes — GitHub-managed | N/A (CI logs not signed) | 90 days per GitHub default |
 | Git commit history on `main` | yes — git-managed | DCO sign-off footer per global CLAUDE.md attribution policy | Indefinite |
 
@@ -472,7 +472,7 @@ An adversary who compromises the maintainer's GitHub account can do anything —
 The kernel emits no OTel events itself (no runtime). It defines the `SessionTrace` and `ToolInvocation` shapes that consumer runtimes use; consumer-emitted events forward-reference `iel-E12` (OTel RFC) and carry a `taxonomy_status: draft` attribute until the RFC ratifies.
 
 | Event | Trigger | Attributes |
-|---|---|---|
+| --- | --- | --- |
 | N/A — kernel emits no events | — | — |
 
 ### § 9.2 Trace propagation
@@ -493,13 +493,13 @@ The kernel defines lineage shapes; consumers populate them. Per Blueprint B § 2
 
 ### § 9.5 Failure taxonomy
 
-**N/A — kernel does not emit `FailureTaxonomy` rows.** Defines the entry shape; consumer runtimes emit rows. The kernel's own quality gates (CI failures, test failures, lint failures) are GitHub Actions / vitest reports — not Blueprint B § 2.13 categories.
+**N/A — kernel does not emit `FailureTaxonomy` rows.** Defines the entry shape; consumer runtimes emit rows. The kernel's own quality gates (CI failures, test failures, lint failures) are GitHub Actions / Vitest reports — not Blueprint B § 2.13 categories.
 
 ---
 
 ## § 10 — Cost governance
 
-**N/A — pure-spec/pure-library repo, no paid surface touched.** The kernel makes zero paid API calls, allocates no paid storage, and does not invoke paid signing (sigstore is free; npm registry is free for public packages).
+**N/A — pure-spec/pure-library repo, no paid surface touched.** The kernel makes zero paid API calls, allocates no paid storage, and does not invoke paid signing (Sigstore is free; npm registry is free for public packages).
 
 All five sub-sections (§ 10.1 Token ceilings, § 10.2 Cost attribution, § 10.3 Retention lifecycle, § 10.4 Cache strategy, § 10.5 Budget ceilings) are N/A for the same reason. The kernel **defines** `CostRecord` shape (Blueprint B § 2.12) for consumer runtimes; consumer runtimes own per-call cost accounting against that shape.
 
@@ -512,7 +512,7 @@ All five sub-sections (§ 10.1 Token ceilings, § 10.2 Cost attribution, § 10.3
 Strict SemVer per Blueprint A § 4.2. **The kernel is the most version-sensitive surface in the ecosystem** because every consumer repo depends on its canonical entity shapes — a breaking change ripples through `audit-harness`, `j-rig`, `intent-rollout-gate`, and any future Pydantic / Rust consumers.
 
 | Bump | Trigger | Example |
-|---|---|---|
+| --- | --- | --- |
 | **MAJOR** | Breaking change to any element of the § 6.6 stability promise | Rename a field on `EvalSpec`; remove a state from `EvalRunState`; change `Uuidv7` brand identifier; remove a subpath export |
 | **MAJOR** | Canonical-contract change | Replace `JudgeVerdict.PASS` literal with `'pass'` (case change); rename `gate-result/v1` to `gate-result/v2` (URI bump per Blueprint B § 7.2 backward-compat policy) |
 | **MAJOR** | Predicate URI grammar change | Change `SUBJECT_NAME_REGEX`; add a 4th edge kind to `CompositionEdgeKind` |
@@ -529,7 +529,7 @@ Keep a Changelog format. Sections: `Added`, `Changed`, `Deprecated`, `Removed`, 
 ### § 11.3 Migration notes
 
 | Field | Value |
-|---|---|
+| --- | --- |
 | Migration guide location | `CHANGELOG.md` § Adoption notes (per-version, hand-authored) |
 | Migration generator | Hand-authored at v0.x (codegen explicitly deferred per `iec-E09` acceptance criteria — "sub-children E09b/c/d demoted to P2; hand-migration acceptable"). Automated codemod tool MAY ship at v1.0 if consumer adoption proves manual migration painful. |
 | Required for | Every MAJOR bump. For MINOR bumps that deprecate a feature, the deprecation note in CHANGELOG suffices. |
@@ -537,6 +537,7 @@ Keep a Changelog format. Sections: `Added`, `Changed`, `Deprecated`, `Removed`, 
 ### § 11.4 Compatibility guarantees
 
 Across **minor bumps**:
+
 - Every existing TS interface field name + type is preserved
 - Every existing JSON Schema `$id` is preserved
 - Every existing Zod schema name + parse-shape is preserved
@@ -549,7 +550,7 @@ Across **MAJOR bumps**: only items explicitly preserved in the MAJOR release not
 ### § 11.5 Evidence retention discipline
 
 | Predicate URI | Status | SPEC.md ref | Signing mode |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `evals.intentsolutions.io/gate-result/v1` | approved (NORMATIVE in Blueprint B § 7.4) | `intent-eval-lab/specs/evidence-bundle/v0.1.0-draft/SPEC.md` (will be promoted to v0.1.0 normative when filed) | At v0.1: kernel ships the schema + URI constant; first **production-Rekor** signed emission belongs to consumer runtimes once the SPEC.md normative section is merged on `intent-eval-lab` main. Until then: `sigstore_staging` per DR-010 Q3 conditional approval. |
 | `evals.intentsolutions.io/validation-result/v1` | deferred (body not yet spec'd) | (forthcoming) | `sigstore_staging` |
 | `evals.intentsolutions.io/eval-verdict/v1` | deferred | (forthcoming) | `sigstore_staging` |
@@ -569,7 +570,7 @@ At v0.1.0: the entire production dependency tree is one package (`zod`, MIT-lice
 ## § 12 — Beads / work breakdown
 
 | Field | Value |
-|---|---|
+| --- | --- |
 | **Bead prefix** | `iec-` per Blueprint A § 2.1 taxonomy |
 | **bd workspace** | `~/000-projects/.beads/` (umbrella default per umbrella CLAUDE.md) |
 | **Epic naming** | `iec-E<NN>` (e.g., `iec-E01`, `iec-E09`, `iec-E10`) |
@@ -588,14 +589,14 @@ At v0.1.0: the entire production dependency tree is one package (`zod`, MIT-lice
 ### § 12.2 In-repo epic inventory
 
 | Epic | Status | Purpose |
-|---|---|---|
+| --- | --- | --- |
 | `iec-E01` — Repo scaffold | ✓ closed | Initial repo + LICENSE + README + Apache 2.0 + first commit |
 | `iec-E02` — 13 TS entities + gate-result/v1 + IS Testing SOP | ✓ closed | All 13 canonical entity TS interfaces + NORMATIVE predicate body + branded primitives + state machines + IS Testing SOP install + dual type-test discipline |
 | `iec-E03` — JSON Schemas | ✓ closed | 13 entity schemas + gate-result/v1 + shared _common.schema.json $defs + 31 ajv validation tests |
 | `iec-E04` — Zod runtime validators | ✓ closed | 15 Zod validators with branded primitives + tree-shakable subpath exports + 31 validator tests |
 | `iec-E07` — SemVer regression test suite | open (P2) | Automated regression test that catches MAJOR-bump-worthy changes before they merge |
 | `iec-E08` — Pydantic codegen + Python distribution | open (P2) | Generate Python entity models from JSON Schemas; publish to PyPI |
-| `iec-E09` — NPM publishing v0.1.0 | ✓ closed | First public release with sigstore provenance |
+| `iec-E09` — NPM publishing v0.1.0 | ✓ closed | First public release with Sigstore provenance |
 | `iec-E10` — Per-repo blueprint (this doc) | in-progress | Author this blueprint applying Blueprint C |
 | `iec-E11` — Boundary enforcement (FORBIDDEN/ALLOWLIST/CODEOWNERS) | open (P0) | Extend dep-cruiser rules + add CODEOWNERS + pre-commit gates for boundary discipline |
 | `iec-E12` — Testing SOP + CI/CD + multi-target release pipeline | open (P1) | Multi-target = post-v1 (Python wheel + Rust crate concurrent publishing) |

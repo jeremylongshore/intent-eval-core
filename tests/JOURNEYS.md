@@ -11,7 +11,7 @@
 **Steps**:
 
 | # | Step | Layer | Linked REQ | Test |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 1 | Pin a `SkillSnapshot` with `combined_sha = sha256(source_sha \|\| dependency_lock_sha \|\| config_sha)` | L3 | REQ-IEC-001 | `integration.test.ts` |
 | 2 | Author a `MatcherMap` (e.g., MM-4 token-ceiling-escape) | L3 | REQ-IEC-001, REQ-IEC-007 | `integration.test.ts` |
 | 3 | Author an `EvalSpec` anchoring on snapshot.combined_sha via `expected_artifacts` | L3 | REQ-IEC-001, REQ-IEC-006 | `integration.test.ts` |
@@ -36,7 +36,7 @@
 **Steps**:
 
 | # | Step | Layer | Linked REQ | Test |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 1 | Propose new `FailureTaxonomy` row with `mm_class: 'MM-7'`, `status: 'proposed'` | type-level | REQ-IEC-001, REQ-IEC-011 | `session-tool-cost-failure.test.ts` |
 | 2 | ISEDC review + transition to `status: 'canonical'` | governance | REQ-IEC-011 | manual ISEDC DR; runtime path tested |
 | 3 | Bump kernel's `MmClass` literal union to include 'MM-7'; new MatcherMap rows can now use it | code change | REQ-IEC-001, REQ-IEC-011 | regression on existing tests + new MM-7 test required at bump time |
@@ -50,7 +50,7 @@
 **Steps**:
 
 | # | Step | Layer | Linked REQ | Test |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 1 | Verify DSSE envelope signatures (cosign-OIDC) | runtime — downstream | REQ-IEC-002 | downstream tests in `intent-rollout-gate` |
 | 2 | Decode base64 payload → in-toto Statement v1 | runtime — downstream | REQ-IEC-002 | downstream tests in `intent-rollout-gate` |
 | 3 | Validate `predicateType === GATE_RESULT_V1_URI` | type-level | REQ-IEC-002, REQ-IEC-010 | `gate-result-v1.test.ts` |

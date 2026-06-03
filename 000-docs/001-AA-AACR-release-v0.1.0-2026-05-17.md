@@ -11,17 +11,17 @@
 
 ## Executive summary
 
-First public release of the canonical contracts kernel for the Intent Eval Platform. Ships pure TypeScript types, JSON Schemas, and opt-in Zod validators for the 13 canonical platform entities + the `gate-result/v1` NORMATIVE in-toto predicate body per Blueprint B § 7.4. Published from CI with sigstore provenance.
+First public release of the canonical contracts kernel for the Intent Eval Platform. Ships pure TypeScript types, JSON Schemas, and opt-in Zod validators for the 13 canonical platform entities + the `gate-result/v1` NORMATIVE in-toto predicate body per Blueprint B § 7.4. Published from CI with Sigstore provenance.
 
 **Scope context:** v0.1.0 closes **five epics** authored across a single multi-session sprint:
 
 | Epic | Result |
-|---|---|
+| --- | --- |
 | `iec-E01` — Repo scaffold | ✓ |
 | `iec-E02` — 13 TS entities + `gate-result/v1` + IS Testing SOP | ✓ |
 | `iec-E03` — JSON Schemas (draft 2020-12) | ✓ |
 | `iec-E04` — Zod runtime validators | ✓ |
-| `iec-E09` — NPM publishing + adoption guide | ✓ |
+| `iec-E09` — npm publishing + adoption guide | ✓ |
 
 ---
 
@@ -42,7 +42,7 @@ First public release of the canonical contracts kernel for the Intent Eval Platf
 
 - 0 secrets detected in `src/`
 - 0 prod vulnerabilities (`pnpm audit --prod`)
-- 2 moderate dev-only vulnerabilities (vite + esbuild via vitest transitive) — not in published tarball, monitored
+- 2 moderate dev-only vulnerabilities (vite + esbuild via Vitest transitive) — not in published tarball, monitored
 
 ### Beads
 
@@ -68,7 +68,7 @@ First public release of the canonical contracts kernel for the Intent Eval Platf
 
 - IS Testing SOP install (`@intentsolutions/audit-harness@0.1.0`, husky pre-commit, dependency-cruiser 17 with 8 forbidden architecture rules)
 - CI workflow (`.github/workflows/ci.yml`) — 9-step gate chain: harness:verify, lint, typecheck, arch, test, test:coverage, build, test:types, dist artifact verification
-- Release workflow (`.github/workflows/release.yml`) — tag-triggered, sigstore provenance via `pnpm publish --provenance`, tag-vs-package version drift guard
+- Release workflow (`.github/workflows/release.yml`) — tag-triggered, Sigstore provenance via `pnpm publish --provenance`, tag-vs-package version drift guard
 - ERD-walk integration test locking every Blueprint B § 6.2 cross-entity invariant
 - `tests/{TESTING,RTM,PERSONAS,JOURNEYS}.md` scaffolds — 24 REQs, 4 personas, 3 journeys, all kernel-owned steps tested
 - `CHANGELOG.md` with v0.1.0 surface + adoption guide
@@ -104,11 +104,12 @@ First public release of the canonical contracts kernel for the Intent Eval Platf
 ### Docs sweep (`/validate-consistency` findings)
 
 | Drift | Severity | Resolution |
-|---|---|---|
+| --- | --- | --- |
 | `README.md:79` — "This repo is at epic iec-E01 (scaffold)" | 🟡 Warning | FIXED — replaced with v0.1.0 shipped + closed-epic list |
 | `tests/TESTING.md:99` — "tsd planned" | 🟡 Warning | FIXED — replaced with "tsd installed + wired" |
 
 All other consistency checks PASSED:
+
 - Version: package.json 0.1.0 = CHANGELOG 0.1.0 = git tag v0.1.0 = README v0.1.0
 - License: Apache-2.0 across package.json + LICENSE + README badge
 - Repo URL: package.json `repository.url` matches git remote
@@ -121,12 +122,12 @@ All other consistency checks PASSED:
 ## Quality posture at release
 
 | Gate | Result |
-|---|---|
+| --- | --- |
 | `pnpm run lint` | ✓ |
 | `pnpm run typecheck` | ✓ |
 | `pnpm run arch` (dependency-cruiser, 8 forbidden rules) | ✓ 0 violations |
-| `pnpm run test` (vitest) | ✓ 154 tests across 8 files |
-| `pnpm run test:coverage` (vitest c8) | ✓ 100% line/branch/function/statement |
+| `pnpm run test` (Vitest) | ✓ 154 tests across 8 files |
+| `pnpm run test:coverage` (Vitest c8) | ✓ 100% line/branch/function/statement |
 | `pnpm run test:types` (tsd against published `dist/`) | ✓ ~80 negative-test assertions |
 | `pnpm run build` (TypeScript) | ✓ dist artifacts emit cleanly |
 | Schema validation tests (ajv draft 2020-12) | ✓ 31 tests (16 positive + 4 negative + 7 cross-cutting + 4 structural) |
@@ -140,7 +141,7 @@ All other consistency checks PASSED:
 ## Metrics
 
 | Metric | Value |
-|---|---|
+| --- | --- |
 | Commits since initial scaffold | 24 |
 | Files in published tarball | 159 |
 | Tarball size | ~280 KB unpacked |
@@ -149,7 +150,7 @@ All other consistency checks PASSED:
 | Zod validators | 16 (15 schema-mirroring + 1 primitives + 1 index) |
 | TS entity interfaces | 14 (13 entities + barrel) |
 | Test files | 8 |
-| Total assertions | 154 vitest + ~80 tsd + 31 ajv + 31 Zod ≈ 295 |
+| Total assertions | 154 Vitest + ~80 tsd + 31 ajv + 31 Zod ≈ 295 |
 | Lines added | ~12,600 |
 | Test:source ratio | high (test files exceed entity files; multiple test layers) |
 | CI run time (release workflow) | 38s |
@@ -161,7 +162,7 @@ All other consistency checks PASSED:
 Per umbrella `intent-eval-platform/CLAUDE.md` discipline, every epic carries cross-references in all three layers:
 
 | Epic | Bead | GH | Plane |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | iec-E01 | `bd_000-projects-3mv` | `intent-eval-core#1` (closed) | LAB-82 (Done) |
 | iec-E02 | `bd_000-projects-3sj` | `#2` (closed) | LAB-83 (Done) |
 | iec-E03 | `bd_000-projects-u2y` | `#3` (closed) | LAB-84 (Done) |
@@ -175,7 +176,7 @@ Per umbrella `intent-eval-platform/CLAUDE.md` discipline, every epic carries cro
 8 architectural deferrals captured for post-1.0 follow-up:
 
 | Bead | Title | Priority | Trigger to act |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `bd_000-projects-gzgj` | iec-deferral-A: AssertionExpression typed-class enum | P1 | Class-2 ISEDC pair DR needed before enumeration |
 | `bd_000-projects-k0fj` | iec-deferral-G: tenant_id reservation (Architect W1) | P1 | ISEDC decision: reserve now (cheap) or decline (explicit) |
 | `bd_000-projects-8t7m` | iec-tighten-branch-protection (flip enforce_admins=true) | P1 | NOW (scaffold phase complete) |
@@ -191,12 +192,12 @@ Per umbrella `intent-eval-platform/CLAUDE.md` discipline, every epic carries cro
 ## Release artifacts
 
 | Artifact | Location |
-|---|---|
-| npm tarball | https://registry.npmjs.org/@intentsolutions/core/-/core-0.1.0.tgz |
-| npm package page | https://www.npmjs.com/package/@intentsolutions/core |
-| GH release | https://github.com/jeremylongshore/intent-eval-core/releases/tag/v0.1.0 |
+| --- | --- |
+| npm tarball | <https://registry.npmjs.org/@intentsolutions/core/-/core-0.1.0.tgz> |
+| npm package page | <https://www.npmjs.com/package/@intentsolutions/core> |
+| GH release | <https://github.com/jeremylongshore/intent-eval-core/releases/tag/v0.1.0> |
 | Git tag | `v0.1.0` at commit `c9b9f75` |
-| CI publish run | https://github.com/jeremylongshore/intent-eval-core/actions/runs/26002217507 |
+| CI publish run | <https://github.com/jeremylongshore/intent-eval-core/actions/runs/26002217507> |
 | Sigstore provenance | Embedded in tarball; verify via `npm audit signatures @intentsolutions/core` |
 
 ---
@@ -206,7 +207,7 @@ Per umbrella `intent-eval-platform/CLAUDE.md` discipline, every epic carries cro
 Three sibling platform repos consume this kernel. Per the bead's "hand-migration acceptable" acceptance, no automated codemod ships in v0.1.0. The migration recipe lives in `CHANGELOG.md § Adoption notes` and the GH release notes.
 
 | Sibling repo | Tracking bead | Migration shape |
-|---|---|---|
+| --- | --- | --- |
 | `audit-harness` | `iah-E02` — Import @intentsolutions/core types | Replace local gate-result types with `GateResultV1Schema`; brand existing identifier strings via Zod parsers; emit signed rows whose predicate body satisfies the schema |
 | `j-rig-skill-binary-eval` | `iaj-E02` — Migrate @j-rig/core schemas → @intentsolutions/core | Move existing entity types into this package; map UPPERCASE `JudgeVerdict` → lowercase `RolloutGateDecision` through the `@j-rig/rollout-gate` policy translator |
 | `intent-rollout-gate` | (forthcoming) | Replace local schema definitions with the canonical `GateResultV1Schema`; verify DSSE signatures externally; apply consumer-side policy from `tests/TESTING.md` per § 7.6 architectural separation |
