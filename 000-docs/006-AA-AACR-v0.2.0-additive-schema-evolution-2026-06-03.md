@@ -72,6 +72,7 @@ All three predicate URIs live at `evals.intentsolutions.io` and NEVER at `labs.i
 ## Files added / changed
 
 **Added (8):**
+
 - `schemas/v1/retraction.schema.json`
 - `schemas/v1/dashboard-render.schema.json`
 - `src/predicates/retraction-v1.ts` + `src/predicates/retraction-v1.test.ts`
@@ -83,6 +84,7 @@ All three predicate URIs live at `evals.intentsolutions.io` and NEVER at `labs.i
 - This AAR.
 
 **Changed:**
+
 - `src/entities/EvidenceBundle.ts`, `schemas/v1/evidence-bundle.schema.json`, `src/validators/v1/evidence-bundle.ts` (pre_registration_hash)
 - `src/predicates/index.ts`, `src/predicates/gate-result-v1.ts` (PREDICATE_URIS), `src/validators/v1/index.ts`, `schemas/v1/index.json`
 - `src/__tests__/schemas.test.ts`, `src/validators/v1/validators.test.ts`, `src/predicates/gate-result-v1.test.ts`, `test-d/predicates.test-d.ts` (new tests + updated structural counts 16→18 files / 1→3 predicates)
@@ -108,7 +110,7 @@ All three predicate URIs live at `evals.intentsolutions.io` and NEVER at `labs.i
 
 ## Release hold — coordination with iec-E12
 
-The `package.json` bump to 0.2.0 + this changelog entry are committed, but **the npm publish and the `v0.2.0` git tag are intentionally NOT performed here.** `iec-E12` adds `EvidenceBundlePayload` shape + cross-field invariants to the same v0.2.0 line. Both bodies of work must ship as one coordinated v0.2.0 so consumers see a single, complete minor release rather than two partial ones. When iec-E12 reconciles: re-run the full gate, tag `v0.2.0`, push `--follow-tags`, and let `release.yml` publish with sigstore provenance.
+The `package.json` bump to 0.2.0 + this changelog entry are committed, but **the npm publish and the `v0.2.0` git tag are intentionally NOT performed here.** `iec-E12` adds `EvidenceBundlePayload` shape + cross-field invariants to the same v0.2.0 line. Both bodies of work must ship as one coordinated v0.2.0 so consumers see a single, complete minor release rather than two partial ones. When iec-E12 reconciles: re-run the full gate, tag `v0.2.0`, push `--follow-tags`, and let `release.yml` publish with Sigstore provenance.
 
 ---
 
