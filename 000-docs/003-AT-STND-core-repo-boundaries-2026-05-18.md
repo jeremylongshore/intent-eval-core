@@ -9,7 +9,7 @@ inherits_from:
   - intent-eval-lab/000-docs/011-AT-ARCH-ecosystem-master-blueprint.md (Blueprint A)
   - intent-eval-core/000-docs/002-AT-ARCH-repo-blueprint-2026-05-18.md (per-repo blueprint § 3.4 anti-goals)
 related_drs:
-  - intent-eval-lab/000-docs/010-AT-DECR-isedc-council-session-4-widened-scope-2026-05-13.md (DR-010)
+  - "`intent-eval-lab/000-docs/010-AT-DECR-isedc-council-session-4-widened-scope-2026-05-13.md` (DR-010)"
 related_glossary:
   - intent-eval-lab/000-docs/014-DR-GLOS-canonical-glossary.md
 filing_standard: Document Filing Standard v4.3
@@ -17,7 +17,7 @@ forward_refs:
   - iel-E13 — Architecture boundary standards (3-doc cluster) — upstream lab-side doctrine; this doc will be re-anchored against iel-E13 once it lands. Until then, this doc is the operative kernel-side standard.
 ---
 
-# Core Repo Boundary Doctrine — `intent-eval-core`
+## Core Repo Boundary Doctrine — `intent-eval-core`
 
 ## § 1 — Why this doc exists
 
@@ -28,7 +28,7 @@ Those are NORMATIVE anti-goals, but a NORMATIVE statement is not the same as enf
 The enforcement is **4-axis** because boundary violations come in four shapes:
 
 | Axis | What it catches | Where it lives |
-|---|---|---|
+| --- | --- | --- |
 | **Package patterns** | Forbidden npm packages by name (e.g., `express`, `pg`, `bullmq`, `@anthropic-ai/sdk`) | `FORBIDDEN.md` § Package patterns |
 | **Import paths** | Forbidden source-code paths (e.g., `src/runtime/`, `src/orchestration/`, `src/judges/`) | `FORBIDDEN.md` § Import paths |
 | **Directory names** | Forbidden repo-root directories (e.g., `services/`, `orchestrator/`, `workers/`) | `FORBIDDEN.md` § Directory names |
@@ -85,7 +85,7 @@ Attempting to override any of the above is itself a Class-1 ISEDC trigger.
 The per-repo blueprint (`000-docs/002-AT-ARCH-repo-blueprint-2026-05-18.md`) is the WHAT. This doctrine is the HOW.
 
 | Per-repo blueprint says | This doctrine implements |
-|---|---|
+| --- | --- |
 | § 1.2 "NOT a runtime" | Package-pattern + import-path + directory-name checks block runtime additions |
 | § 3.2 "Out of scope: runtime execution" | `FORBIDDEN.md § Package patterns` lists every runtime/orchestration npm package by name |
 | § 3.4 "Schema duplication is forbidden" | (Enforced elsewhere — by the kernel BEING the source of truth, peer repos importing) |
@@ -136,7 +136,7 @@ Boundary changes do NOT happen via PR comment, Slack thread, or "I'm refactoring
 ## § 9 — Operational reference
 
 | Operation | Command |
-|---|---|
+| --- | --- |
 | Manual run | `pnpm run boundaries` |
 | Pre-commit | Runs automatically via `.husky/pre-commit` |
 | CI gate | `.github/workflows/boundary-check.yml` runs on every PR + push to main |

@@ -7,17 +7,17 @@
 
 ## 1. This System in 5 Minutes
 
-`@intentsolutions/core` is the **canonical contracts kernel** for the Intent Eval Platform — a single npm package that defines, in three coordinated forms, every shared shape that flows between the five platform repos. The three forms are: TypeScript interfaces (`src/entities/`, `src/predicates/`, `src/primitives.ts`), JSON Schema draft-2020-12 documents (`schemas/v1/`), and Zod runtime validators (`src/validators/v1/`). Each form mirrors the same 13 entities and the same one fully-normative in-toto predicate body (`gate-result/v1`). The package compiles to ESM in `dist/`, exports tree-shakable subpaths, ships with **zero runtime dependencies** at the main entry (`zod` is loaded only by consumers who import from `./validators/v1`), and is published with sigstore-keyless provenance through npm's OIDC flow.
+`@intentsolutions/core` is the **canonical contracts kernel** for the Intent Eval Platform — a single npm package that defines, in three coordinated forms, every shared shape that flows between the five platform repos. The three forms are: TypeScript interfaces (`src/entities/`, `src/predicates/`, `src/primitives.ts`), JSON Schema draft-2020-12 documents (`schemas/v1/`), and Zod runtime validators (`src/validators/v1/`). Each form mirrors the same 13 entities and the same one fully-normative in-toto predicate body (`gate-result/v1`). The package compiles to ESM in `dist/`, exports tree-shakable subpaths, ships with **zero runtime dependencies** at the main entry (`zod` is loaded only by consumers who import from `./validators/v1`), and is published with Sigstore-keyless provenance through npm's OIDC flow.
 
 The kernel exists because before it, the same 13 entities were redefined locally in `audit-harness`, `j-rig-skill-binary-eval`, and `intent-rollout-gate` — each with slightly different field names, missing fields, and mutually incompatible validators. The lab's earlier `gate-result/v1` v0.1.0-draft schema had drifted from Blueprint B § 7.4, and DR-010's "unification thesis" (every validator emits an Evidence Bundle) was unenforceable. This package replaces that drift with one source of truth: the kernel **defines** the canonical contracts; everyone else **consumes** them.
 
 It is read by humans (the entity files are the readable form of Blueprint B § 2), imported by TypeScript consumers (`import type { EvalSpec } from '@intentsolutions/core'`), pulled by polyglot consumers (`schemas/v1/*.schema.json` is the language-neutral wire format), and validated at runtime by anyone who needs structural enforcement (`GateResultV1Schema.parse(payload)`). The kernel runs on consumer machines and in consumer CI; it has no servers of its own, no DB, no scheduler, no queue, no LLM provider adapter, and no execution loop. That absence is enforced architecturally — a 4-axis boundary checker (`scripts/check-boundaries.ts`) reads `FORBIDDEN.md` + `ALLOWLIST.md` and blocks pre-commit + PR if anything that smells like a runtime tries to land.
 
-Current state (2026-05-20): v0.1.0 shipped on 2026-05-17 from CI with sigstore provenance, closing five epics (`iec-E01`, `iec-E02`, `iec-E03`, `iec-E04`, `iec-E09`). Since then, three follow-on epics have landed on `main`: `iec-E10` (per-repo blueprint applying Blueprint C), `iec-E11` (4-axis boundary enforcement + CI workflow + ALLOWLIST/FORBIDDEN/CODEOWNERS narrowing), and `iec-E12` (testing SOP + CI/CD ratify-and-close AAR + boundary-check required status). The latest commit (`ac0cdec`, `iec-E07`) adds an api-extractor SemVer regression gate that diffs the public surface against a committed golden snapshot. The 9-step CI gate chain is green; the boundary check is green; coverage is 100% line/branch/function/statement; the architecture rules emit 0 violations across 8 forbidden dep-cruiser entries.
+Current state (2026-05-20): v0.1.0 shipped on 2026-05-17 from CI with Sigstore provenance, closing five epics (`iec-E01`, `iec-E02`, `iec-E03`, `iec-E04`, `iec-E09`). Since then, three follow-on epics have landed on `main`: `iec-E10` (per-repo blueprint applying Blueprint C), `iec-E11` (4-axis boundary enforcement + CI workflow + ALLOWLIST/FORBIDDEN/CODEOWNERS narrowing), and `iec-E12` (testing SOP + CI/CD ratify-and-close AAR + boundary-check required status). The latest commit (`ac0cdec`, `iec-E07`) adds an api-extractor SemVer regression gate that diffs the public surface against a committed golden snapshot. The 9-step CI gate chain is green; the boundary check is green; coverage is 100% line/branch/function/statement; the architecture rules emit 0 violations across 8 forbidden dep-cruiser entries.
 
 The biggest **risk** is consumer-side adoption inertia. The kernel was published two weeks before this audit but the three downstream sibling repos (`audit-harness`, `j-rig-skill-binary-eval`, `intent-rollout-gate`) have not yet migrated their local schemas onto it. Each day they don't, the unification thesis weakens — sibling repos accumulate divergent local types, and the canonical-shapes guarantee depends on the migration actually happening. The second-biggest risk is the JSON-Schema-vs-Zod twin-source maintenance burden: the two sources can drift, and a six-axis defense (codegen reference output in `_generated/`, hand-authored canonical validators in `src/validators/v1/`, schema-validation tests + Zod-validation tests + ERD-walk integration tests + tsd type tests) is what keeps them aligned. If any of those defenses lapse, the divergence will be silent.
 
-The third-biggest risk is deferred security posture: while the publish flow uses npm provenance (sigstore-keyless via GitHub OIDC) and consumers can run `npm audit signatures`, several pieces of the broader DSSE/Rekor story are still deferral beads — `signing_mode` field enforcement in DSSE (Security C-3), Rekor pre-flight validation (Security C-2), and CISO-binding DNSSEC + CAA pinning on `evals.intentsolutions.io` before first production-Rekor unlock. Those are tracked but not yet closed.
+The third-biggest risk is deferred security posture: while the publish flow uses npm provenance (Sigstore-keyless via GitHub OIDC) and consumers can run `npm audit signatures`, several pieces of the broader DSSE/Rekor story are still deferral beads — `signing_mode` field enforcement in DSSE (Security C-3), Rekor pre-flight validation (Security C-2), and CISO-binding DNSSEC + CAA pinning on `evals.intentsolutions.io` before first production-Rekor unlock. Those are tracked but not yet closed.
 
 ---
 
@@ -25,49 +25,49 @@ The third-biggest risk is deferred security posture: while the publish flow uses
 
 ### What It Does
 
-`@intentsolutions/core` is a published npm library (`@intentsolutions/core@0.1.0`, Apache-2.0, ESM, Node 20+). Its single responsibility is to publish a frozen, versioned, sigstore-signed set of canonical contracts for the Intent Eval Platform. The contracts come in three forms — TypeScript interfaces, JSON Schemas, and Zod runtime validators — and they cover three things: the 13 canonical platform entities defined in Blueprint B § 2 (`EvalSpec`, `EvalRun`, `MatcherMap`, `EvidenceBundle`, `JudgeDecision`, `RuntimeReceipt`, `RegressionPack`, `RolloutGate`, `SkillSnapshot`, `SessionTrace`, `ToolInvocation`, `CostRecord`, `FailureTaxonomy`), the one fully-normative in-toto predicate body (`gate-result/v1`) per Blueprint B § 7.4, and ten branded primitive types (`Uuidv7`, `Sha256`, `Sha256Prefixed`, `Rfc3339`, `SemVer`, `KebabSlug`, `MicroUsd`, `StorageKey`, `OtelSpanId`, `ActorIdentity`).
+`@intentsolutions/core` is a published npm library (`@intentsolutions/core@0.1.0`, Apache-2.0, ESM, Node 20+). Its single responsibility is to publish a frozen, versioned, Sigstore-signed set of canonical contracts for the Intent Eval Platform. The contracts come in three forms — TypeScript interfaces, JSON Schemas, and Zod runtime validators — and they cover three things: the 13 canonical platform entities defined in Blueprint B § 2 (`EvalSpec`, `EvalRun`, `MatcherMap`, `EvidenceBundle`, `JudgeDecision`, `RuntimeReceipt`, `RegressionPack`, `RolloutGate`, `SkillSnapshot`, `SessionTrace`, `ToolInvocation`, `CostRecord`, `FailureTaxonomy`), the one fully-normative in-toto predicate body (`gate-result/v1`) per Blueprint B § 7.4, and ten branded primitive types (`Uuidv7`, `Sha256`, `Sha256Prefixed`, `Rfc3339`, `SemVer`, `KebabSlug`, `MicroUsd`, `StorageKey`, `OtelSpanId`, `ActorIdentity`).
 
-Implementation status: **fully implemented for v0.1**. The five epics that constitute v0.1.0 are closed (`iec-E01` repo scaffold; `iec-E02` 13 TS entities + `gate-result/v1` + IS Testing SOP install; `iec-E03` JSON Schemas; `iec-E04` Zod runtime validators; `iec-E09` NPM publishing with sigstore provenance). Three follow-on epics have also landed: `iec-E10` (per-repo blueprint at `000-docs/002-AT-ARCH-...md`), `iec-E11` (4-axis boundary enforcement — `FORBIDDEN.md`, `ALLOWLIST.md`, `scripts/check-boundaries.ts`, `.github/workflows/boundary-check.yml`), and `iec-E12` (testing SOP + CI/CD bootstrap AAR + boundary-check required status). The latest commit (`ac0cdec`) closes `iec-E07` (api-extractor SemVer regression gate against a committed golden snapshot). All this exists on `main`; the published v0.1.0 reflects the state up through `iec-E09`, and v0.1.1 (when it ships) will reflect the additions.
+Implementation status: **fully implemented for v0.1**. The five epics that constitute v0.1.0 are closed (`iec-E01` repo scaffold; `iec-E02` 13 TS entities + `gate-result/v1` + IS Testing SOP install; `iec-E03` JSON Schemas; `iec-E04` Zod runtime validators; `iec-E09` npm publishing with Sigstore provenance). Three follow-on epics have also landed: `iec-E10` (per-repo blueprint at `000-docs/002-AT-ARCH-...md`), `iec-E11` (4-axis boundary enforcement — `FORBIDDEN.md`, `ALLOWLIST.md`, `scripts/check-boundaries.ts`, `.github/workflows/boundary-check.yml`), and `iec-E12` (testing SOP + CI/CD bootstrap AAR + boundary-check required status). The latest commit (`ac0cdec`) closes `iec-E07` (api-extractor SemVer regression gate against a committed golden snapshot). All this exists on `main`; the published v0.1.0 reflects the state up through `iec-E09`, and v0.1.1 (when it ships) will reflect the additions.
 
-Technical foundation: TypeScript 5.7 with every available strict flag enabled (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `noPropertyAccessFromIndexSignature`, `verbatimModuleSyntax`); pnpm 9 workspace (single package, not a monorepo); vitest 2 for tests; tsd for negative-position type tests; dependency-cruiser 17 for architecture rule enforcement; eslint 9 flat config with typed linting; husky for pre-commit gating; api-extractor 7 for SemVer golden-snapshot diffing; sigstore via npm OIDC for publish provenance. The `dist/` artifact is ~280 KB unpacked, 159 files, no runtime deps in the main entry, `zod ^4.4.3` listed as a peer/runtime dep used only by the `validators/v1/*` subpath.
+Technical foundation: TypeScript 5.7 with every available strict flag enabled (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `noPropertyAccessFromIndexSignature`, `verbatimModuleSyntax`); pnpm 9 workspace (single package, not a monorepo); Vitest 2 for tests; tsd for negative-position type tests; dependency-cruiser 17 for architecture rule enforcement; ESLint 9 flat config with typed linting; husky for pre-commit gating; api-extractor 7 for SemVer golden-snapshot diffing; Sigstore via npm OIDC for publish provenance. The `dist/` artifact is ~280 KB unpacked, 159 files, no runtime deps in the main entry, `zod ^4.4.3` listed as a peer/runtime dep used only by the `validators/v1/*` subpath.
 
 Key risks (audit-time, ordered by severity): (1) downstream sibling repos have not yet migrated — `audit-harness` (tracked at `iah-E02`), `j-rig-skill-binary-eval` (`iaj-E02`), `intent-rollout-gate` (no bead claimed); (2) JSON Schema + Zod twin-source maintenance burden; (3) deferred DSSE/Rekor posture (`bd_000-projects-k0fj` tenant_id reservation, Security C-2 Rekor pre-flight, Security C-3 `signing_mode` in DSSE — all unresolved); (4) the lab's `iel-link-schemas-to-kernel` bead is still open, meaning the lab's own canonical schemas still need to be repointed at the kernel.
 
 ### Operational Status
 
 | Environment | Status | Uptime Target | Release Cadence | Last Deploy |
-|-------------|--------|---------------|-----------------|-------------|
-| Production (npm registry) | LIVE — `@intentsolutions/core@0.1.0` published with sigstore provenance | 99.9% (inherits npm registry SLA; no Intent Solutions own-service component) | Tag-driven; expected ~monthly through v0.x, then quarterly | 2026-05-17 |
+| --- | --- | --- | --- | --- |
+| Production (npm registry) | LIVE — `@intentsolutions/core@0.1.0` published with Sigstore provenance | 99.9% (inherits npm registry SLA; no Intent Solutions own-service component) | Tag-driven; expected ~monthly through v0.x, then quarterly | 2026-05-17 |
 | Staging | N/A — no staging registry; the npm registry is the only publish target | N/A | N/A | N/A |
-| Local Dev | `pnpm install && pnpm run check` produces green 9-step gate chain | N/A | Pre-commit hook + push hook gate every commit | Continuous |
+| Local dev | `pnpm install && pnpm run check` produces green 9-step gate chain | N/A | Pre-commit hook + push hook gate every commit | Continuous |
 
 Note: this is a **library**, not a service. There is no running process, no server, no scheduled job, no queue worker. Operational concerns live entirely in (a) the npm registry's availability for downloads, (b) the release CI workflow's correctness when tag-triggered, and (c) downstream consumer adoption.
 
 ### Technology Stack
 
 | Category | Technology | Version | Purpose |
-|----------|------------|---------|---------|
+| --- | --- | --- | --- |
 | Language | TypeScript | ^5.7.2 | Source language; all strict flags enabled (`tsconfig.json:9-26`) |
 | Module system | ESM (NodeNext) | n/a | `"type": "module"` in `package.json:26`; `.js` extensions in relative imports per NodeNext resolution |
 | Runtime target | Node.js | >=20.0.0 (`.nvmrc` pins Node 22 for dev) | `package.json:52` |
 | Package manager | pnpm | >=9.0.0 (pinned `9.15.0` via `packageManager` field) | `package.json:55` |
 | Runtime dep (kernel) | (none) | n/a | Main entry has zero runtime dependencies |
-| Runtime dep (validators subpath) | zod | ^4.4.3 | `package.json:114`; required only by `src/validators/v1/*` |
+| Runtime dep (validators subpath) | `zod` | ^4.4.3 | `package.json:114`; required only by `src/validators/v1/*` |
 | Schema authoring | JSON Schema draft 2020-12 | n/a | `schemas/v1/*.schema.json` |
-| Codegen reference | json-schema-to-zod | ^2.8.1 (devDep) | Produces `_generated/*.ts` reference; canonical Zod validators are hand-authored |
+| codegen reference | `json-schema-to-zod` | ^2.8.1 (devDep) | Produces `_generated/*.ts` reference; canonical Zod validators are hand-authored |
 | Schema validation (tests) | ajv + ajv-formats | ^8.20.0 / ^3.0.1 (devDep) | Validates the JSON Schemas against fixtures |
-| Test runner | vitest | ^2.1.8 | Runtime + type-level tests via `expectTypeOf` |
+| Test runner | Vitest | ^2.1.8 | Runtime + type-level tests via `expectTypeOf` |
 | Type-level tests | tsd | ^0.33.0 | Second-opinion negative type tests against the published `dist/` |
-| Linter | eslint + typescript-eslint | ^9.17.0 / ^8.19.0 | Flat config (`eslint.config.js`), typed-linting via `projectService` |
+| Linter | ESLint + typescript-ESLint | ^9.17.0 / ^8.19.0 | Flat config (`eslint.config.js`), typed-linting via `projectService` |
 | Formatter | prettier | ^3.4.2 | `.prettierrc.json` |
 | Architecture rules | dependency-cruiser | ^17.4.0 (devDep) | 8 forbidden rules in `.dependency-cruiser.cjs`, hash-pinned |
 | API surface diff | @microsoft/api-extractor | ^7.58.7 | Golden snapshot at `api/intentsolutions-core.api.md`, drift gate in CI |
 | Architectural enforcement (project) | @intentsolutions/audit-harness | ^0.1.0 (devDep) | escape-scan, arch-check, harness-hash, gherkin-lint, CRAP, bias-count |
 | Hooks | husky | ^9.1.7 | `.husky/pre-commit` runs escape-scan + boundaries + lint-staged |
 | Lint-staged | lint-staged | ^17.0.5 | Per-file linting in pre-commit |
-| Coverage | @vitest/coverage-v8 | ^2.1.8 | V8-instrumented; 100% floor enforced in `vitest.config.ts` |
+| Coverage | `@vitest/coverage-v8` | ^2.1.8 | V8-instrumented; 100% floor enforced in `vitest.config.ts` |
 | CI | GitHub Actions | n/a | `.github/workflows/{ci,boundary-check,release}.yml` |
-| Publish provenance | npm OIDC + sigstore | n/a | `pnpm publish --provenance` from `release.yml:95` |
+| Publish provenance | npm OIDC + Sigstore | n/a | `pnpm publish --provenance` from `release.yml:95` |
 | License | Apache-2.0 | n/a | `LICENSE`; Apache for the kernel so every downstream (commercial + OSS + internal) can depend |
 
 ---
@@ -79,21 +79,21 @@ Note: this is a **library**, not a service. There is no running process, no serv
 For each technology: what it does AND why it was chosen over alternatives.
 
 | Layer | Technology | Version | Purpose | Why This |
-|-------|------------|---------|---------|----------|
+| --- | --- | --- | --- | --- |
 | Source | TypeScript (strict + every additional flag) | ^5.7.2 | Author entity interfaces, branded primitives, state-machine transition maps, and predicate body types | Two reasons. (1) DR-010 Q2 binds the platform to "TS-primary signing surfaces; Python permitted ML internals" — every signed contract has to be authored in TypeScript first. (2) `verbatimModuleSyntax` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` together encode invariants in the type system that would otherwise require runtime checks (cf. `tsconfig.json:21-26`). Plain JavaScript was never on the table; less-strict TS would mean weaker compile-time guarantees on the contracts everyone else trusts. |
 | Wire format | JSON Schema draft 2020-12 | n/a | Language-neutral representation of the same 13 entities + the predicate body; `$ref` cross-references via `_common.schema.json` to avoid duplication | The platform must serve non-TS consumers eventually (Python via Pydantic codegen — deferred to `iec-E08`; Rust if/when needed). JSON Schema is the lingua franca and draft 2020-12 has the modern `if/then/else` and `$dynamicRef` constructs the `gate-result/v1` advisory-severity rule needs. Alternatives considered: OpenAPI 3.1 (rejected — overkill, oriented at HTTP services we don't have); protobuf (rejected — binary-first, debugging predicate bodies in JSON is a feature, not a bug). |
-| Runtime validation | Zod | ^4.4.3 | Opt-in runtime parsers per entity + the predicate; tree-shakable subpath exports so types-only consumers pay zero zod bundle cost | `zod` is the only runtime npm dep allowed in the kernel (ALLOWLIST.md cap of ≤8, current count 1/8). Alternatives considered: io-ts (rejected — fp-ts dependency tree pulls more than needed); ajv at runtime (rejected — code is JSON-data-driven so debugging refinements is awkward); valibot (rejected — newer, smaller community, would lose `.brand()` typing fidelity); arktype (rejected — same). Zod's `.brand<'Uuidv7'>()` integrates cleanly with the TS branded primitive types in `src/primitives.ts`, which is what makes the parse-and-brand pattern work end-to-end. |
+| Runtime validation | Zod | ^4.4.3 | Opt-in runtime parsers per entity + the predicate; tree-shakable subpath exports so types-only consumers pay zero `zod` bundle cost | `zod` is the only runtime npm dep allowed in the kernel (ALLOWLIST.md cap of ≤8, current count 1/8). Alternatives considered: io-ts (rejected — fp-ts dependency tree pulls more than needed); ajv at runtime (rejected — code is JSON-data-driven so debugging refinements is awkward); valibot (rejected — newer, smaller community, would lose `.brand()` typing fidelity); arktype (rejected — same). Zod's `.brand<'Uuidv7'>()` integrates cleanly with the TS branded primitive types in `src/primitives.ts`, which is what makes the parse-and-brand pattern work end-to-end. |
 | Branded primitives | TypeScript phantom-type brands | (compile-only) | Distinguish `Uuidv7` from `Sha256Prefixed` at the type level even though both are strings at runtime | The pattern (`declare const __brand: unique symbol; type Brand<T, B> = T & { readonly [__brand]: B }`, `src/primitives.ts:19-20`) gives type-safety on the consumer side without any runtime cost. Alternatives: nominal types via class wrappers (rejected — runtime weight, fights with JSON serialization); runtime-tagged objects (rejected — same). Brands are intentionally not constructed in `src/primitives.ts` itself; the Zod parsers in `src/validators/v1/_primitives.ts` own the parse-and-brand. |
-| Codegen reference | json-schema-to-zod | ^2.8.1 (devDep only) | Run via `pnpm run codegen:validators`; output to `src/validators/v1/_generated/`; used as **reference**, not as canonical. The hand-authored canonical Zod validators live one directory up at `src/validators/v1/<entity>.ts`. | Naive codegen produces `z.any()` for cross-file `$ref`s, can't apply `.brand<'X'>()` (which is what makes the inferred Zod output types structurally identical to the TS interfaces), can't model `superRefine` rules from `if/then` schema blocks, and can't pick `z.discriminatedUnion` over `z.union` (which the variant types need for narrowing). Pure-codegen would either lock to the lowest-common-denominator Zod surface (worse types, worse error messages) or require post-codegen hand-patching (manual reconciliation step every regen — drift bait). Hand-authoring with codegen-as-reference is the cleaner separation. Discipline doc at `src/validators/v1/_generated/README.md`. |
-| Architecture rules | dependency-cruiser | ^17.4.0 (devDep) | Enforce: no circular deps; `src/(?!validators/)` may not import npm packages (`kernel-no-runtime-deps`); `src/validators/` may only import zod from npm (`validators-only-import-zod`); `src/predicates/` may not import from `src/entities/` (`predicates-no-entities`); `state-machines/` is a leaf (`state-machines-pure`); test files cannot be imported from non-test files (`no-test-imports-in-src`); deprecated Node core modules forbidden (`no-deprecated-core`); orphan modules surfaced as warnings (`no-orphans`) | Architecture-rule enforcement has to live in code that runs in CI, not in prose. Alternatives considered: eslint-plugin-import (too coarse for the predicates-no-entities rule); writing a bespoke checker on top of TS AST (too much code for the dep-graph slice we need). The `.dependency-cruiser.cjs` file is hash-pinned via `.harness-hash` so policy changes require explicit re-pinning (cf. `pnpm exec audit-harness init`). |
+| codegen reference | `json-schema-to-zod` | ^2.8.1 (devDep only) | Run via `pnpm run codegen:validators`; output to `src/validators/v1/_generated/`; used as **reference**, not as canonical. The hand-authored canonical Zod validators live one directory up at `src/validators/v1/<entity>.ts`. | Naive codegen produces `z.any()` for cross-file `$ref`s, can't apply `.brand<'X'>()` (which is what makes the inferred Zod output types structurally identical to the TS interfaces), can't model `superRefine` rules from `if/then` schema blocks, and can't pick `z.discriminatedUnion` over `z.union` (which the variant types need for narrowing). Pure-codegen would either lock to the lowest-common-denominator Zod surface (worse types, worse error messages) or require post-codegen hand-patching (manual reconciliation step every regen — drift bait). Hand-authoring with codegen-as-reference is the cleaner separation. Discipline doc at `src/validators/v1/_generated/README.md`. |
+| Architecture rules | dependency-cruiser | ^17.4.0 (devDep) | Enforce: no circular deps; `src/(?!validators/)` may not import npm packages (`kernel-no-runtime-deps`); `src/validators/` may only import `zod` from npm (`validators-only-import-zod`); `src/predicates/` may not import from `src/entities/` (`predicates-no-entities`); `state-machines/` is a leaf (`state-machines-pure`); test files cannot be imported from non-test files (`no-test-imports-in-src`); deprecated Node core modules forbidden (`no-deprecated-core`); orphan modules surfaced as warnings (`no-orphans`) | Architecture-rule enforcement has to live in code that runs in CI, not in prose. Alternatives considered: `eslint-plugin-import` (too coarse for the predicates-no-entities rule); writing a bespoke checker on top of TS AST (too much code for the dep-graph slice we need). The `.dependency-cruiser.cjs` file is hash-pinned via `.harness-hash` so policy changes require explicit re-pinning (cf. `pnpm exec audit-harness init`). |
 | Boundary enforcement | Custom `scripts/check-boundaries.ts` reading `FORBIDDEN.md` + `ALLOWLIST.md` | Node `--experimental-strip-types` | The 4-axis check that catches what dep-cruiser doesn't: forbidden npm package names (Axis 1), forbidden source-tree paths (Axis 2), forbidden top-level directories (Axis 3), forbidden npm-keyword categories (Axis 4); also a separate URL-pattern check that blocks `labs.intentsolutions.io` as a predicate URI host (CISO binding — REFUSE, no override path) | Defense in depth: any one axis would miss classes of violation. The single-checker approach reads markdown-as-config so the same machine-readable enumeration is also the human-readable doctrine. Cf. `000-docs/003-AT-STND-core-repo-boundaries-2026-05-18.md` § 2 for the four-shapes-of-violation rationale. |
-| Publish provenance | npm `--provenance` (sigstore-keyless via GitHub OIDC) | n/a | `pnpm publish --provenance --access public` from `.github/workflows/release.yml:95` with `id-token: write` permission | The publish flow runs on a tag push (`v*.*.*`), re-runs the full gate chain, verifies tag-vs-package version, then `pnpm publish` with `--provenance`. The OIDC token is exchanged for a sigstore key, the tarball is signed, the provenance attestation lands at `https://registry.npmjs.org/@intentsolutions/core` alongside the tarball, and consumers can verify with `npm audit signatures @intentsolutions/core`. Alternatives considered: cosign with explicit keys (rejected — key-management burden); GitHub's own SLSA framework (rejected — not yet first-class for npm); no signing (rejected — supply-chain attack surface). |
-| Hash-pinning | `@intentsolutions/audit-harness init` writing `.harness-hash` | ^0.1.0 | Policy files (`.dependency-cruiser.cjs`) are hashed; pre-commit `harness:verify` step refuses commits whose hashed policy doesn't match the pinned hash | If policy can be silently mutated by an LLM or an unattentive contributor, the whole boundary doctrine softens over time. Hash-pinning makes policy edits explicit + audit-trailed. Cf. `.harness-hash:1` for the current pin. |
+| Publish provenance | npm `--provenance` (Sigstore-keyless via GitHub OIDC) | n/a | `pnpm publish --provenance --access public` from `.github/workflows/release.yml:95` with `id-token: write` permission | The publish flow runs on a tag push (`v*.*.*`), re-runs the full gate chain, verifies tag-vs-package version, then `pnpm publish` with `--provenance`. The OIDC token is exchanged for a Sigstore key, the tarball is signed, the provenance attestation lands at `https://registry.npmjs.org/@intentsolutions/core` alongside the tarball, and consumers can verify with `npm audit signatures @intentsolutions/core`. Alternatives considered: Cosign with explicit keys (rejected — key-management burden); GitHub's own SLSA framework (rejected — not yet first-class for npm); no signing (rejected — supply-chain attack surface). |
+| Hash-pinning | `@intentsolutions/audit-harness init` writing `.harness-hash` | ^0.1.0 | Policy files (`.dependency-cruiser.cjs`) are hashed; pre-commit `harness:verify` step refuses commits whose hashed policy doesn't match the pinned hash | If policy can be silently mutated by an LLM or an inattentive contributor, the whole boundary doctrine softens over time. Hash-pinning makes policy edits explicit + audit-trailed. Cf. `.harness-hash:1` for the current pin. |
 | api-extractor SemVer gate | @microsoft/api-extractor | ^7.58.7 | Public-surface golden snapshot at `api/intentsolutions-core.api.md`; CI diffs current surface against snapshot; drift fails CI with instructions to bump version per per-repo blueprint § 11.1 + commit refreshed snapshot in same PR | Closes the loop on the contracts-kernel promise: the public surface cannot change without an explicit version bump and a snapshot refresh. Alternatives considered: dts-bundle-generator + diff (rejected — api-extractor's review markdown is purpose-built for this); manually-curated `.d.ts` declarations (rejected — too easy to drift from actual emitted surface). |
 
 ### System Diagram
 
-```
+```text
                         Author / contributor laptop
                         +----------------------------+
                         |  pnpm run check            |
@@ -180,7 +180,7 @@ The critical path is **publish-and-consume**. End-to-end, step by step:
 1. **Author commit** (engineer laptop). Engineer makes a change to `src/entities/EvalRun.ts` or `schemas/v1/eval-run.schema.json` or `src/validators/v1/eval-run.ts`. The pre-commit hook runs:
    - `pnpm exec audit-harness escape-scan --staged` — looks at staged diff for policy-violating patterns; refuses on hit.
    - `pnpm run boundaries` — 4-axis boundary check; refuses on URL-pattern hit, challenges on Axes 1-3 with override-bead path.
-   - `pnpm exec lint-staged` — runs eslint + prettier on the staged files.
+   - `pnpm exec lint-staged` — runs ESLint + prettier on the staged files.
    Failure point: any of these fails -> commit blocked.
 
 2. **PR opened**. Two CI workflows fire in parallel:
@@ -195,24 +195,24 @@ The critical path is **publish-and-consume**. End-to-end, step by step:
    - Checks out with full history (`fetch-depth: 0`).
    - Verifies the tag (`vX.Y.Z`) matches `package.json#version` (defends against tag-vs-package drift). Failure point: mismatch -> abort before publish.
    - Re-runs the full gate chain (`harness:verify`, lint, typecheck, arch, test, coverage, build, test:types, dist-verify).
-   - Runs `pnpm publish --no-git-checks --provenance --access public` with `NODE_AUTH_TOKEN` from secrets and `id-token: write` for the sigstore OIDC exchange. Failure point: provenance generation fails (e.g., OIDC token issuance fails) -> publish aborts before tarball reaches npm; recovery is to investigate Actions OIDC config.
+   - Runs `pnpm publish --no-git-checks --provenance --access public` with `NODE_AUTH_TOKEN` from secrets and `id-token: write` for the Sigstore OIDC exchange. Failure point: provenance generation fails (e.g., OIDC token issuance fails) -> publish aborts before tarball reaches npm; recovery is to investigate Actions OIDC config.
 
-6. **npm registry** indexes the tarball + sigstore provenance attestation. Failure point: registry outage. No mitigation owned by this repo.
+6. **npm registry** indexes the tarball + Sigstore provenance attestation. Failure point: registry outage. No mitigation owned by this repo.
 
 7. **Consumer install**. Downstream repo (e.g., `audit-harness`) runs `pnpm add @intentsolutions/core` or bumps the existing version. The package's main entry resolves to `dist/index.js` (zero deps); the validators subpath resolves to `dist/validators/v1/<entity>.js` (`zod` peer dep).
 
 8. **Consumer import**:
    - Types-only: `import type { EvalSpec } from '@intentsolutions/core'` — pure compile-time; zero runtime weight.
    - Schemas: `import schema from '@intentsolutions/core/schemas/v1/gate-result.schema.json' with { type: 'json' }` — JSON import; consumer can feed to ajv / jsonschema-py / etc.
-   - Validators: `import { GateResultV1Schema } from '@intentsolutions/core/validators/v1/gate-result-v1'` — loads zod; `GateResultV1Schema.parse(payload)` does the runtime check (`src/validators/v1/gate-result-v1.ts:42-72`).
+   - Validators: `import { GateResultV1Schema } from '@intentsolutions/core/validators/v1/gate-result-v1'` — loads `zod`; `GateResultV1Schema.parse(payload)` does the runtime check (`src/validators/v1/gate-result-v1.ts:42-72`).
 
-9. **Optional provenance verify**: `npm audit signatures @intentsolutions/core` — fetches the sigstore attestation and verifies. Failure point: signature missing / fails verification -> consumer must decide. The kernel itself doesn't enforce this; it's a consumer-side check.
+9. **Optional provenance verify**: `npm audit signatures @intentsolutions/core` — fetches the Sigstore attestation and verifies. Failure point: signature missing / fails verification -> consumer must decide. The kernel itself doesn't enforce this; it's a consumer-side check.
 
 ### Dependency Graph
 
 Build-order dependencies (compile-time):
 
-```
+```text
 primitives.ts       (leaf — depends on nothing)
    ^
    |
@@ -230,7 +230,7 @@ index.ts            (re-exports primitives + state-machines + entities + predica
 
 Cross-cutting:
 
-```
+```text
 validators/v1/      (depends on `zod` from npm + sibling validator files;
                      MUST NOT depend on src/entities or src/predicates;
                      own copy of the predicate-body shape — twin source,
@@ -239,7 +239,7 @@ validators/v1/      (depends on `zod` from npm + sibling validator files;
 
 External:
 
-```
+```text
 @intentsolutions/audit-harness  (dev-only) — required for hash-pinning + arch + escape-scan
 zod ^4.x                          (runtime, validators subpath only)
 ```
@@ -253,12 +253,12 @@ Failure modes if a dependency is unavailable:
 Internal dep-cruiser-enforced rules (`.dependency-cruiser.cjs:19-115`):
 
 | Rule | Direction | Severity | Why |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `no-circular` | any | error | Circular deps break tree-shaking and indicate layering rot |
 | `no-orphans` | any | warn | Orphan modules are usually dead code |
 | `no-deprecated-core` | any -> Node deprecated core | warn | Avoid `punycode`, `domain`, etc. |
 | `kernel-no-runtime-deps` | `src/(?!validators/)` -> npm | error | Kernel main entry must be zero-runtime-dep |
-| `validators-only-import-zod` | `src/validators/` -> npm except zod | error | Validators subtree is the only place that can import npm; zod is the only npm pkg it can import |
+| `validators-only-import-zod` | `src/validators/` -> npm except `zod` | error | Validators subtree is the only place that can import npm; `zod` is the only npm pkg it can import |
 | `predicates-no-entities` | `src/predicates` -> `src/entities` | error | Predicates are the canonical signed surface; entities are the DB-side projection. Predicates must be definable without entities. EvidenceBundle imports from predicates (the reverse direction) — that's the canonical flow |
 | `no-test-imports-in-src` | non-test -> `*.test.ts` | error | Test files cannot be imported from production source |
 | `state-machines-pure` | `src/state-machines` -> `src/(entities\|predicates)` | error | state-machines is a leaf; entities depend on state-machines, never the reverse |
@@ -283,7 +283,7 @@ That's the 8 forbidden architecture rules referenced throughout the docs.
 
 - **Chosen**: Author every canonical entity + predicate in TypeScript first, generate JSON Schema as the language-neutral form, and provide Zod runtime validators in TypeScript. Python distribution (Pydantic codegen) is deferred to `iec-E08` — not abandoned, just deferred.
 - **Over**: Authoring the schemas in JSON Schema first and generating TS, OR authoring in Python (Pydantic) first and generating both TS and JSON Schema, OR maintaining all three forms hand-in-hand from day one with no primary.
-- **Because**: DR-010 Q2 (ISEDC Session 4 widened-scope lock) binds the platform to "TS-primary signing surfaces; Python permitted ML internals." The reasoning in DR-010 is: the signing surface — the in-toto + DSSE envelope path — is where supply-chain correctness lives. TS has the strongest mainstream tooling for compile-time type safety, the npm provenance flow has the strongest sigstore-keyless OIDC integration of any package ecosystem, and the platform's overall consumer surface is JavaScript/TypeScript-heavy. Python remains permitted for the parts of the platform that are statistics or ML — but the canonical contracts must be authored in TS.
+- **Because**: DR-010 Q2 (ISEDC Session 4 widened-scope lock) binds the platform to "TS-primary signing surfaces; Python permitted ML internals." The reasoning in DR-010 is: the signing surface — the in-toto + DSSE envelope path — is where supply-chain correctness lives. TS has the strongest mainstream tooling for compile-time type safety, the npm provenance flow has the strongest Sigstore-keyless OIDC integration of any package ecosystem, and the platform's overall consumer surface is JavaScript/TypeScript-heavy. Python remains permitted for the parts of the platform that are statistics or ML — but the canonical contracts must be authored in TS.
 - **Cost**: Python consumers don't have a Pydantic distribution at v0.1. They can consume `schemas/v1/*.schema.json` via jsonschema-py, but they don't have brand-typed Pydantic models. That's an actual gap. Also: the engineer authoring the kernel has to maintain three forms in lockstep (TS + JSON Schema + Zod) rather than two — that's the cost of forfeiting the JSON-Schema-first option.
 - **Revisit when**: `iec-E08` (Pydantic codegen + Python distribution) ships. Until then, polyglot consumers fall back to JSON Schema only, and that's a documented limit.
 
@@ -305,10 +305,10 @@ That's the 8 forbidden architecture rules referenced throughout the docs.
 
 #### Decision #5 — Sigstore-keyless provenance via npm OIDC, not signed releases with explicit keys
 
-- **Chosen**: Use `pnpm publish --provenance` from the release workflow with `permissions: id-token: write`. The npm CLI exchanges the GitHub Actions OIDC token for a sigstore signing key (keyless / Fulcio-issued cert), signs the tarball, and posts the attestation to the registry. Consumers verify with `npm audit signatures @intentsolutions/core`.
-- **Over**: (a) Maintaining a long-lived cosign key in repo secrets and signing with that. (b) GPG signatures on git tags only (no tarball signature). (c) No signing at all.
-- **Because**: Keyless sigstore is the canonical npm provenance flow as of 2024+; it's tested, it's free, and the attestation lives at the registry next to the tarball so verification is one command. Long-lived keys add a key-rotation problem that we don't need. GPG-on-tags-only doesn't help consumers who install from npm because they're not verifying tags. No signing leaves the supply chain unsigned.
-- **Cost**: Trust in the GitHub Actions OIDC issuer + sigstore's Fulcio CA + the npm registry. If any of those is compromised, the signature isn't reliable. Also: keyless sigstore certs are short-lived; the verification flow has to trust the transparency log (Rekor) for proof-of-existence. That's fine for npm packages but means the kernel can't trivially be air-gapped. Also: the consumer-side check (`npm audit signatures`) is opt-in; consumers who don't run it still get the unverified install. The kernel can't force consumer-side verification.
+- **Chosen**: Use `pnpm publish --provenance` from the release workflow with `permissions: id-token: write`. The npm CLI exchanges the GitHub Actions OIDC token for a Sigstore signing key (keyless / Fulcio-issued cert), signs the tarball, and posts the attestation to the registry. Consumers verify with `npm audit signatures @intentsolutions/core`.
+- **Over**: (a) Maintaining a long-lived Cosign key in repo secrets and signing with that. (b) GPG signatures on git tags only (no tarball signature). (c) No signing at all.
+- **Because**: Keyless Sigstore is the canonical npm provenance flow as of 2024+; it's tested, it's free, and the attestation lives at the registry next to the tarball so verification is one command. Long-lived keys add a key-rotation problem that we don't need. GPG-on-tags-only doesn't help consumers who install from npm because they're not verifying tags. No signing leaves the supply chain unsigned.
+- **Cost**: Trust in the GitHub Actions OIDC issuer + Sigstore's Fulcio CA + the npm registry. If any of those is compromised, the signature isn't reliable. Also: keyless Sigstore certs are short-lived; the verification flow has to trust the transparency log (Rekor) for proof-of-existence. That's fine for npm packages but means the kernel can't trivially be air-gapped. Also: the consumer-side check (`npm audit signatures`) is opt-in; consumers who don't run it still get the unverified install. The kernel can't force consumer-side verification.
 - **Revisit when**: Sigstore's threat model changes substantially OR an npm package consumer needs offline / air-gapped verification OR the platform requires a stronger attestation framework (e.g., for FedRAMP-style compliance). Deferral beads `Security C-2` (Rekor pre-flight) and `Security C-3` (signing_mode in DSSE) track the broader DSSE story; the npm provenance flow is the v0.1 baseline.
 
 #### Decision #6 — One published package (ONE BIG), not a monorepo of `@intent-eval/types` + `@intent-eval/schemas` + `@intent-eval/validators`
@@ -346,7 +346,7 @@ Intentional omissions, in order of "most-likely-to-be-asked-about":
 - **No Pydantic distribution at v0.1.** Polyglot consumers consume JSON Schema directly via jsonschema-py. Tracked at `iec-E08` for future delivery; deferred per `iec-E09` AAR's "What did NOT go in v0.1.0" section.
 - **No automated migration codemod for downstream consumers.** The migration recipe lives in `CHANGELOG.md § Adoption notes`; consumers hand-migrate. Demoted to P2 per `iec-E09` acceptance ("hand-migration acceptable").
 - **No `examples/` or `demos/` directory.** Forbidden by Axis 3. The test fixtures (`tests/fixtures/v1/*.valid.json`) serve as worked examples; the entity files' JSDocs cite Blueprint B sections + line numbers.
-- **No DSSE signature verification logic.** The kernel defines the `DsseEnvelope` + `DsseSignature` shapes (`src/predicates/gate-result-v1.ts:249-269`); cryptographic verification belongs in a sigstore client package downstream.
+- **No DSSE signature verification logic.** The kernel defines the `DsseEnvelope` + `DsseSignature` shapes (`src/predicates/gate-result-v1.ts:249-269`); cryptographic verification belongs in a Sigstore client package downstream.
 - **No `AssertionExpression` typed-class enum.** `EvalSpec.assertions` is typed as `readonly unknown[]`. Blueprint B § 2.1 says "typed assertion expression" without naming a class enum; the spec extraction explicitly directs **STOP — do not invent an assertion-class enum** (extension is a Class-2 ISEDC pair DR). Tracked at deferral bead `bd_000-projects-gzgj` (iec-deferral-A).
 - **No `ScoringConfig` fields beyond `aggregation_rule`.** Blueprint B § 2.1 only spec-binds the aggregation rule; weights, thresholds, tiebreakers, confidence floors are intentionally absent — § 7.6 cordons threshold semantics off the predicate URI surface and into consumer-side `tests/TESTING.md` policy. Tracked at `bd_000-projects-21re` (iec-deferral-C).
 - **No `CompositionDag` wire format normative spec.** The TS shape lives at `src/entities/EvalSpec.ts:137-140` but the canonical serialization (adjacency vs edge list, ordering rules, etc.) isn't locked. Tracked at `bd_000-projects-3sjx` (iec-deferral-F).
@@ -354,7 +354,7 @@ Intentional omissions, in order of "most-likely-to-be-asked-about":
 ### Assumptions the Architecture Rests On
 
 - **The npm registry is the durable distribution channel for at least the v0.x lifecycle.** If the registry goes away or its terms change materially, consumers lose the install path. No fallback is owned by this repo.
-- **GitHub Actions OIDC + Fulcio + Rekor remain trustworthy.** The sigstore-keyless provenance flow trusts all three. If any is compromised, provenance attestations are unreliable.
+- **GitHub Actions OIDC + Fulcio + Rekor remain trustworthy.** The Sigstore-keyless provenance flow trusts all three. If any is compromised, provenance attestations are unreliable.
 - **Downstream sibling repos will migrate within a reasonable window.** The unification thesis (DR-010 Q3) only holds if consumers actually consume the kernel. Two weeks post-publish, the migration beads (`iah-E02`, `iaj-E02`, `iel-link-schemas-to-kernel`, intent-rollout-gate forthcoming) are still open. If they remain open indefinitely, the kernel's value proposition softens.
 - **`evals.intentsolutions.io` will be DNSSEC + CAA pinned before first production-Rekor unlock.** CISO binding per DR-004 + DR-010 § 10. The predicate URI host is reserved; the cryptographic posture for the URI is a Security C-2 / C-3 deferral. Until then, `signing_mode='rekor_production'` is not a path consumers should take.
 - **Blueprint B § 7.4 is stable enough that `gate-result/v1` will not need a v2 in the v0.1 lifecycle.** Adding/loosening any field on the predicate body requires Class-1 ISEDC convening; that's deliberate friction. If Blueprint B § 7.4 needs revision more than once per quarter, the friction is wrong-sized.
@@ -367,7 +367,7 @@ Intentional omissions, in order of "most-likely-to-be-asked-about":
 
 ### Layout
 
-```
+```text
 intent-eval-core/
 +- .github/
 |  +- workflows/
@@ -534,8 +534,8 @@ These five-to-ten files are what hold the kernel up. If any of them breaks, some
 ### Prerequisites
 
 | Tool | Version | Install | Verify |
-|------|---------|---------|--------|
-| Node.js | >=20 (Node 22 pinned for dev via `.nvmrc`) | https://nodejs.org or `fnm install 22 && fnm use 22` | `node --version` -> `v22.x.x` |
+| --- | --- | --- | --- |
+| Node.js | >=20 (Node 22 pinned for dev via `.nvmrc`) | <https://nodejs.org> or `fnm install 22 && fnm use 22` | `node --version` -> `v22.x.x` |
 | pnpm | >=9 (pinned `9.15.0` via `packageManager` in `package.json`) | `corepack enable && corepack prepare pnpm@9.15.0 --activate` | `pnpm --version` -> `9.15.0` |
 | git | any modern | distro package manager | `git --version` |
 | node `--experimental-strip-types` support | comes with Node 22 | n/a | `node --experimental-strip-types -e 'console.log(1)'` -> `1` |
@@ -545,36 +545,43 @@ These five-to-ten files are what hold the kernel up. If any of them breaks, some
 The kernel is a library, not a service, so "running" means "tests pass and you can import a type."
 
 1. **Clone**:
-   ```
+
+   ```bash
    git clone git@github.com:jeremylongshore/intent-eval-core.git
    cd intent-eval-core
    ```
 
 2. **Install** (deterministic via lockfile):
-   ```
+
+   ```bash
    pnpm install --frozen-lockfile
    ```
+
    Expect: pnpm fetches deps + sets up husky hooks via the `prepare` script (`package.json:57`). Output ends with "Done in Xs."
 
 3. **Run the canonical gate** (this is `pnpm run check` per `package.json:76`):
-   ```
+
+   ```bash
    pnpm run check
    ```
-   Steps it runs in order: `lint` -> `typecheck` -> `test` (vitest run) -> `arch` (audit-harness arch) -> `boundaries` (4-axis check). All green is the expected outcome on a clean checkout of `main`. Coverage and dist artifact verification are CI-only — they are not part of `check` but are part of `ci.yml`.
+
+   Steps it runs in order: `lint` -> `typecheck` -> `test` (Vitest run) -> `arch` (audit-harness arch) -> `boundaries` (4-axis check). All green is the expected outcome on a clean checkout of `main`. Coverage and dist artifact verification are CI-only — they are not part of `check` but are part of `ci.yml`.
 
 4. **Import a type to confirm**:
-   ```
+
+   ```bash
    pnpm exec node --input-type=module -e "
      import('./dist/index.js').then(m => console.log(Object.keys(m).slice(0, 10)));
    "
    ```
+
    First run `pnpm run build` if `dist/` doesn't exist yet. Expect a list starting with state-machine transition maps + the canTransition helper + the GATE_RESULT_V1_URI const. (Type-only exports don't appear in JS object keys at runtime — that's fine; types are erased.)
 
 5. **Validate a sample bundle against `gate-result/v1`** (the load-bearing demo):
 
    The repo doesn't have a stand-alone "run me" example by design (Axis 3 forbids `examples/`), but the test fixtures + validator give you what you need. From a Node REPL after build:
 
-   ```
+   ```ts
    const { GateResultV1Schema } = await import('./dist/validators/v1/gate-result-v1.js');
    const valid = (await import('node:fs/promises'))
      .readFile('tests/fixtures/v1/gate-result.valid.json', 'utf-8')
@@ -591,7 +598,7 @@ The kernel is a library, not a service, so "running" means "tests pass and you c
 ### Common Setup Problems
 
 | Symptom | Cause | Fix |
-|---------|-------|-----|
+| --- | --- | --- |
 | `pnpm install` fails with `ERR_PNPM_UNSUPPORTED_ENGINE` | Node version too old (<20) | Install Node 22 via nvm/fnm/corepack; the `.nvmrc` is the source of truth |
 | `pnpm install` fails with `Cannot find module 'husky'` (chicken-and-egg) | The `prepare` script runs husky before husky is installed in some edge cases | Run `pnpm install --ignore-scripts` first, then `pnpm rebuild husky` |
 | `pnpm run boundaries` fails with `cannot find module 'check-boundaries.ts'` | Older Node (<22.6) doesn't support `--experimental-strip-types` | Upgrade to Node 22 per `.nvmrc`; the script's shebang `#!/usr/bin/env -S node --experimental-strip-types` requires it |
@@ -609,14 +616,14 @@ The kernel is a library, not a service, so "running" means "tests pass and you c
 ### Command Map
 
 | Task | Command | Notes |
-|------|---------|-------|
+| --- | --- | --- |
 | Install deps | `pnpm install --frozen-lockfile` | Frozen lockfile mode is what CI uses; matches dev to CI |
 | Run all checks (the canonical pre-commit gate) | `pnpm run check` | lint + typecheck + test + arch + boundaries (5 steps; cf. `package.json:76`) |
-| Run unit tests | `pnpm run test` | vitest run mode |
-| Run tests in watch mode | `pnpm run test:watch` | vitest in watch |
+| Run unit tests | `pnpm run test` | Vitest run mode |
+| Run tests in watch mode | `pnpm run test:watch` | Vitest in watch |
 | Run tests with coverage | `pnpm run test:coverage` | Enforces the 100% floor via `vitest.config.ts` |
 | Run negative type tests | `pnpm run test:types` | tsd against `test-d/` files; second-opinion against published surface |
-| Lint | `pnpm run lint` | eslint flat config |
+| Lint | `pnpm run lint` | ESLint flat config |
 | Lint and fix | `pnpm run lint:fix` | |
 | Typecheck only | `pnpm run typecheck` | tsc --noEmit |
 | Format | `pnpm run format` | prettier --write . |
@@ -654,7 +661,7 @@ This is a library that publishes to the public npm registry. The "deployment" is
 
 **Execution steps**:
 
-```
+```bash
 # 1. Tag
 git tag -a v0.1.1 -m "Release v0.1.1"
 
@@ -671,7 +678,7 @@ The release workflow then:
 5. `pnpm run harness:verify` (the hash-pin gate).
 6. `pnpm run lint`, `typecheck`, `arch`, `test`, `test:coverage`, `build`, `test:types`.
 7. Verifies dist artifacts emitted (`dist/index.js`, `dist/index.d.ts`, `dist/validators/v1/index.js`, `schemas/v1/gate-result.schema.json`).
-8. `pnpm publish --no-git-checks --provenance --access public` with `NODE_AUTH_TOKEN` from secrets + `id-token: write` for sigstore.
+8. `pnpm publish --no-git-checks --provenance --access public` with `NODE_AUTH_TOKEN` from secrets + `id-token: write` for Sigstore.
 
 **Verification**:
 
@@ -681,7 +688,7 @@ The release workflow then:
 
 **Rollback protocol**:
 
-```
+```bash
 # 1. If the bad version has been live <72h AND no consumers have pinned it,
 #    you MAY unpublish — but treat as last resort:
 npm unpublish @intentsolutions/core@X.Y.Z
@@ -704,7 +711,7 @@ git push origin vX.Y.Z+1
 ### Monitoring & Alerting
 
 | Surface | Status |
-|---|---|
+| --- | --- |
 | Dashboards | Not configured. The npm registry shows download counts, dependent count, last publish time; no Intent-Solutions-owned dashboards. |
 | SLIs / SLOs | Not defined. The library is library-only — there's no service to define availability against. The closest analog is "every consumer who installs a pinned version always gets a green install + a verifiable signature." |
 | On-call rotation | Not established. The single author + Anthropic-cohort backup is the rotation. |
@@ -713,7 +720,7 @@ git push origin vX.Y.Z+1
 ### Incident Response
 
 | Severity | Definition | Response Time | Playbook |
-|----------|------------|---------------|----------|
+| --- | --- | --- | --- |
 | P0 | Published version is malicious (e.g., wrong tarball uploaded, account compromise) | Immediate | Within 72h: `npm unpublish`. After 72h: `npm deprecate` + cut a new fix release. Rotate npm token. Notify consumers via GH release notes + (forthcoming) Discord. |
 | P1 | Published version has a critical correctness bug (e.g., `GateResultV1Schema` rejects valid payloads) | Immediate | Deprecate the bad version. Fix on main. Tag + publish a patch release. Update CHANGELOG with the migration note. |
 | P2 | Sigstore / npm provenance attestation fails for the published tarball | 1 hour | Investigate Actions OIDC token issuance; cut a new patch release that re-runs the provenance flow. Notify consumers verifying via `npm audit signatures`. |
@@ -727,7 +734,7 @@ Ordered by likelihood x impact.
 
 ### 8.1 JSON Schema and Zod validator drift (the twin-source maintenance burden)
 
-- **Symptom**: A schema change lands in `schemas/v1/<entity>.schema.json` but the corresponding `src/validators/v1/<entity>.ts` is missed. The CI test suite catches it via fixture cross-validation, but the failure message is "vitest test failed: parse threw" rather than "schemas and validators are out of sync." Engineer scratches head.
+- **Symptom**: A schema change lands in `schemas/v1/<entity>.schema.json` but the corresponding `src/validators/v1/<entity>.ts` is missed. The CI test suite catches it via fixture cross-validation, but the failure message is "Vitest test failed: parse threw" rather than "schemas and validators are out of sync." Engineer scratches head.
 - **Cause**: The twin sources are hand-authored (Decision #3). Codegen produces only the `_generated/` reference output. There is no single check that says "these two are in sync."
 - **Fix**: When the test fails, read the test name in the failure output — the cross-validation test in `src/__tests__/schemas.test.ts` + `src/validators/v1/validators.test.ts` names the entity. Open both the schema file and the validator file side-by-side and reconcile.
 - **Prevention**: Always edit both files in the same PR. Use the codegen reference (`pnpm run codegen:validators`) as a sanity check on the structural shape before propagating brands + `superRefine` rules to the canonical Zod. Engineer convention only; not enforced.
@@ -751,12 +758,12 @@ Ordered by likelihood x impact.
 - **Symptom**: `pnpm run arch` fails red with a dep-cruiser violation. The 8 rules and their fix paths (cf. `.dependency-cruiser.cjs:19-115`):
 
   | Rule | If it fires it means | Fix |
-  |---|---|---|
+  | --- | --- | --- |
   | `no-circular` | You added an import that creates a cycle between modules | Refactor — circular deps are an error, not a warning |
   | `no-orphans` (warn) | You added a module nothing imports | Either import it from somewhere legitimate or delete |
   | `no-deprecated-core` (warn) | You imported `punycode` / `domain` / etc. | Use a modern alternative or polyfill |
-  | `kernel-no-runtime-deps` | You imported an npm package from somewhere outside `src/validators/` | Move it to `src/validators/` (if it's zod) or to a sibling repo (everything else) |
-  | `validators-only-import-zod` | You imported an npm package other than zod from `src/validators/` | Move the dep elsewhere; the validators subtree is zod-only by design |
+  | `kernel-no-runtime-deps` | You imported an npm package from somewhere outside `src/validators/` | Move it to `src/validators/` (if it's `zod`) or to a sibling repo (everything else) |
+  | `validators-only-import-zod` | You imported an npm package other than `zod` from `src/validators/` | Move the dep elsewhere; the validators subtree is `zod`-only by design |
   | `predicates-no-entities` | You imported from `src/entities/` in `src/predicates/` | Invert the dependency — entities can import predicates (canonical direction); predicates cannot import entities |
   | `no-test-imports-in-src` | You imported a `*.test.ts` file from production source | Tests are not consumer-shipped; move the imported helper to a non-test file |
   | `state-machines-pure` | You imported from `src/entities/` or `src/predicates/` in `src/state-machines/` | state-machines is a leaf layer — invert |
@@ -814,14 +821,14 @@ Ordered by likelihood x impact.
 ### Access Control
 
 | Role | Purpose | Permissions | MFA |
-|------|---------|-------------|-----|
+| --- | --- | --- | --- |
 | `@jeremylongshore` (owner) | Solo maintainer | Admin on GH repo + npm package | Yes (per repo + npm requirements) |
-| GitHub Actions runner | CI + release workflow | Read repo contents, write id-token (OIDC) for sigstore, write packages via `NODE_AUTH_TOKEN` | Workflow scope; secrets gated by branch protection |
+| GitHub Actions runner | CI + release workflow | Read repo contents, write id-token (OIDC) for Sigstore, write packages via `NODE_AUTH_TOKEN` | Workflow scope; secrets gated by branch protection |
 | Codeowner routing | PR review | `@jeremylongshore` per `CODEOWNERS` | n/a |
 
 ### Secrets
 
-- **Where**: `NPM_TOKEN` lives in GitHub Actions repo secrets. The `id-token: write` permission is granted per-workflow (release.yml) and exchanged for a sigstore signing cert via the npm provenance flow. No long-lived signing keys are stored anywhere in the repo or in CI secrets — sigstore-keyless OIDC is the whole point.
+- **Where**: `NPM_TOKEN` lives in GitHub Actions repo secrets. The `id-token: write` permission is granted per-workflow (release.yml) and exchanged for a Sigstore signing cert via the npm provenance flow. No long-lived signing keys are stored anywhere in the repo or in CI secrets — Sigstore-keyless OIDC is the whole point.
 - **Rotation**: The `NPM_TOKEN` is the only long-lived secret; rotate it via npm account UI when needed (e.g., suspected compromise, periodic cycle). Update the GH Actions secret in the same step. No automation.
 - **Emergency access**: If the npm token is compromised, immediate rotation + (within 72h) `npm unpublish` the affected versions if needed, then re-tag and re-publish from a clean rotation. Sigstore provenance from the new token + the same GH OIDC issuer makes the provenance chain re-verifiable end-to-end.
 
@@ -836,13 +843,13 @@ Implemented:
 - 100% test coverage floor + tsd negative type tests catch a wide range of regressions.
 - api-extractor SemVer gate catches surface drift.
 - Hash-pinning makes policy edits visible in diff (`.harness-hash`).
-- `pnpm audit --prod` runs clean (0 prod vulnerabilities at v0.1.0 release; 2 moderate dev-only vulnerabilities — vite + esbuild via vitest transitive — not in the published tarball).
+- `pnpm audit --prod` runs clean (0 prod vulnerabilities at v0.1.0 release; 2 moderate dev-only vulnerabilities — vite + esbuild via Vitest transitive — not in the published tarball).
 - The kernel ships zero runtime deps in the main entry, which means the supply-chain surface for types-only consumers is just this package.
 
 Aspirational / deferred:
 
-- **DSSE signature verification logic** — the kernel types the envelope (`DsseEnvelope`, `DsseSignature`) but provides no verification helper. Verification belongs in a sigstore client package downstream of the kernel. This is by design (Decision #1 — contracts-only) but means consumers must implement DSSE verification themselves if they want to verify a signed bundle, beyond the npm-tarball-level `npm audit signatures` check.
-- **Rekor pre-flight (Security C-2)** — verifying that an attestation's Rekor entry exists before consumers trust the signature is a deferral. Tracked at deferral bead `Security C-2`. Until ratified, consumers should treat sigstore-keyless attestations as best-effort.
+- **DSSE signature verification logic** — the kernel types the envelope (`DsseEnvelope`, `DsseSignature`) but provides no verification helper. Verification belongs in a Sigstore client package downstream of the kernel. This is by design (Decision #1 — contracts-only) but means consumers must implement DSSE verification themselves if they want to verify a signed bundle, beyond the npm-tarball-level `npm audit signatures` check.
+- **Rekor pre-flight (Security C-2)** — verifying that an attestation's Rekor entry exists before consumers trust the signature is a deferral. Tracked at deferral bead `Security C-2`. Until ratified, consumers should treat Sigstore-keyless attestations as best-effort.
 - **`signing_mode` enforcement in DSSE (Security C-3)** — the kernel exposes `SigningMode = 'sigstore_staging' | 'rekor_production' | 'unsigned_experimental'` on `EvidenceBundle` (`src/entities/EvidenceBundle.ts:30`) but does not enforce a consumer-side gate that "you may not trust `unsigned_experimental` rows in production." The enforcement belongs at the consumer-policy layer (per `tests/TESTING.md`). Tracked at `Security C-3`.
 - **CISO-binding DNSSEC + CAA pinning on `evals.intentsolutions.io`** — required before any signed attestation can land in `rekor_production` mode. Currently not in place; the predicate URI host is reserved but not cryptographically pinned to a specific signing identity. Until this lands, `signing_mode='rekor_production'` is not a path consumers should take.
 - **`tenant_id` reservation (Architect W1)** — should the predicate body reserve a `tenant_id` field now (cheap to add) or decline explicitly? Tracked at `bd_000-projects-k0fj`. The "do nothing" default means future multi-tenant deployments may need a Class-1 ISEDC re-convening to add it.
@@ -857,7 +864,7 @@ Aspirational / deferred:
 ### Monthly Costs
 
 | Resource | Cost | Notes |
-|----------|------|-------|
+| --- | --- | --- |
 | npm registry | $0 (public package) | Free for OSS packages |
 | GitHub repo + Actions | $0 (public repo, OSS minutes free tier) | Apache 2.0 OSS qualifies for the free tier |
 | Sigstore / Fulcio / Rekor | $0 (community service) | The keyless flow is a public good |
@@ -868,7 +875,7 @@ Aspirational / deferred:
 This is a library, not a service. "Performance" has three relevant dimensions:
 
 - **Build time**: `pnpm run build` (tsc on ~30 source files) completes in <10s on a modern dev machine. CI build step typically 4-6s.
-- **Test time**: `pnpm run test` (154 vitest tests across 8 files + ~80 tsd assertions + 31 ajv tests + 31 Zod validator tests = ~295 assertions) completes in <5s. CI test step typically 3-5s.
+- **Test time**: `pnpm run test` (154 Vitest tests across 8 files + ~80 tsd assertions + 31 ajv tests + 31 Zod validator tests = ~295 assertions) completes in <5s. CI test step typically 3-5s.
 - **Full CI run time**: the 9-step gate chain completes in ~38s (cf. v0.1.0 AAR's release-CI metric). The boundary-check workflow runs in parallel in <30s.
 - **Consumer install time**: `pnpm add @intentsolutions/core` resolves and links the 159-file, ~280 KB unpacked tarball in <2s on a warm cache.
 - **Consumer parse time** (Zod runtime validation): a single `GateResultV1Schema.parse(payload)` call is microseconds; not a hot path concern. Zod's own benchmarks place it competitive with hand-rolled validators.
@@ -888,7 +895,7 @@ This is a library, not a service. "Performance" has three relevant dimensions:
 
 ### What's Working
 
-- **v0.1.0 published with sigstore provenance.** Verifiable via `npm audit signatures @intentsolutions/core` (cf. v0.1.0 AAR § "Release artifacts"). The release workflow's 38s green run is the canonical evidence.
+- **v0.1.0 published with Sigstore provenance.** Verifiable via `npm audit signatures @intentsolutions/core` (cf. v0.1.0 AAR § "Release artifacts"). The release workflow's 38s green run is the canonical evidence.
 - **9-step CI gate chain green on every PR + main.** harness-verify, lint, typecheck, arch, test, coverage, build, test:types, dist-verify. Cf. `.github/workflows/ci.yml:39-82`.
 - **4-axis boundary check green.** No FORBIDDEN package patterns, no forbidden import paths, no forbidden top-level dirs, no forbidden URL hits. Cf. `.github/workflows/boundary-check.yml` + the FORBIDDEN.md "Compliance audit" footer (1 runtime dep / 8 cap, 0 forbidden hits).
 - **100% line/branch/function/statement coverage** on consumer-facing code (excluding `_generated/`). Enforced in `vitest.config.ts`; verified at every CI run.
@@ -913,7 +920,7 @@ This is a library, not a service. "Performance" has three relevant dimensions:
 ### Implementation Status
 
 | Component | Status | Evidence |
-|-----------|--------|----------|
+| --- | --- | --- |
 | 13 canonical entity TS interfaces | SHIPPED v0.1.0 | `src/entities/{EvalSpec,EvalRun,MatcherMap,...}.ts` |
 | `gate-result/v1` NORMATIVE predicate body | SHIPPED v0.1.0 | `src/predicates/gate-result-v1.ts` |
 | 10 branded primitive types | SHIPPED v0.1.0 | `src/primitives.ts` |
@@ -922,7 +929,7 @@ This is a library, not a service. "Performance" has three relevant dimensions:
 | 15 Zod runtime validators | SHIPPED v0.1.0 | `src/validators/v1/*.ts` |
 | IS Testing SOP install (audit-harness, husky, dep-cruiser hash-pinned) | SHIPPED v0.1.0 | `.husky/pre-commit`, `.harness-hash`, `.dependency-cruiser.cjs` |
 | 9-step CI gate chain | SHIPPED v0.1.0 | `.github/workflows/ci.yml` |
-| Tag-triggered release with sigstore provenance | SHIPPED v0.1.0 | `.github/workflows/release.yml` |
+| Tag-triggered release with Sigstore provenance | SHIPPED v0.1.0 | `.github/workflows/release.yml` |
 | ERD-walk integration test | SHIPPED v0.1.0 | `src/integration.test.ts` |
 | Per-repo blueprint (Blueprint C application, iec-E10) | SHIPPED post-v0.1.0 | `000-docs/002-AT-ARCH-repo-blueprint-2026-05-18.md` |
 | 4-axis boundary enforcement (FORBIDDEN/ALLOWLIST/CODEOWNERS/checker/CI, iec-E11) | SHIPPED post-v0.1.0 | `FORBIDDEN.md`, `ALLOWLIST.md`, `scripts/check-boundaries.ts`, `.github/workflows/boundary-check.yml` |
@@ -977,16 +984,16 @@ Measurable outcomes:
 ### URLs
 
 | Resource | URL |
-|----------|-----|
-| npm package | https://www.npmjs.com/package/@intentsolutions/core |
-| GitHub repo | https://github.com/jeremylongshore/intent-eval-core |
-| Latest release | https://github.com/jeremylongshore/intent-eval-core/releases/tag/v0.1.0 |
-| CI runs | https://github.com/jeremylongshore/intent-eval-core/actions/workflows/ci.yml |
-| Release runs | https://github.com/jeremylongshore/intent-eval-core/actions/workflows/release.yml |
-| Boundary check runs | https://github.com/jeremylongshore/intent-eval-core/actions/workflows/boundary-check.yml |
+| --- | --- |
+| npm package | <https://www.npmjs.com/package/@intentsolutions/core> |
+| GitHub repo | <https://github.com/jeremylongshore/intent-eval-core> |
+| Latest release | <https://github.com/jeremylongshore/intent-eval-core/releases/tag/v0.1.0> |
+| CI runs | <https://github.com/jeremylongshore/intent-eval-core/actions/workflows/ci.yml> |
+| Release runs | <https://github.com/jeremylongshore/intent-eval-core/actions/workflows/release.yml> |
+| Boundary check runs | <https://github.com/jeremylongshore/intent-eval-core/actions/workflows/boundary-check.yml> |
 | Provenance attestation | Embedded in npm tarball; verify with `npm audit signatures @intentsolutions/core` |
-| Predicate URI (gate-result/v1) | https://evals.intentsolutions.io/gate-result/v1 |
-| Schema $id (gate-result/v1) | https://evals.intentsolutions.io/gate-result/v1.schema.json |
+| Predicate URI (gate-result/v1) | <https://evals.intentsolutions.io/gate-result/v1> |
+| Schema $id (gate-result/v1) | <https://evals.intentsolutions.io/gate-result/v1.schema.json> |
 | Plane sub-module | Intent Eval Core - Kernel (LAB project; UUID `5abf1653-c9ba-4029-8c04-76f148eb78f5`) |
 | Umbrella doc (governance) | `~/000-projects/intent-eval-platform/CLAUDE.md` |
 | Phase A foundation (intent-eval-lab) | DR-010, Blueprint A/B/C, Canonical Glossary on `main` |
@@ -1019,7 +1026,7 @@ Measurable outcomes:
 - **CHALLENGE vs REFUSE** — Exit-code distinction in the 4-axis boundary checker. CHALLENGE (exit 1) is overridable via a `boundary-override: bd_<id>` line in the PR description; REFUSE (exit 2) has no override path. The only REFUSE rule today is the `labs.intentsolutions.io` URL pattern.
 - **codegen reference** — Output of `pnpm run codegen:validators` at `src/validators/v1/_generated/`. NOT canonical; used as a structural sanity check before hand-authoring the canonical Zod validator one directory up.
 - **Composition DAG** — Per Blueprint B § 1.3, the directed acyclic graph an `EvalSpec` declares over `EvalRun` and `ToolInvocation` nodes via `feeds` / `gates` / `enriches` edges.
-- **DSSE** — Dead Simple Signing Envelope. The outer wrapper around an in-toto Statement v1, signed via sigstore-keyless OIDC. Defined at `src/predicates/gate-result-v1.ts:249-269`.
+- **DSSE** — Dead Simple Signing Envelope. The outer wrapper around an in-toto Statement v1, signed via Sigstore-keyless OIDC. Defined at `src/predicates/gate-result-v1.ts:249-269`.
 - **Evidence Bundle** — Per Blueprint B § 2.4, the append-only collection of signed predicate rows produced by an EvalRun. APPEND-ONLY; corrections create a new bundle with a new UUIDv7 referencing the prior bundle's `content_hash`.
 - **FORBIDDEN.md** — Machine-readable 4-axis boundary forbidden set at the repo root. Read by `scripts/check-boundaries.ts`. Hash-pinned via `.harness-hash`.
 - **`gate-result/v1`** — The only fully NORMATIVE in-toto predicate body at v1. Defined in Blueprint B § 7.4; implemented in `src/predicates/gate-result-v1.ts`, `schemas/v1/gate-result.schema.json`, `src/validators/v1/gate-result-v1.ts`. Adding/loosening any field requires Class-1 ISEDC convening.

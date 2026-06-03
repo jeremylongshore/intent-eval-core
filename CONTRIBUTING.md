@@ -48,9 +48,11 @@ pnpm exec audit-harness verify  # hash-pinned policy verification
 
 1. Fork the repository
 2. Create a feature branch from `main`:
+
    ```bash
    git checkout -b feat/your-change-name
    ```
+
 3. Make your changes — schemas are the source of truth; never hand-edit generated Zod validators
 4. Run `pnpm run codegen:validators` if you touched any `schemas/v1/*.schema.json` file
 5. Verify locally: `pnpm run check` must pass green
@@ -62,7 +64,7 @@ pnpm exec audit-harness verify  # hash-pinned policy verification
 ### Branch Strategy
 
 | Branch | Purpose |
-|--------|---------|
+| --- | --- |
 | `main` | Production-ready code; npm-publish source on tag push `v*.*.*` |
 | `feat/*` | New features (additive — new entities, new schemas, new validators) |
 | `fix/*` | Bug fixes (no shape changes; just behavior corrections) |
@@ -104,7 +106,7 @@ pnpm vitest run path/to/file.test.ts  # single file
 
 Use [Conventional Commits](https://www.conventionalcommits.org/):
 
-```
+```text
 <type>(<scope>): <subject>
 
 [optional body]
@@ -114,6 +116,7 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 **Types:** `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `ci`, `perf`
 
 **Examples:**
+
 - `feat(gate-result): add advisory_severity conditional refinement`
 - `fix(branded-types): tighten Sha256Prefixed regex to reject mixed case`
 - `docs(readme): clarify consumer-side import patterns`
@@ -146,7 +149,7 @@ When in doubt about whether a change is in scope: this package is the kernel of 
 
 - **Questions**: [GitHub Discussions](https://github.com/jeremylongshore/intent-eval-core/discussions)
 - **Bugs**: [Issue Tracker](https://github.com/jeremylongshore/intent-eval-core/issues)
-- **Email**: jeremy@intentsolutions.io
+- **Email**: <jeremy@intentsolutions.io>
 
 ## License
 

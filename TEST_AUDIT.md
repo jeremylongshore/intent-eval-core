@@ -19,7 +19,7 @@ The repo passes IS Testing SOP at the highest standard appropriate to its type. 
 ## Classification
 
 | Field | Value |
-|---|---|
+| --- | --- |
 | Repo type | `library` |
 | Sub-classification | Pure-type kernel + opt-in runtime validator subpath |
 | Language | TypeScript 5 (strict + every additional strict flag) |
@@ -33,7 +33,7 @@ The repo passes IS Testing SOP at the highest standard appropriate to its type. 
 ## 7-layer taxonomy results
 
 | Layer | Status | Detail |
-|---|---|---|
+| --- | --- | --- |
 | **L0** — Enforcement harness | ✅ INSTALLED | `@intentsolutions/audit-harness@0.1.0` as devDep; `pnpm exec audit-harness verify` + `init` + `arch` + `escape-scan` all wired |
 | **L1** — Git hooks + CI enforcement | ✅ INSTALLED | husky pre-commit (escape-scan + boundaries + lint-staged); GitHub Actions CI (`lint + typecheck + test + build` REQUIRED check) + dedicated boundary-check workflow |
 | **L2** — Static analysis + linting | ✅ INSTALLED | ESLint 9 flat config (typed lint via `projectService`, `no-explicit-any: error`, type-imports enforced); Prettier 3; TypeScript 5 with ALL strict flags including `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`, `noImplicitOverride`, `noPropertyAccessFromIndexSignature` |
@@ -47,7 +47,7 @@ The repo passes IS Testing SOP at the highest standard appropriate to its type. 
 ### Additional test layers shipped (above the canonical 7)
 
 | Layer | Status | Detail |
-|---|---|---|
+| --- | --- | --- |
 | **Schema validation** | ✅ INSTALLED | 31 ajv-based JSON Schema validation tests (draft 2020-12) against 16 positive + 4 negative golden fixtures + 7 cross-cutting Blueprint B invariants codified at the schema layer |
 | **Validator parity** | ✅ INSTALLED | 31 Zod validator tests proving the hand-authored validators agree with ajv schema validators on the same fixtures |
 | **Full ERD-walk integration** | ✅ INSTALLED | `src/integration.test.ts` constructs all 13 entities + gate-result/v1 + DSSE Statement end-to-end; locks every Blueprint B § 6.2 cross-entity invariant |
@@ -58,7 +58,7 @@ The repo passes IS Testing SOP at the highest standard appropriate to its type. 
 ## Test totals
 
 | Metric | Value |
-|---|---|
+| --- | --- |
 | Test files | 8 (vitest) + 3 (tsd test-d) = 11 |
 | Vitest assertions | 154 across 8 files |
 | Tsd negative assertions | ~80 |
@@ -77,7 +77,7 @@ The repo passes IS Testing SOP at the highest standard appropriate to its type. 
 dep-cruiser config at `.dependency-cruiser.cjs`, hash-pinned via `.harness-hash`. Per-rule status on current `main`:
 
 | Rule | Severity | Status |
-|---|---|---|
+| --- | --- | --- |
 | `no-circular` | error | 0 violations |
 | `no-orphans` | warn | 0 |
 | `no-deprecated-core` | warn | 0 |
@@ -90,7 +90,7 @@ dep-cruiser config at `.dependency-cruiser.cjs`, hash-pinned via `.harness-hash`
 Plus the new 4-axis boundary checker (`scripts/check-boundaries.ts`):
 
 | Axis | Status |
-|---|---|
+| --- | --- |
 | A1 Package patterns | 1 runtime dep (zod), well below cap of 8; 0 forbidden-pattern matches |
 | A2 Import paths | 0 forbidden src/ subpaths; all 8 allowed subpaths recognized |
 | A3 Directory names | 0 forbidden top-level dirs; all 21 allowed top-level files recognized |
@@ -106,7 +106,7 @@ Plus the new 4-axis boundary checker (`scripts/check-boundaries.ts`):
 P2 deferrals (intentional, tracked):
 
 | Item | Bead | Why deferred |
-|---|---|---|
+| --- | --- | --- |
 | Pydantic codegen + Python distribution | `iec-E08` | v0.x is JS-first; Python kernel deferred to v0.3+ after Phase B kickoff |
 | Rust crate distribution | (not yet beaded) | Post-Pydantic; surface via Class-2 governance when triggered |
 | Mutation testing | n/a — WAIVED for pure-type library | Mutations on `as const` arrays + type definitions don't add signal |
@@ -118,7 +118,7 @@ P2 deferrals (intentional, tracked):
 P2 architectural deferrals (filed during the v0.1.0 sprint):
 
 | Bead | Title |
-|---|---|
+| --- | --- |
 | `bd_000-projects-gzgj` | iec-deferral-A: AssertionExpression typed-class enum (Class-2 ISEDC) |
 | `bd_000-projects-k0fj` | iec-deferral-G: tenant_id reservation (Architect W1) |
 | `bd_000-projects-21re` | iec-deferral-C: ScoringConfig fields beyond aggregation_rule |
@@ -132,7 +132,7 @@ P2 architectural deferrals (filed during the v0.1.0 sprint):
 ## RTM / Personas / Journeys
 
 | Artifact | Source of truth | State |
-|---|---|---|
+| --- | --- | --- |
 | `tests/RTM.md` | 24 REQ-IEC-NNN requirements derived from DR-010 + Blueprints A/B/C + Glossary + IS Testing SOP + standards-body discipline | All MUSTs covered; all SHOULDs covered; COULDs tracked as deferral beads (above) |
 | `tests/PERSONAS.md` | 4 downstream-consumer personas (audit-harness, j-rig, intent-rollout-gate, methodology authors) | 100% key-flow coverage on the 3 runtime-consumer personas; methodology-author persona is non-runtime |
 | `tests/JOURNEYS.md` | 3 type-level journeys (full ERD walk, NEW MM-class lifecycle, gate-result/v1 consumer parse) | All kernel-owned steps tested; runtime-owned steps marked as downstream concerns |
@@ -193,6 +193,6 @@ Future ratchet-ups (P2, tracked as `iec-E07/E08`):
 ## Audit history
 
 | Run date | Auditor | Branch | Verdict |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 2026-05-16 | Inline during iec-E02e | feat branch | Initial install + scaffolds; 0 P0/P1 gaps post-install |
 | 2026-05-19 | Formal `/audit-tests` (this report) | main @ 7441221 | Grade A; 0 gaps; ratify-and-close |

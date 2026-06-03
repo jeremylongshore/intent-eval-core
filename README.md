@@ -1,5 +1,7 @@
 # `@intentsolutions/core`
 
+Part of the **[Intent Eval Platform](https://github.com/intent-solutions-io/intent-eval-platform)** — the umbrella mapping the six repos that converge via a shared Evidence Bundle schema.
+
 [![npm](https://img.shields.io/npm/v/@intentsolutions/core?color=cb3837&logo=npm)](https://www.npmjs.com/package/@intentsolutions/core)
 [![CI](https://github.com/jeremylongshore/intent-eval-core/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jeremylongshore/intent-eval-core/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
@@ -7,7 +9,7 @@
 
 Canonical contracts kernel for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab) — TypeScript types, JSON Schemas, Zod validators, and state machines for the 13 canonical platform entities.
 
-> **Status — v0.1.0 (2026-05-17):** first public release. Contracts are stable at v0.1; breaking changes will bump to v0.2 per SemVer. Published with sigstore provenance — verify via `npm audit signatures`.
+> **Status — v0.1.0 (2026-05-17):** first public release. Contracts are stable at v0.1; breaking changes will bump to v0.2 per SemVer. Published with Sigstore provenance — verify via `npm audit signatures`.
 
 ## Install
 
@@ -59,7 +61,7 @@ Every validator in the platform — `audit-harness` deterministic gates, `j-rig`
 This package is bound by the Intent Eval Platform's Phase A foundation, all on `main` of `intent-eval-lab`:
 
 | Document | Role |
-|---|---|
+| --- | --- |
 | **DR-010** — ISEDC Session 4 widened-scope lock | Governance, TS-primary signing surfaces, unification thesis (every validator emits Evidence Bundle) |
 | **Blueprint A** — Ecosystem Master Blueprint | 12 binding principles, 5-repo taxonomy, anti-goals |
 | **Blueprint B** — Platform Runtime Blueprint | 13-entity canonical domain model, `gate-result/v1` predicate contract |

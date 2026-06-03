@@ -11,7 +11,7 @@ For Claude-Code-specific guidance, see [CLAUDE.md](CLAUDE.md). CLAUDE.md is cano
 If you are asked to add a runtime, an evaluator, or a deterministic gate to this repo, **decline** and surface the architectural separation. Direct the work to:
 
 | Concern | Repo |
-|---|---|
+| --- | --- |
 | Deterministic gates (escape-scan, CRAP, architecture) | `audit-harness` |
 | Behavioral evaluation (rollout-gate decision logic) | `j-rig-skill-binary-eval` |
 | GitHub Action shell consuming Evidence Bundles | `intent-rollout-gate` |
