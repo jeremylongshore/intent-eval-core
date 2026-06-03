@@ -6,24 +6,24 @@ authors:
 status: AAR (informational)
 binding_authority: iec-E12
 related_drs:
-  - intent-eval-lab/000-docs/010-AT-DECR-isedc-council-session-4-widened-scope-2026-05-13.md (DR-010)
+  - "`intent-eval-lab/000-docs/010-AT-DECR-isedc-council-session-4-widened-scope-2026-05-13.md` (DR-010)"
 filing_standard: Document Filing Standard v4.3
 ---
 
-# AAR — Testing SOP + CI/CD + Multi-Target Release Pipeline (iec-E12)
+## AAR — Testing SOP + CI/CD + Multi-Target Release Pipeline (iec-E12)
 
 ## Executive summary
 
-iec-E12 is largely a **ratify-and-close** epic. Its 7 sub-bead deliverables substantially landed during three prior epics (`iec-E02e` Testing SOP install; `iec-E09` NPM publishing; `iec-E11` boundary enforcement). This AAR ratifies what shipped, formalizes the audit artifact, and ties off the final task (boundary-check as required status check).
+iec-E12 is largely a **ratify-and-close** epic. Its 7 sub-bead deliverables substantially landed during three prior epics (`iec-E02e` Testing SOP install; `iec-E09` npm publishing; `iec-E11` boundary enforcement). This AAR ratifies what shipped, formalizes the audit artifact, and ties off the final task (boundary-check as required status check).
 
 | Sub-bead | Acceptance criterion | Where it landed |
-|---|---|---|
+| --- | --- | --- |
 | **E12a** `/repo-dress --fill-gaps` pass | Repo is fully dressed; all 21 governance files present | Confirmed in § Governance file inventory below |
 | **E12b** Install audit-harness + commit TESTING.md + .harness-hash | `@intentsolutions/audit-harness@0.1.0` devDep; tests/TESTING.md; .harness-hash pinning .dependency-cruiser.cjs | iec-E02e (commit `7f928d4`, refined in `3dd9c03`) |
 | **E12c** Run `/audit-tests` → TEST_AUDIT.md | Audit ran; report committed | Inline audit happened during iec-E02e; formal TEST_AUDIT.md committed in this PR |
 | **E12d** Run `/implement-tests` → stage gap-fill | All identified gaps closed; CI gate chain green | iec-E02e (commit `7f928d4`) |
-| **E12e** Release pipeline: tag → npm publish + sigstore sign | `.github/workflows/release.yml` with `pnpm publish --provenance`; sigstore provenance verified on npm | iec-E09 (commit `c9b9f75`, release run `26002217507`) |
-| **E12f** sigstore signing config (cosign keyless via GH OIDC) | OIDC-based sigstore signing in place | iec-E09 — npm provenance IS the canonical sigstore-keyless OIDC flow for npm packages; explanation in § Sigstore signing posture below |
+| **E12e** Release pipeline: tag → npm publish + Sigstore sign | `.github/workflows/release.yml` with `pnpm publish --provenance`; Sigstore provenance verified on npm | iec-E09 (commit `c9b9f75`, release run `26002217507`) |
+| **E12f** Sigstore signing config (Cosign keyless via GH OIDC) | OIDC-based Sigstore signing in place | iec-E09 — npm provenance IS the canonical Sigstore-keyless OIDC flow for npm packages; explanation in § Sigstore signing posture below |
 | **E12g** Branch protection: required checks after 3 green days | Boundary-check added to required status checks | This PR — first action after the 3rd green day on `boundary-check.yml` |
 
 ## Governance file inventory (E12a confirmation)
@@ -33,7 +33,7 @@ The repo at commit `7441221` has **22 governance + policy + spec artifacts**. In
 ### Repo-root governance (12 files)
 
 | File | Purpose |
-|---|---|
+| --- | --- |
 | `LICENSE` | Apache 2.0 |
 | `README.md` | Package overview, install, import surface |
 | `CHANGELOG.md` | Keep a Changelog format; v0.1.0 + Unreleased sections |
@@ -50,14 +50,14 @@ The repo at commit `7441221` has **22 governance + policy + spec artifacts**. In
 ### Per-repo NORMATIVE docs (2 files)
 
 | File | Purpose |
-|---|---|
+| --- | --- |
 | `000-docs/002-AT-ARCH-repo-blueprint-2026-05-18.md` | NORMATIVE per-repo blueprint applying Blueprint C |
 | `000-docs/003-AT-STND-core-repo-boundaries-2026-05-18.md` | NORMATIVE boundary doctrine |
 
 ### Per-repo informational docs (3 files)
 
 | File | Purpose |
-|---|---|
+| --- | --- |
 | `000-docs/000-INDEX.md` | Index |
 | `000-docs/001-AA-AACR-release-v0.1.0-2026-05-17.md` | v0.1.0 release AAR |
 | `000-docs/004-AT-AAR-testing-cicd-bootstrap-2026-05-19.md` | This file |
@@ -65,7 +65,7 @@ The repo at commit `7441221` has **22 governance + policy + spec artifacts**. In
 ### Engineering policy + traceability (5 files)
 
 | File | Purpose |
-|---|---|
+| --- | --- |
 | `tests/TESTING.md` | Engineer-owned testing policy (hash-pinned via harness) |
 | `tests/RTM.md` | Requirements traceability matrix (24 REQ-IEC-NNN) |
 | `tests/PERSONAS.md` | 4 downstream-consumer personas |
@@ -82,24 +82,24 @@ See `TEST_AUDIT.md` at repo root for the formal audit grade (**A — 0 P0 / 0 P1
 
 ## Sigstore signing posture (E12f explanation)
 
-The bead title says "sigstore signing config (cosign keyless via GH OIDC)." The literal interpretation — invoking `cosign` directly — is unnecessary for this kernel. The canonical sigstore-keyless flow for npm-published packages **IS** `pnpm publish --provenance` / `npm publish --provenance` (added to npm in Sept 2023). Under the hood that flow:
+The bead title says "Sigstore signing config (Cosign keyless via GH OIDC)." The literal interpretation — invoking `cosign` directly — is unnecessary for this kernel. The canonical Sigstore-keyless flow for npm-published packages **IS** `pnpm publish --provenance` / `npm publish --provenance` (added to npm in Sept 2023). Under the hood that flow:
 
-1. Uses the GitHub Actions OIDC token to authenticate to Fulcio (sigstore CA)
+1. Uses the GitHub Actions OIDC token to authenticate to Fulcio (Sigstore CA)
 2. Fulcio issues a short-lived signing certificate keyed to the GH workflow identity
 3. The package tarball is signed with that certificate
-4. The signature + certificate are logged to Rekor (the sigstore transparency log)
+4. The signature + certificate are logged to Rekor (the Sigstore transparency log)
 5. The signed bundle is attached to the npm package as a provenance attestation
 6. Consumers verify via `npm audit signatures <pkg>` which checks Fulcio + Rekor
 
-This **is** cosign-keyless-via-OIDC. The kernel publishes via npm; npm publishes via sigstore-keyless. End-to-end, the flow satisfies the bead.
+This **is** Cosign-keyless-via-OIDC. The kernel publishes via npm; npm publishes via Sigstore-keyless. End-to-end, the flow satisfies the bead.
 
 Adding a separate `cosign sign-blob` step would only matter if the kernel published artifacts OUTSIDE npm. Currently:
 
-- npm tarball: ✅ signed via npm provenance (sigstore-keyless via GH OIDC)
+- npm tarball: ✅ signed via npm provenance (Sigstore-keyless via GH OIDC)
 - GitHub Release page: human-readable narrative; not a verifiable distribution channel
 - No Python wheel, no Rust crate, no standalone binary at v0.1
 
-When iec-E08 (Pydantic + Python wheel via PyPI) ships, PyPI's analogous provenance flow will cover the Python artifact. Until then, no additional cosign-keyless step is needed.
+When iec-E08 (Pydantic + Python wheel via PyPI) ships, PyPI's analogous provenance flow will cover the Python artifact. Until then, no additional Cosign-keyless step is needed.
 
 **Verification path consumers use today**:
 
@@ -117,7 +117,7 @@ The bead title mentions "multi-target." At v0.1 the kernel targets **npm only**.
 After this PR merges, branch protection on `main` adds `Boundary check / 4-axis boundary check` to the required status checks. Status check matrix post-merge:
 
 | Check name | Source workflow | Required |
-|---|---|---|
+| --- | --- | --- |
 | `lint + typecheck + test + build` | `ci.yml` | ✅ |
 | `4-axis boundary check` | `boundary-check.yml` | ✅ (added this PR) |
 
@@ -126,7 +126,7 @@ This was the original bead's deferral: "minimum now; required checks after 3 gre
 ## Quality posture at AAR time
 
 | Gate | Status |
-|---|---|
+| --- | --- |
 | `pnpm run check` | ✓ green (lint + typecheck + test + arch + boundaries) |
 | `pnpm run test:coverage` | ✓ 100% line/branch/function/statement |
 | `pnpm run test:types` (tsd) | ✓ ~80 negative-test assertions pass |
@@ -134,7 +134,7 @@ This was the original bead's deferral: "minimum now; required checks after 3 gre
 | `pnpm run boundaries` (4-axis checker) | ✓ 0 violations |
 | `pnpm run harness:verify` | ✓ hash-pinned policy intact |
 | npm provenance verified | ✓ `npm audit signatures @intentsolutions/core@0.1.0` shows 1 sig |
-| Test totals | 154 vitest + ~80 tsd + 31 ajv + 31 Zod ≈ 295 assertions |
+| Test totals | 154 Vitest + ~80 tsd + 31 ajv + 31 Zod ≈ 295 assertions |
 | Branch protection on main | ✓ `enforce_admins=true`; 2 required status checks after this PR |
 
 ## Cross-references

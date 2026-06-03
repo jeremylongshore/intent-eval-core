@@ -12,7 +12,7 @@ Adding any of these as a runtime dependency (`package.json#dependencies`) is for
 
 ### Web frameworks (kernel is not a service)
 
-```
+```text
 express
 fastify
 koa
@@ -31,7 +31,7 @@ astro
 
 ### HTTP clients (kernel makes no network calls)
 
-```
+```text
 axios
 got
 node-fetch
@@ -41,7 +41,7 @@ superagent
 
 ### Database drivers + ORMs (kernel persists nothing)
 
-```
+```text
 pg
 mysql
 mysql2
@@ -62,7 +62,7 @@ drizzle-orm
 
 ### Job queues + schedulers (kernel runs nothing)
 
-```
+```text
 bullmq
 bull
 agenda
@@ -77,7 +77,7 @@ agendash
 
 ### LLM provider adapters (kernel invokes nothing)
 
-```
+```text
 openai
 @openai/*
 @anthropic-ai/*
@@ -102,7 +102,7 @@ ai
 
 ### Optimization / RL / agent frameworks (kernel is not a runtime)
 
-```
+```text
 @dspy/*
 dspy
 @openai-agents/*
@@ -114,7 +114,7 @@ autogpt
 
 ### Real-time / streaming (kernel is synchronous over plain data)
 
-```
+```text
 socket.io
 @socket.io/*
 ws
@@ -125,7 +125,7 @@ graphql-subscriptions
 
 ### Observability runtime (kernel emits nothing; defines OTel SHAPES only)
 
-```
+```text
 @opentelemetry/sdk-node
 @opentelemetry/instrumentation
 @opentelemetry/auto-instrumentations-node
@@ -140,7 +140,7 @@ prom-client
 
 ### Storage SDKs (kernel persists nothing)
 
-```
+```text
 @aws-sdk/client-s3
 @aws-sdk/client-dynamodb
 aws-sdk
@@ -154,7 +154,7 @@ ipfs-http-client
 
 ### Auth + session (kernel has no users + no sessions)
 
-```
+```text
 passport
 @passport/*
 express-session
@@ -169,7 +169,7 @@ better-auth
 
 ### General process management (kernel is library-only)
 
-```
+```text
 pm2
 nodemon
 forever
@@ -181,7 +181,7 @@ ts-node-dev
 
 Adding any of these source-tree paths is forbidden (regardless of what's imported into them).
 
-```
+```text
 src/runtime/
 src/runtimes/
 src/orchestration/
@@ -228,7 +228,8 @@ src/commands/
 ```
 
 **Allowed `src/` subpaths** (whitelist — kernel-only):
-```
+
+```text
 src/
 src/entities/
 src/predicates/
@@ -255,7 +256,7 @@ Any path outside the allowed list triggers a BLOCK. Adding a new allowed-path re
 
 Adding any of these directories at repo root is forbidden.
 
-```
+```text
 services/
 orchestrator/
 orchestrators/
@@ -292,7 +293,7 @@ docker/
 
 **Allowed top-level directories** (whitelist — repo is library-only):
 
-```
+```text
 .beads/         (gitignored — task tracking)
 .github/        (CI workflows)
 .harness-hash   (file — hash-pinned policy manifest)
@@ -318,7 +319,7 @@ Files at the repo root are also bounded; see `ALLOWLIST.md § Top-level files al
 
 Forbidden keywords (any match BLOCKS):
 
-```
+```text
 agent
 agents
 ai-agent
@@ -390,7 +391,7 @@ A package may declare multiple keywords; if **any** keyword matches the forbidde
 
 These URL patterns MUST NOT appear as live URLs in any source file, schema, fixture, or test as the host of a predicate URI:
 
-```
+```text
 labs.intentsolutions.io
 ```
 

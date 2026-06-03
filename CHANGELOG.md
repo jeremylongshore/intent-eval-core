@@ -130,7 +130,7 @@ First public release. The canonical contracts kernel for the [Intent Eval Platfo
 Three sibling platform repos will migrate to this package:
 
 | Repo | What to import | Migration shape |
-|---|---|---|
+| --- | --- | --- |
 | `audit-harness` | `@intentsolutions/core` types for entities the harness emits predicate rows about; `@intentsolutions/core/validators/v1/gate-result-v1` for runtime parsing | Replace any local `gate-result/v1`-shaped types; brand existing identifier strings via the Zod parsers; emit signed rows whose predicate body satisfies `GateResultV1Schema` |
 | `j-rig-skill-binary-eval` | `@intentsolutions/core` for `JudgeDecision`, `EvalRun`, `SessionTrace`, `ToolInvocation`; `@intentsolutions/core/validators/v1` for runtime parsing | Move existing entity types into this package; map judge verdicts (UPPERCASE `JudgeVerdict`) through the `@j-rig/rollout-gate` translator to RolloutGate decisions (lowercase `RolloutGateDecision`) |
 | `intent-rollout-gate` | `@intentsolutions/core/validators/v1/gate-result-v1` for parsing DSSE-wrapped predicate bodies | Replace local schema definitions with the canonical `GateResultV1Schema`; verify DSSE signatures externally (out of kernel scope); apply consumer-side policy from `tests/TESTING.md` per § 7.6 architectural separation |
