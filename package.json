@@ -89,7 +89,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
-    "@intentsolutions/audit-harness": "^0.1.0",
+    "@intentsolutions/audit-harness": "^1.1.5",
     "@microsoft/api-extractor": "^7.58.7",
     "@microsoft/api-extractor-model": "^7.33.8",
     "@types/node": "^22.10.0",
