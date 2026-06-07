@@ -24,7 +24,7 @@ The dashboard ingest (`src/ingest/`) fetches `report-manifest.json`, then per ro
 
 - **Manifest shape** = `{repo, signing:{issuer,subject,workflowRef}, rows:[{bundle, sigstoreBundle, sourceSha, gateResults}]}`. Verified locally against the dashboard's real `isReportManifestShape` (returns true) and `validateEvidenceBundle` (returns OK).
 - **Canonical bytes.** `emit-evidence.ts` writes each `bundle-<i>.json` as `stableStringify(bundle)` (sorted keys, no whitespace) — byte-identical to the dashboard's `canonicalJsonBytes`. `cosign sign-blob` signs those exact bytes, so the dashboard's re-canonicalisation round-trips and the DSSE check passes.
-- **Signing identity.** Keyless cosign in `release.yml` ⇒ Fulcio SAN `https://github.com/jeremylongshore/intent-eval-core/.github/workflows/release.yml@refs/tags/vX.Y.Z`, matching the dashboard's pinned `iec` entry (`release.yml@refs/tags/*`, `operatorConfirmed: true`). No pinned-subjects change needed.
+- **Signing identity.** Cosign keyless signing in `release.yml` ⇒ Fulcio SAN `https://github.com/jeremylongshore/intent-eval-core/.github/workflows/release.yml@refs/tags/vX.Y.Z`, matching the dashboard's pinned `iec` entry (`release.yml@refs/tags/*`, `operatorConfirmed: true`). No pinned-subjects change needed.
 
 ## 4. Two contract decisions (the non-obvious bits)
 
@@ -34,11 +34,11 @@ The dashboard ingest (`src/ingest/`) fetches `report-manifest.json`, then per ro
 ## 5. What is verified where
 
 - **Locally (this PR):** `--self-check` (kernel-valid + canonical-stable builders), a real run over the repo's actual gates (architecture + coverage, both `pass`), and cross-repo validation against the dashboard's real `validateEvidenceBundle` + `isReportManifestShape`. `pnpm run check` green (lint + typecheck + 195 tests + arch + boundaries).
-- **First tag run only (nr75.8 milestone):** the live cosign keyless signature + Rekor entry + Release-asset publish + the dashboard's end-to-end fetch→verify→ingest. These need real CI OIDC and cannot be exercised locally.
+- **First tag run only (nr75.8 milestone):** the live Cosign keyless signature + Rekor entry + Release-asset publish + the dashboard's end-to-end fetch→verify→ingest. These need real CI OIDC and cannot be exercised locally.
 
 ## 6. Gates emitted (first cut)
 
-`architecture` (audit-harness `arch`) and `coverage` (vitest json-summary vs the configured floor). Both map to authored explainers on the dashboard's testing surface. More gates (mutation, CRAP, escape-scan) are additive — append outcomes in `collectOutcomes()`.
+`architecture` (audit-harness `arch`) and `coverage` (Vitest json-summary vs the configured floor). Both map to authored explainers on the dashboard's testing surface. More gates (mutation, CRAP, escape-scan) are additive — append outcomes in `collectOutcomes()`.
 
 ## 7. Operator wiring (dashboard side, follow-up)
 
