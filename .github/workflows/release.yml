@@ -62,6 +62,11 @@ jobs:
       - name: Harness verify (hash-pinned policy artifacts)
         run: pnpm run harness:verify
 
+      # Build BEFORE lint/typecheck so the CI emit helpers' kernel self-reference
+      # imports resolve to typed dist (see ci.yml for the rationale).
+      - name: Build
+        run: pnpm run build
+
       - name: Lint
         run: pnpm run lint
 
@@ -76,9 +81,6 @@ jobs:
 
       - name: Coverage (100% floor)
         run: pnpm run test:coverage
-
-      - name: Build
-        run: pnpm run build
 
       - name: Type tests (tsd)
         run: pnpm run test:types
@@ -95,3 +97,89 @@ jobs:
         run: pnpm publish --no-git-checks --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # ── Emit this repo's own testing evidence for the dashboard (bead nr75.4) ──
+  #
+  # Runs the deterministic gates → kernel gate-result/v1 rows → kernel
+  # EvidenceBundles (scripts/emit-evidence.ts, fail-closed against the kernel
+  # schemas), keyless-signs each bundle's CANONICAL bytes with cosign (Fulcio
+  # OIDC + Rekor), assembles report-manifest.json (scripts/assemble-manifest.ts),
+  # and publishes it as a Release asset. The dashboard's HttpManifestFetcher is
+  # pointed at:
+  #   https://github.com/jeremylongshore/intent-eval-core/releases/latest/download/report-manifest.json
+  # and re-verifies OIDC subject + Rekor inclusion + DSSE + kernel schema at
+  # ingest (it never trusts this manifest at render time).
+  #
+  # The signing identity is this workflow's reusable-workflow ref
+  # (release.yml@refs/tags/vX.Y.Z), which matches the dashboard's pinned
+  # allowlist entry for `iec` (operatorConfirmed: true).
+  emit-evidence:
+    name: Emit signed gate-result evidence for the dashboard
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # upload the manifest as a Release asset
+      id-token: write # cosign keyless (Fulcio OIDC)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (kernel validators must be in dist for the emit self-reference)
+        run: pnpm run build
+
+      - name: Emit-evidence self-check (kernel-valid + canonical-stable)
+        run: node --experimental-strip-types scripts/emit-evidence.ts --self-check
+
+      - name: Emit gate-result/v1 EvidenceBundles
+        run: node --experimental-strip-types scripts/emit-evidence.ts --out build/evidence --ref "${GITHUB_REF}"
+
+      - name: Sign each EvidenceBundle (cosign keyless → Rekor)
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          signed=0
+          for bundle in build/evidence/bundle-*.json; do
+            # skip any already-produced *.sigstore.json
+            case "$bundle" in *.sigstore.json) continue;; esac
+            sig="${bundle%.json}.sigstore.json"
+            echo "::group::cosign sign-blob $bundle"
+            cosign sign-blob --yes --bundle "$sig" "$bundle"
+            echo "::endgroup::"
+            signed=$((signed + 1))
+          done
+          if [ "$signed" -eq 0 ]; then
+            echo "::error::no EvidenceBundles were produced to sign"
+            exit 1
+          fi
+          echo "✓ signed $signed bundle(s)"
+
+      - name: Assemble report-manifest.json (fail-closed on shape mismatch)
+        run: node --experimental-strip-types scripts/assemble-manifest.ts --dir build/evidence --out build/evidence/report-manifest.json
+
+      - name: Publish report-manifest.json as a Release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF#refs/tags/}"
+          gh release upload "$tag" build/evidence/report-manifest.json --clobber
+          echo "✓ uploaded report-manifest.json to release $tag"

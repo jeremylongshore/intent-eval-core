@@ -40,6 +40,14 @@ jobs:
       - name: Harness verify (hash-pinned policy artifacts)
         run: pnpm run harness:verify
 
+      # Build BEFORE lint/typecheck: the CI emit helpers (scripts/emit-evidence.ts,
+      # scripts/assemble-manifest.ts) import the kernel validators via the package
+      # self-reference (@intentsolutions/core/...), which only resolves to typed
+      # dist after a build. Without this, type-aware lint reports no-unsafe-call on
+      # the schema .parse() calls and typecheck cannot find the module.
+      - name: Build
+        run: pnpm run build
+
       - name: Lint
         run: pnpm run lint
 
@@ -63,9 +71,6 @@ jobs:
           flags: typescript
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Build
-        run: pnpm run build
 
       - name: Type tests (tsd — second-opinion against published surface)
         run: pnpm run test:types

@@ -128,3 +128,12 @@ appaudit
 nullable
 (?i)uri
 pre_registration_hash
+dogfood
+dogfooding
+dogfoods
+explainer
+explainers
+canonicalisation
+canonicalise
+canonicalises
+fail2ban
