@@ -15,6 +15,7 @@ export * from './eval-spec.js';
 export * from './eval-run.js';
 export * from './matcher-map.js';
 export * from './evidence-bundle.js';
+export * from './evidence-statement.js';
 export * from './judge-decision.js';
 export * from './runtime-receipt.js';
 export * from './regression-pack.js';

@@ -9,15 +9,32 @@ versioning follows [SemVer 2.0.0](https://semver.org/).
 
 ### Pending
 
-- `iec-E12` reconciliation — `EvidenceBundlePayload` shape + cross-field invariants (CISO-co-authored per `iec-E12a`); blocks on `iec-E12b` audit-harness second-emitter sketch. **The v0.2.0 npm publish + git tag are HELD until this lands** so the additive surface below and the iec-E12 cross-field invariants release together as one coordinated v0.2.0.
 - Evidence Bundle predicate compatibility policy (forward/backward/mixing/deprecation rules) MUST land before first prod-Rekor anchor — bd `bd_000-projects-uprg` (P0)
-- OTel semantic conventions pinned in `schemas/v1/otel-attributes.yaml` BEFORE v0.2.0 ships to prevent attribute drift across consumer emitters — bd `bd_000-projects-9pi3` (P0)
+- OTel semantic conventions pinned in `schemas/v1/otel-attributes.yaml` to prevent attribute drift across consumer emitters — bd `bd_000-projects-9pi3` (P0)
 
-## [0.2.0] — UNRELEASED (additive surface landed; publish held pending iec-E12)
+## [0.3.0] - 2026-06-07
 
-Purely **additive** schema-evolution release (amber-lighthouse Epic 2.1 / bead `ied-schema-evolution`). No v0.1 contract is changed, renamed, or removed — every v0.1.0 / v0.1.1 EvidenceBundle and gate-result/v1 row remains valid against v0.2.0. SemVer MINOR.
+`iec-E12` (ISEDC Session 5 Q2 / DR-018). Purely **additive** — no v0.1/v0.2 contract changes; every prior EvidenceBundle + gate-result/v1 row stays valid. SemVer MINOR. The v0.2.0 line shipped the EvidenceBundle field surface (`pre_registration_hash`); this release lands the deferred `EvidenceBundlePayload` wire format + the cross-field invariants.
 
-**Release coordination:** the version bump + this changelog entry land in the schema-evolution PR, but the npm publish and the `v0.2.0` git tag are HELD until `iec-E12` (which adds `EvidenceBundlePayload` cross-field invariants to the same v0.2.0 line) reconciles, so both bodies of work ship as one coordinated v0.2.0.
+### Added
+
+- **`EvidenceStatement`** (entity type + `EvidenceStatementSchema` Zod validator) — the in-toto Statement v1 row shape carrying a `gate-result/v1` predicate, folded from j-rig. Pins `_type` to `https://in-toto.io/Statement/v1` and `predicateType` to the canonical `gate-result/v1` URI.
+- **Cross-field invariants** (Blueprint B § 7.3 line 792, enumerated for `iec-E12a`) enforced as Zod refinements on `EvidenceStatementSchema`: **I1** `subject[0].name === predicate.gate_id`; **I2** `subject[0].digest.sha256 === predicate.input_hash` (compared without the `sha256:` prefix). These bind the in-toto subject to the predicate body so a row cannot claim a subject it did not evaluate. (Invariants are inherently cross-field and live in the Zod validator — they are not expressible in JSON Schema.)
+- **`EvidenceBundlePayload`** (entity type + `EvidenceBundlePayloadSchema` Zod validator) — the JSON-array wire format an `EvidenceBundle`'s `storage_key` content-addresses: an ordered array of `EvidenceStatement` rows.
+- **`extensions?: Record<string, unknown>`** escape hatch on `EvidenceStatement` for experimental, non-normative fields — kept OUT of the closed-world `gate-result/v1` predicate body. Consumers MUST NOT use it for ship/no-ship decisions.
+- **`IN_TOTO_STATEMENT_V1_TYPE`** constant exported from `@intentsolutions/core/validators/v1`.
+
+### Changed
+
+- `api/intentsolutions-core.api.md` regenerated for the additive `.`-surface exports (`EvidenceStatement`, `EvidenceBundlePayload`).
+
+### Breaking changes
+
+- None. New exports only; the normative `gate-result/v1` body is untouched.
+
+## [0.2.0] - 2026-06-04
+
+Purely **additive** schema-evolution release (amber-lighthouse Epic 2.1 / bead `ied-schema-evolution`). No v0.1 contract is changed, renamed, or removed — every v0.1.0 / v0.1.1 EvidenceBundle and gate-result/v1 row remains valid against v0.2.0. SemVer MINOR. Published to npm with sigstore provenance via tag `v0.2.0`.
 
 ### Added — public surface
 
