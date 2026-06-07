@@ -25,6 +25,7 @@ Naming: `NNN-CC-ABCD-description-YYYY-MM-DD.md` where:
 | 004 | [Testing SOP + CI/CD bootstrap AAR](004-AT-AAR-testing-cicd-bootstrap-2026-05-19.md) | 2026-05-19 | AT-AAR | informational (iec-E12 ratify-and-close) |
 | 005 | [appaudit DevOps playbook](005-AA-AUDT-appaudit-devops-playbook.md) | 2026-05-20 | AA-AUDT | informational |
 | 006 | [v0.2.0 additive schema evolution AAR](006-AA-AACR-v0.2.0-additive-schema-evolution-2026-06-03.md) | 2026-06-03 | AA-AACR | additive surface landed; publish held pending iec-E12 |
+| 007 | [Emit signed gate-result evidence for the dashboard](007-DR-RFC-emit-evidence-dashboard-ingest-2026-06-07.md) | 2026-06-07 | DR-RFC | accepted (nr75.4; emit engine + release.yml job) |
 
 ## Cross-repo authority chain
 
