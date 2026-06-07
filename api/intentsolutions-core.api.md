@@ -233,10 +233,18 @@ export interface EvidenceBundle {
 }
 
 // @public
+export type EvidenceBundlePayload = readonly EvidenceStatement[];
+
+// @public
 export type EvidenceBundleState = 'building' | 'signing' | 'signed' | 'archived_to_rekor';
 
 // @public
 export const evidenceBundleTransitions: TransitionMap<EvidenceBundleState>;
+
+// @public
+export interface EvidenceStatement extends GateResultV1Statement {
+    readonly extensions?: Readonly<Record<string, unknown>>;
+}
 
 // @public
 export interface FailureTaxonomy {
