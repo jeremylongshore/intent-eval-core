@@ -162,7 +162,12 @@ jobs:
             case "$bundle" in *.sigstore.json) continue;; esac
             sig="${bundle%.json}.sigstore.json"
             echo "::group::cosign sign-blob $bundle"
-            cosign sign-blob --yes --bundle "$sig" "$bundle"
+            # --new-bundle-format emits the sigstore protobuf Bundle
+            # (mediaType + verificationMaterial + messageSignature) that the
+            # dashboard's sigstore-js verify() consumes. WITHOUT it, cosign
+            # writes the legacy {base64Signature, cert, rekorBundle} shape, which
+            # sigstore.verify() cannot parse.
+            cosign sign-blob --yes --new-bundle-format --bundle "$sig" "$bundle"
             echo "::endgroup::"
             signed=$((signed + 1))
           done
@@ -181,5 +186,13 @@ jobs:
         run: |
           set -euo pipefail
           tag="${GITHUB_REF#refs/tags/}"
-          gh release upload "$tag" build/evidence/report-manifest.json --clobber
-          echo "✓ uploaded report-manifest.json to release $tag"
+          # release.yml publishes to npm but does not itself create a GitHub
+          # Release object, so create-or-upload (idempotent): create the Release
+          # with the asset if absent, else upload/clobber onto the existing one.
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" build/evidence/report-manifest.json --clobber
+          else
+            gh release create "$tag" build/evidence/report-manifest.json \
+              --title "$tag" --generate-notes --verify-tag
+          fi
+          echo "✓ report-manifest.json published to release $tag"
