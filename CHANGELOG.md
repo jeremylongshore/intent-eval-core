@@ -12,6 +12,15 @@ versioning follows [SemVer 2.0.0](https://semver.org/).
 - Evidence Bundle predicate compatibility policy (forward/backward/mixing/deprecation rules) MUST land before first prod-Rekor anchor — bd `bd_000-projects-uprg` (P0)
 - OTel semantic conventions pinned in `schemas/v1/otel-attributes.yaml` to prevent attribute drift across consumer emitters — bd `bd_000-projects-9pi3` (P0)
 
+## [0.3.1] - 2026-06-08
+
+Release-engineering patch. **No API or schema change** — the published package is byte-identical to v0.3.0 (the fixes are CI-only). Its purpose is to emit a **dashboard-verifiable** evidence manifest, closing the loop with the intent-eval-dashboard ingest.
+
+### Fixed
+
+- `release.yml` emit-evidence now creates the GitHub Release if absent before uploading `report-manifest.json` (v0.3.0's emit failed "release not found" — the workflow only published to npm, never created a Release object).
+- `cosign sign-blob --new-bundle-format` so the signed evidence bundle is the sigstore protobuf Bundle (`verificationMaterial` + `messageSignature`) the dashboard's `sigstore.verify()` consumes — v0.3.0 emitted the legacy `{base64Signature, cert, rekorBundle}` shape, which sigstore-js cannot parse.
+
 ## [0.3.0] - 2026-06-07
 
 `iec-E12` (ISEDC Session 5 Q2 / DR-018). Purely **additive** — no v0.1/v0.2 contract changes; every prior EvidenceBundle + gate-result/v1 row stays valid. SemVer MINOR. The v0.2.0 line shipped the EvidenceBundle field surface (`pre_registration_hash`); this release lands the deferred `EvidenceBundlePayload` wire format + the cross-field invariants.
