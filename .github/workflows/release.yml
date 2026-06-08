@@ -181,5 +181,13 @@ jobs:
         run: |
           set -euo pipefail
           tag="${GITHUB_REF#refs/tags/}"
-          gh release upload "$tag" build/evidence/report-manifest.json --clobber
-          echo "✓ uploaded report-manifest.json to release $tag"
+          # release.yml publishes to npm but does not itself create a GitHub
+          # Release object, so create-or-upload (idempotent): create the Release
+          # with the asset if absent, else upload/clobber onto the existing one.
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" build/evidence/report-manifest.json --clobber
+          else
+            gh release create "$tag" build/evidence/report-manifest.json \
+              --title "$tag" --generate-notes --verify-tag
+          fi
+          echo "✓ report-manifest.json published to release $tag"
