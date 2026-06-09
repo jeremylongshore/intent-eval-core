@@ -35,11 +35,13 @@ measuring it against them would conflate two distinct contracts.
 | Deferred negatives (out-of-scope) | 7 | accept (by design) | **7/7 correctly deferred** |
 
 **In-scope negatives (foundation must reject) — 11:**
+
 - 8 × `missing-<field>` → caught by the `requiredFields` fold.
 - `constraint-name-reserved-word`, `constraint-name-xml-tag` → caught by `securityChecks`.
 - `constraint-description-over-budget` → caught by `disclosureMarkers`.
 
-**Deferred negatives (per-contract schema's job, not the foundation's) — 7:**
+**Deferred negatives (handled by the per-contract schema, not the foundation) — 7:**
+
 - 5 × `type-<field>` → `requiredFields` checks **presence**, not type. Type validation
   is a per-contract concern (a `version` that is a number is still *present*).
 - `constraint-name-uppercase`, `constraint-name-spaces` → kebab-case **name format** is a
