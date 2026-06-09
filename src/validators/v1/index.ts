@@ -28,3 +28,6 @@ export * from './failure-taxonomy.js';
 export * from './gate-result-v1.js';
 export * from './retraction-v1.js';
 export * from './dashboard-render-v1.js';
+
+// Authoring-tier validators (Spec Authority Kernel, plan 033 § 14).
+export * from './authoring/index.js';
