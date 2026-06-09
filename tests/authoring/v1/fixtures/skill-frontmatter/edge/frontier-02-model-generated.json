@@ -1,0 +1,10 @@
+{
+  "name": "example-skill-12",
+  "description": "Triage an inbound support ticket: classify intent, extract entities, and draft a grounded reply.",
+  "allowed-tools": ["Read"],
+  "version": "1.12.0",
+  "author": "Jeremy Longshore <jeremy@intentsolutions.io>",
+  "license": "Apache-2.0",
+  "compatibility": "claude-code",
+  "tags": ["example", "tag-12"]
+}

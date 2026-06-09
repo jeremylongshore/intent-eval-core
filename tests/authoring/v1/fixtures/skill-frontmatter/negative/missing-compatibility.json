@@ -1,0 +1,9 @@
+{
+  "name": "example-skill-0",
+  "description": "Example skill number 0 that performs a single focused task.",
+  "allowed-tools": ["Read"],
+  "version": "1.0.0",
+  "author": "Jeremy Longshore <jeremy@intentsolutions.io>",
+  "license": "Apache-2.0",
+  "tags": ["example", "tag-0"]
+}
