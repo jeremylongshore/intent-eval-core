@@ -1,0 +1,10 @@
+{
+  "name": "example-skill-11",
+  "description": "Generate a concise summary of a pull request diff, highlighting risk areas, then propose follow-up tests.",
+  "allowed-tools": ["Read", "Write", "Bash"],
+  "version": "1.11.0",
+  "author": "Jeremy Longshore <jeremy@intentsolutions.io>",
+  "license": "Apache-2.0",
+  "compatibility": "claude-code",
+  "tags": ["example", "tag-11"]
+}
