@@ -26,6 +26,7 @@ Naming: `NNN-CC-ABCD-description-YYYY-MM-DD.md` where:
 | 005 | [appaudit DevOps playbook](005-AA-AUDT-appaudit-devops-playbook.md) | 2026-05-20 | AA-AUDT | informational |
 | 006 | [v0.2.0 additive schema evolution AAR](006-AA-AACR-v0.2.0-additive-schema-evolution-2026-06-03.md) | 2026-06-03 | AA-AACR | additive surface landed; publish held pending iec-E12 |
 | 007 | [Emit signed gate-result evidence for the dashboard](007-DR-RFC-emit-evidence-dashboard-ingest-2026-06-07.md) | 2026-06-07 | DR-RFC | accepted (nr75.4; emit engine + release.yml job) |
+| 008 | [Schema-policy eval — marketplace-tier foundation](008-AA-EVAL-schema-policy-marketplace-tier-2026-06-09.md) | 2026-06-09 | AA-EVAL | closes audit C2 (foundation sound; coverage boundary measured) |
 
 ## Cross-repo authority chain
 
