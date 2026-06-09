@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v1/index.json",
+  "title": "@intentsolutions/core authoring schema index v1",
+  "description": "Catalog of authoring-contract schemas for the Spec Authority Kernel (SAK). Source of truth: plan 033 § 14.10 / § 14.A (intent-eval-lab/000-docs/033-PP-PLAN-skill-refiner-sak-amendment-v7-2026-05-28.md). The marketplace-tier foundation is the 4-fold composable $defs that all six authoring contracts inherit. Per-contract schemas (skill-frontmatter, plugin-manifest, agent-definition, mcp-config, hook-config, marketplace-catalog) land in subsequent SAK phases.",
+  "version": "1.0.0-draft",
+  "schemas": {
+    "marketplace-tier": {
+      "path": "marketplace-tier.schema.json",
+      "title": "IS marketplace authoring tier — 4-fold composable $defs",
+      "kind": "authoring-foundation",
+      "spec": "plan 033 § 14.10 / § 14.A",
+      "folds": ["requiredFields", "deprecationRegistry", "securityChecks", "disclosureMarkers"]
+    }
+  }
+}
