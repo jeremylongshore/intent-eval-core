@@ -2,15 +2,29 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v1/index.json",
   "title": "@intentsolutions/core authoring schema index v1",
-  "description": "Catalog of authoring-contract schemas for the Spec Authority Kernel (SAK). Source of truth: plan 033 § 14.10 / § 14.A (intent-eval-lab/000-docs/033-PP-PLAN-skill-refiner-sak-amendment-v7-2026-05-28.md). The marketplace-tier foundation is the 4-fold composable $defs that all six authoring contracts inherit. Per-contract schemas (skill-frontmatter, plugin-manifest, agent-definition, mcp-config, hook-config, marketplace-catalog) land in subsequent SAK phases.",
+  "description": "Catalog of authoring-contract schemas for the Spec Authority Kernel (SAK). Source of truth: ISEDC Session 8 charter DR-044 (intent-eval-lab/000-docs/044-AT-DECR-isedc-council-session-8-sak-charter-2026-06-09.md) + plan 033 § 14.10 / § 14.A. The marketplace-tier foundation exposes the THREE universal folds (deprecationRegistry, securityChecks, disclosureMarkers) + the universalFolds composition that every per-contract schema inherits by reference (D7). Each per-contract contract is three artifacts — an upstream-base (authored by the open standard), an is-overlay (authored by IS), and the published allOf composition. skill-frontmatter is contract #1 (the walking skeleton). The remaining five (plugin-manifest, agent-definition, mcp-config, hook-config, marketplace-catalog) land on-demand behind a CFO bandwidth sign-off, codegen-generated (D8 — codegen is a hard precondition of contract #2).",
   "version": "1.0.0-draft",
   "schemas": {
     "marketplace-tier": {
       "path": "marketplace-tier.schema.json",
-      "title": "IS marketplace authoring tier — 4-fold composable $defs",
+      "title": "IS marketplace authoring tier — 3 universal folds + universalFolds composition",
       "kind": "authoring-foundation",
-      "spec": "plan 033 § 14.10 / § 14.A",
-      "folds": ["requiredFields", "deprecationRegistry", "securityChecks", "disclosureMarkers"]
+      "spec": "DR-044 D7 / plan 033 § 14.10",
+      "universalFolds": ["deprecationRegistry", "securityChecks", "disclosureMarkers"]
+    },
+    "skill-frontmatter": {
+      "path": "skill-frontmatter.schema.json",
+      "title": "skill-frontmatter — IS marketplace-tier contract (composition)",
+      "kind": "authoring-contract",
+      "contractIndex": 1,
+      "spec": "DR-044 D7 / plan 033 § 14.2 / 6767-b §4",
+      "layers": {
+        "upstreamBase": "upstream-base/skill-frontmatter.v1.json",
+        "universalFolds": "marketplace-tier.schema.json#/$defs/universalFolds",
+        "isOverlay": "is-overlay/skill-frontmatter.v1.json"
+      },
+      "baseRequired": ["name", "description"],
+      "overlayRequired": ["allowed-tools", "version", "author", "license", "compatibility", "tags"]
     }
   }
 }

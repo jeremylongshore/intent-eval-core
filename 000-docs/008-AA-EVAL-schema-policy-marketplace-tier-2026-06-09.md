@@ -70,3 +70,33 @@ measuring it against them would conflate two distinct contracts.
 This eval covers the `marketplace-tier` foundation against `skill-frontmatter`. The full
 per-contract correctness evals (one per contract) follow once those schemas land on the
 foundation (charter-gated). The harness pattern here is reusable for them.
+
+---
+
+## Addendum — DR-044 D7: the per-contract schema closes the deferred gap (2026-06-09)
+
+The ISEDC Session 8 charter (DR-044) ratified the per-contract composition model (D7), and
+`skill-frontmatter` was built as authoring contract #1 — the three-artifact base+overlay
+composition (`upstream-base/skill-frontmatter.v1.json` + the shared `universalFolds` +
+`is-overlay/skill-frontmatter.v1.json` ⇒ `skill-frontmatter.schema.json`). The harness
+(`src/__tests__/schema-policy-eval.test.ts`) was re-pointed from the foundation's
+`IsMarketplaceSchema` to the published `SkillFrontmatterSchema`.
+
+**What changed:** the foundation alone deferred type-validation + kebab-case name-format to the
+(then-unbuilt) per-contract schema — 7 negatives were "correctly deferred". The per-contract
+schema now owns exactly those checks (type via the base/overlay; kebab-case via the base; the
+3 universal folds inherited by reference). **All 18 negatives are now in-scope and rejected; there
+are no deferrals left.**
+
+| Class | n | Contract verdict | Result |
+|---|---|---|---|
+| Valid (positive + edge) | 22 | accept | **22/22 accepted — 0 false-rejects** |
+| Negatives (all) | 18 | reject | **18/18 rejected — 0 false-accepts** |
+
+The formerly-deferred 7 (5 × `type-<field>` + `constraint-name-uppercase` +
+`constraint-name-spaces`) are now caught: `type-name`/`type-compatibility` by the upstream base
+(field types + agentskills.io name surface), `type-version`/`type-tags`/`type-allowed-tools` by
+the IS overlay (narrowed types), and the two name-format negatives by the base kebab-case pattern.
+The ajv↔Zod fold-agreement test (`src/__tests__/skill-frontmatter-schema.test.ts`) holds the JSON
+Schema and the hand-authored Zod mirror to the same verdict on all 40 fixtures (the D8 grandfather
+backstop). **Audit C2 remains closed — now with zero deferrals.**
