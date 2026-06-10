@@ -1,24 +1,30 @@
 /**
- * IS marketplace authoring tier — 4-fold composable runtime validators.
+ * IS marketplace authoring tier — universal-fold composable runtime validators.
  *
  * Hand-authored Zod mirror of
  * `schemas/authoring/v1/marketplace-tier.schema.json` (the canonical runtime
- * parser; the JSON Schema is the language-agnostic wire contract). Foundation
- * that all six authoring contracts (skill-frontmatter, plugin-manifest,
- * agent-definition, mcp-config, hook-config, marketplace-catalog) inherit.
+ * parser; the JSON Schema is the language-agnostic wire contract). The shared
+ * foundation that every per-contract authoring schema (skill-frontmatter,
+ * plugin-manifest, agent-definition, mcp-config, hook-config,
+ * marketplace-catalog) inherits BY REFERENCE.
  *
- * Per plan 033 § 14.10 (closes C3 / F-RH-001 / F-RH-006), the marketplace tier
- * is DECOMPOSED into four orthogonal folds so each evolves under its own
- * authority and changelog (see schemas/authoring/v1/CHANGELOG.md):
+ * Per ISEDC Session 8 charter DR-044 decision D7
+ * (intent-eval-lab/000-docs/044-AT-DECR-isedc-council-session-8-sak-charter-2026-06-09.md),
+ * the marketplace tier is decomposed so the THREE universal folds are uniform
+ * across all six contracts, while `requiredFields` is specialized PER CONTRACT:
  *
- *   - requiredFields      (architectural — ISEDC Class-1)
  *   - deprecationRegistry (tactical — autonomous validator patch)
- *   - securityChecks      (CISO-driven)
- *   - disclosureMarkers   (Karpathy-axis)
+ *   - securityChecks      (CISO-driven — UNIVERSAL-IMMUTABLE: add-only, never overridable)
+ *   - disclosureMarkers   (Karpathy-axis — token budget)
  *
- * Canonical predicate (plan 033 § 14.A):
- *   valid_isMarketplace(a) := requiredFields(a) ∧ deprecationRegistry(a)
- *                             ∧ securityChecks(a) ∧ disclosureMarkers(a)
+ * Canonical predicate:
+ *   valid_universalFolds(a) := deprecationRegistry(a) ∧ securityChecks(a)
+ *                              ∧ disclosureMarkers(a)
+ *
+ * `requiredFields` is NO LONGER part of this foundation — it was removed in the
+ * D7 refactor and now lives in each per-contract schema. This module instead
+ * exposes a parameterizable `requiredFieldsIssues(artifact, fields)` helper that
+ * each contract calls with its own required-field list.
  *
  * The folds are intentionally open-world — `allOf` composition requires each
  * branch to tolerate fields the other branches add. Closed-world checks belong
@@ -28,7 +34,7 @@
 import { z } from 'zod';
 
 /** An authoring artifact's parsed frontmatter/manifest object. */
-type AuthoringArtifact = Record<string, unknown>;
+export type AuthoringArtifact = Record<string, unknown>;
 
 /** A single fold finding: a human-readable message plus the offending path. */
 export interface FoldIssue {
@@ -36,27 +42,15 @@ export interface FoldIssue {
   readonly path: readonly string[];
 }
 
-// ─── Fold constants (the spec surface; mirror the JSON Schema) ──────────────
+// ─── Universal-fold constants (the spec surface; mirror the JSON Schema) ─────
 
-/** FOLD 1 — the IS marketplace 8-field required set (NON-NEGOTIABLES item 1). */
-export const IS_MARKETPLACE_REQUIRED_FIELDS = [
-  'name',
-  'description',
-  'allowed-tools',
-  'version',
-  'author',
-  'license',
-  'compatibility',
-  'tags',
-] as const;
-
-/** FOLD 2 — deprecated field → replacement field migrations. */
+/** deprecationRegistry — deprecated field → replacement field migrations. */
 export const IS_MARKETPLACE_DEPRECATED_FIELDS: Readonly<Record<string, string>> = {
   'compatible-with': 'compatibility',
   when_to_use: 'description',
 };
 
-/** FOLD 3 — names that must not be used (reserved words). */
+/** securityChecks — names that must not be used (reserved words). */
 export const IS_MARKETPLACE_RESERVED_NAMES = [
   'skill',
   'claude',
@@ -66,15 +60,23 @@ export const IS_MARKETPLACE_RESERVED_NAMES = [
   'agent',
 ] as const;
 
-/** FOLD 4 — token-budget ceiling for `description`. */
+/** disclosureMarkers — token-budget ceiling for `description`. */
 export const SKILL_DESCRIPTION_MAX = 1536;
 
-// ─── Fold checkers (pure; independently testable) ───────────────────────────
+// ─── requiredFields — parameterizable per-contract helper (D7) ──────────────
 
-/** FOLD 1/4 — every required field MUST be present. */
-export function requiredFieldsIssues(artifact: AuthoringArtifact): FoldIssue[] {
+/**
+ * Required-field presence check, parameterized by the contract's own required
+ * set. `requiredFields` moved out of the foundation in the D7 refactor; each
+ * per-contract schema supplies its own list (a plugin-manifest's set is not a
+ * skill's). Returns one issue per missing field, in declaration order.
+ */
+export function requiredFieldsIssues(
+  artifact: AuthoringArtifact,
+  requiredFields: readonly string[],
+): FoldIssue[] {
   const issues: FoldIssue[] = [];
-  for (const field of IS_MARKETPLACE_REQUIRED_FIELDS) {
+  for (const field of requiredFields) {
     if (!(field in artifact)) {
       issues.push({ message: `missing required field "${field}"`, path: [field] });
     }
@@ -82,7 +84,9 @@ export function requiredFieldsIssues(artifact: AuthoringArtifact): FoldIssue[] {
   return issues;
 }
 
-/** FOLD 2/4 — a present deprecated key fails; the message names the replacement. */
+// ─── Universal-fold checkers (pure; independently testable) ─────────────────
+
+/** UNIVERSAL FOLD 1/3 — a present deprecated key fails; the message names the replacement. */
 export function deprecationRegistryIssues(artifact: AuthoringArtifact): FoldIssue[] {
   const issues: FoldIssue[] = [];
   for (const [deprecated, replacement] of Object.entries(IS_MARKETPLACE_DEPRECATED_FIELDS)) {
@@ -96,7 +100,7 @@ export function deprecationRegistryIssues(artifact: AuthoringArtifact): FoldIssu
   return issues;
 }
 
-/** FOLD 3/4 — reserved-word + XML + shell-substitution hardening. */
+/** UNIVERSAL FOLD 2/3 — UNIVERSAL-IMMUTABLE reserved-word + XML + shell-substitution hardening. */
 export function securityChecksIssues(artifact: AuthoringArtifact): FoldIssue[] {
   const issues: FoldIssue[] = [];
   const name = artifact['name'];
@@ -123,7 +127,7 @@ export function securityChecksIssues(artifact: AuthoringArtifact): FoldIssue[] {
   return issues;
 }
 
-/** FOLD 4/4 — `description` token-budget ceiling. */
+/** UNIVERSAL FOLD 3/3 — `description` token-budget ceiling. */
 export function disclosureMarkersIssues(artifact: AuthoringArtifact): FoldIssue[] {
   const issues: FoldIssue[] = [];
   const description = artifact['description'];
@@ -136,10 +140,9 @@ export function disclosureMarkersIssues(artifact: AuthoringArtifact): FoldIssue[
   return issues;
 }
 
-/** The composition — every fold's issues, in fold order (plan 033 § 14.A). */
-export function isMarketplaceIssues(artifact: AuthoringArtifact): FoldIssue[] {
+/** The universal-folds composition — every universal fold's issues, in fold order. */
+export function universalFoldsIssues(artifact: AuthoringArtifact): FoldIssue[] {
   return [
-    ...requiredFieldsIssues(artifact),
     ...deprecationRegistryIssues(artifact),
     ...securityChecksIssues(artifact),
     ...disclosureMarkersIssues(artifact),
@@ -150,42 +153,32 @@ export function isMarketplaceIssues(artifact: AuthoringArtifact): FoldIssue[] {
 
 const AuthoringArtifactSchema = z.record(z.string(), z.unknown());
 
-function attach(
-  schema: typeof AuthoringArtifactSchema,
+/** Attach a pure fold checker to the base artifact schema as a Zod refinement. */
+export function attach(
   checker: (artifact: AuthoringArtifact) => FoldIssue[],
 ): z.ZodType<AuthoringArtifact> {
-  return schema.superRefine((data, ctx) => {
+  return AuthoringArtifactSchema.superRefine((data, ctx) => {
     for (const issue of checker(data)) {
       ctx.addIssue({ code: 'custom', message: issue.message, path: [...issue.path] });
     }
   });
 }
 
-/** FOLD 1/4 schema — required-field presence. */
-export const IsMarketplaceRequiredFieldsSchema = attach(
-  AuthoringArtifactSchema,
-  requiredFieldsIssues,
-);
+/** A required-fields Zod schema for a given contract's required set. */
+export function makeRequiredFieldsSchema(
+  requiredFields: readonly string[],
+): z.ZodType<AuthoringArtifact> {
+  return attach((artifact) => requiredFieldsIssues(artifact, requiredFields));
+}
 
-/** FOLD 2/4 schema — deprecation registry. */
-export const IsMarketplaceDeprecationRegistrySchema = attach(
-  AuthoringArtifactSchema,
-  deprecationRegistryIssues,
-);
+/** UNIVERSAL FOLD 1/3 schema — deprecation registry. */
+export const DeprecationRegistrySchema = attach(deprecationRegistryIssues);
 
-/** FOLD 3/4 schema — security checks. */
-export const IsMarketplaceSecurityChecksSchema = attach(
-  AuthoringArtifactSchema,
-  securityChecksIssues,
-);
+/** UNIVERSAL FOLD 2/3 schema — security checks (UNIVERSAL-IMMUTABLE). */
+export const SecurityChecksSchema = attach(securityChecksIssues);
 
-/** FOLD 4/4 schema — disclosure markers. */
-export const IsMarketplaceDisclosureMarkersSchema = attach(
-  AuthoringArtifactSchema,
-  disclosureMarkersIssues,
-);
+/** UNIVERSAL FOLD 3/3 schema — disclosure markers. */
+export const DisclosureMarkersSchema = attach(disclosureMarkersIssues);
 
-/** The IS marketplace tier — `allOf` composition of the four folds. */
-export const IsMarketplaceSchema = attach(AuthoringArtifactSchema, isMarketplaceIssues);
-
-export type IsMarketplace = z.infer<typeof IsMarketplaceSchema>;
+/** The universal-folds composition schema — the three universal folds. */
+export const UniversalFoldsSchema = attach(universalFoldsIssues);
