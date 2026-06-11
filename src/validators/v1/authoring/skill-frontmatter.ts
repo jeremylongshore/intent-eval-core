@@ -149,8 +149,14 @@ export function isOverlayIssues(artifact: AuthoringArtifact): FoldIssue[] {
     ...requiredFieldsIssues(artifact, SKILL_FRONTMATTER_OVERLAY_REQUIRED),
   ];
 
-  if ('allowed-tools' in artifact && !isStringArray(artifact['allowed-tools'])) {
-    issues.push({ message: 'allowed-tools must be an array of strings', path: ['allowed-tools'] });
+  if ('allowed-tools' in artifact) {
+    const allowedTools = artifact['allowed-tools'];
+    if (typeof allowedTools !== 'string' && !isStringArray(allowedTools)) {
+      issues.push({
+        message: 'allowed-tools must be a string or an array of strings',
+        path: ['allowed-tools'],
+      });
+    }
   }
 
   if ('version' in artifact) {

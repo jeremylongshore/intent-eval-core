@@ -141,7 +141,25 @@ describe('skill-frontmatter — ajv ↔ Zod fold agreement (D8 backstop)', () =>
 
   it.each([
     ['empty allowed-tools array is accepted', { 'allowed-tools': [] as unknown }, true],
-    ['string allowed-tools is rejected', { 'allowed-tools': 'Read' }, false],
+    // v0.4.1 non-breaking relaxation: allowed-tools accepts a CSV/space-delimited
+    // STRING (the upstream prose form + the published-plugin corpus form) OR a
+    // YAML array. Both forms validate; only malformed types reject.
+    ['array allowed-tools is accepted', { 'allowed-tools': ['Read', 'Write'] }, true],
+    ['single-token string allowed-tools is accepted', { 'allowed-tools': 'Read' }, true],
+    ['CSV-string allowed-tools is accepted', { 'allowed-tools': 'Read, Write, Bash' }, true],
+    [
+      'space-delimited string allowed-tools is accepted',
+      { 'allowed-tools': 'Read Write Bash' },
+      true,
+    ],
+    ['empty-string allowed-tools is accepted (zero tools)', { 'allowed-tools': '' }, true],
+    ['number allowed-tools is rejected', { 'allowed-tools': 42 }, false],
+    ['null allowed-tools is rejected', { 'allowed-tools': null }, false],
+    [
+      'array-with-non-string allowed-tools is rejected',
+      { 'allowed-tools': ['Read', 7] as unknown },
+      false,
+    ],
     ['non-semver version is rejected', { version: '1.2' }, false],
     ['prerelease semver is accepted', { version: '1.2.3-beta.1' }, true],
     ['non-array tags is rejected', { tags: 'a' }, false],

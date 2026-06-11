@@ -83,6 +83,15 @@ interface FieldSchema {
   readonly items?: FieldSchema;
   readonly required?: readonly string[];
   readonly properties?: Readonly<Record<string, FieldSchema>>;
+  /**
+   * A union of accepted sub-schemas. The codegen recognizes exactly one anyOf
+   * shape today (feature-gated by `isStringOrStringArrayAnyOf`): the
+   * string | array-of-strings union that the overlay's `allowed-tools` uses to
+   * accept BOTH the upstream CSV/space-delimited string form AND the YAML array
+   * form (v0.4.1 non-breaking relaxation). Any other anyOf shape is left
+   * unrecognized so it cannot silently mis-generate.
+   */
+  readonly anyOf?: readonly FieldSchema[];
 }
 
 /**
@@ -680,6 +689,27 @@ function overlayFieldCheck(
   const lines: string[] = [];
   const access = `artifact['${field}']`;
 
+  // anyOf [ string, array-of-strings ] — the v0.4.1 non-breaking relaxation that
+  // lets a field accept BOTH the upstream CSV/space-delimited string form AND the
+  // YAML array form (e.g. `allowed-tools`). Feature-gated to exactly this union
+  // shape; any other anyOf is not handled here (falls through unrecognized rather
+  // than mis-generating). Emit one combined check: a string OR a string[] passes;
+  // anything else (number, object, array-with-non-strings, null) is an issue.
+  if (isStringOrStringArrayAnyOf(schema)) {
+    lines.push(
+      `  if ('${field}' in artifact) {`,
+      `    const ${camel(field)} = ${access};`,
+      `    if (typeof ${camel(field)} !== 'string' && !isStringArray(${camel(field)})) {`,
+      `      issues.push({`,
+      `        message: '${field} must be a string or an array of strings',`,
+      `        path: ['${field}'],`,
+      `      });`,
+      `    }`,
+      `  }`,
+    );
+    return lines;
+  }
+
   // SemVer-narrowed string (overlay adds a `pattern` the base lacks) — e.g.
   // `version`.
   if (schema.type === 'string' && schema.pattern !== undefined) {
@@ -774,6 +804,35 @@ function overlayFieldCheck(
   );
   lines.push(`  }`);
   return lines;
+}
+
+/**
+ * The feature-gate for the v0.4.1 `allowed-tools` relaxation: is this field an
+ * `anyOf` that is EXACTLY the string | array-of-strings union? Recognizing only
+ * this precise shape (two members: one bare `{type:'string'}` and one
+ * `{type:'array', items:{type:'string'}}`, in either order) keeps the codegen
+ * keyword-driven and prevents any other anyOf shape from silently mis-generating.
+ */
+function isStringOrStringArrayAnyOf(schema: FieldSchema): boolean {
+  if (schema.anyOf?.length !== 2) {
+    return false;
+  }
+  const isBareString = (s: FieldSchema): boolean =>
+    s.type === 'string' &&
+    s.pattern === undefined &&
+    s.enum === undefined &&
+    s.format === undefined &&
+    s.minLength === undefined &&
+    s.maxLength === undefined;
+  const isStringArrayMember = (s: FieldSchema): boolean =>
+    s.type === 'array' && s.items?.type === 'string';
+  const [a, b] = schema.anyOf as readonly [FieldSchema, FieldSchema];
+  return (isBareString(a) && isStringArrayMember(b)) || (isStringArrayMember(a) && isBareString(b));
+}
+
+/** Convert a (possibly hyphenated) JSON key into a valid camelCase JS identifier. */
+function camel(field: string): string {
+  return field.replace(/-([a-z0-9])/g, (_m, c: string) => c.toUpperCase());
 }
 
 /** Whether any overlay field constrains via SemVer (drives the SEMVER_PATTERN const). */
@@ -873,6 +932,11 @@ function usesStringArray(
 ): boolean {
   const all = [...Object.values(baseProps), ...Object.values(overlayProps)];
   if (all.some((s) => s.type === 'array' && s.items?.type === 'string')) {
+    return true;
+  }
+  // The string | array-of-strings anyOf relaxation (v0.4.1 `allowed-tools`)
+  // relies on isStringArray to accept the array form.
+  if (all.some((s) => isStringOrStringArrayAnyOf(s))) {
     return true;
   }
   return visibilityFields.length > 0 || hasEnvVars;
