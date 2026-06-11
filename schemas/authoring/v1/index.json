@@ -25,6 +25,29 @@
       },
       "baseRequired": ["name", "description"],
       "overlayRequired": ["allowed-tools", "version", "author", "license", "compatibility", "tags"]
+    },
+    "plugin-manifest": {
+      "path": "plugin-manifest.schema.json",
+      "title": "plugin-manifest — IS marketplace-tier contract (composition)",
+      "kind": "authoring-contract",
+      "contractIndex": 2,
+      "lifecycle": "SHIPPED-INTERNAL",
+      "spec": "DR-044 D8 / plan 033 § 14.A / code.claude.com/docs/en/plugins-reference",
+      "layers": {
+        "upstreamBase": "upstream-base/plugin-manifest.v1.json",
+        "universalFolds": "marketplace-tier.schema.json#/$defs/universalFolds",
+        "isOverlay": "is-overlay/plugin-manifest.v1.json"
+      },
+      "baseRequired": ["name"],
+      "overlayRequired": [
+        "version",
+        "description",
+        "author",
+        "homepage",
+        "license",
+        "keywords",
+        "commands"
+      ]
     }
   }
 }

@@ -112,3 +112,42 @@ invariant (overlay only ADDS required + NARROWS) is asserted by the property tes
 | --- | --- |
 | `1.0.0-draft` | Initial `allOf` of `[upstream-base, marketplace-tier#/$defs/universalFolds, is-overlay]`. Inline generated effective-required manifest (REQUIRED HERE / INHERITED). |
 | `1.0.0-draft` (DR-044 D8) | Single-source authoring codegen landed (`scripts/codegen-authoring.ts`). The Zod validator + the inline `$comment` manifest are now GENERATED from the base + overlay schemas; the walking-skeleton is promoted from hand-authored to generated output (body byte-identical). `--check` idempotency gate wired into `pnpm run check` + CI. The remaining five contracts ride this codegen for free. |
+
+## Contract #2 — `plugin-manifest`
+
+The `.claude-plugin/plugin.json` manifest. Three artifacts:
+[`upstream-base/plugin-manifest.v1.json`](./upstream-base/plugin-manifest.v1.json) (authored by Claude
+Code), [`is-overlay/plugin-manifest.v1.json`](./is-overlay/plugin-manifest.v1.json) (authored by IS),
+and the published [`plugin-manifest.schema.json`](./plugin-manifest.schema.json) (pure `allOf`). Zod
+mirror at [`src/validators/v1/authoring/plugin-manifest.ts`](../../../src/validators/v1/authoring/plugin-manifest.ts).
+**GENERATED** per DR-044 D8 by [`scripts/codegen-authoring.ts`](../../../scripts/codegen-authoring.ts) —
+this is the FIRST contract that MUST be codegen-generated (D8 makes single-source codegen a hard
+precondition of contract #2). Generating it generalized the codegen from skill-frontmatter's
+hardcoded field names to a JSON-Schema-keyword-driven dispatch (object `author`, URI
+`homepage`/`repository`, array `keywords`); skill-frontmatter's generated body is unchanged
+(byte-identical). Upstream authority: code.claude.com/docs/en/plugins-reference §
+"Plugin manifest schema". **Lifecycle: SHIPPED-INTERNAL** — schemas exist, lint, codegen-generated,
+fold-agreement-tested; NO consumer cutover, NOT published. PUBLISHED promotion needs the vendored
+deep-capture reconciliation + CFO per-contract sign-off (DR-049).
+
+### § upstream-base (authored by THEM)
+
+| Version | Change |
+| --- | --- |
+| `1.0.0-draft` | code.claude.com/docs/en/plugins-reference projection: "If you include a manifest, `name` is the only required field" ⇒ required floor `[name]`. Optional `[version, description, author, homepage, repository, license, keywords, commands, metadata]`. Name kebab-case + ≤64; `author` is an OBJECT (`{name}` required, `email`/`url` optional) — NOT a string (this differs from skill-frontmatter); `homepage`/`repository` URI-format; `keywords`/`commands` arrays of strings. Description length intentionally uncapped here (the universal disclosureMarkers fold is the operative cap). |
+
+### § is-overlay (authored by US)
+
+Evolves under **ISEDC Class-1 ratification only** — the overlay-required delta is the IS marketplace
+floor and must not be silently reduced (the 2026-04-28-debacle guard). The monotonic-additive
+invariant (overlay only ADDS required + NARROWS) is asserted by the property test.
+
+| Version | Change |
+| --- | --- |
+| `1.0.0-draft` | Overlay-required delta `[version, description, author, homepage, license, keywords, commands]` (union with base floor `[name]` = the IS 8-field plugin set). `version` narrowed to strict SemVer 2.0.0; `commands` narrowed to a string array. `repository` stays upstream-optional (no `missing-repository` corpus negative). Decomposed against the corpus-first golden ground truth at `tests/authoring/v1/fixtures/plugin-manifest/`. |
+
+### § plugin-manifest (composition)
+
+| Version | Change |
+| --- | --- |
+| `1.0.0-draft` (DR-044 D8) | Initial `allOf` of `[upstream-base, marketplace-tier#/$defs/universalFolds, is-overlay]`, codegen-generated (Zod + inline `$comment` effective-required manifest). ajv↔Zod fold agreement proven on all 40 corpus fixtures + monotonicity property test. Registered in `index.json` as `contractIndex: 2`, `lifecycle: SHIPPED-INTERNAL`. |
