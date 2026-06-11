@@ -47,6 +47,18 @@ jobs:
       - name: Authoring codegen up to date (DR-044 D8 stale-codegen gate)
         run: pnpm run codegen:authoring:check
 
+      # Predicate-namespace isolation (3kye.5 / DR-049): authoring conformance is
+      # a deterministic lint, never a signed attestation, so no authoring schema
+      # may reference the evals.intentsolutions.io predicate namespace.
+      - name: Predicate-namespace isolation (DR-049 authoring/lint vs signed split)
+        run: pnpm run check:predicate-namespace
+
+      # Rubric-floor self-pin (3kye.6 / DR-049): the anti-realignment guard — a
+      # required field may not be removed/weakened from any contract's overlay
+      # required set or the securityChecks fold without an explicit ADR marker.
+      - name: Rubric-floor guard (DR-049 anti-realignment self-pin)
+        run: pnpm run check:rubric-floor
+
       # Build BEFORE lint/typecheck: the CI emit helpers (scripts/emit-evidence.ts,
       # scripts/assemble-manifest.ts) import the kernel validators via the package
       # self-reference (@intentsolutions/core/...), which only resolves to typed

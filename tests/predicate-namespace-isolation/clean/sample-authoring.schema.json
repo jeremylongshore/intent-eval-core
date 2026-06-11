@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v1/sample.schema.json",
+  "title": "sample authoring contract — PASSING fixture (no predicate namespace)",
+  "$comment": "A clean authoring schema. Authoring conformance is a deterministic lint; it never references the signed-predicate host. This fixture proves the gate PASSES on compliant input.",
+  "type": "object",
+  "required": ["name", "description"],
+  "properties": {
+    "name": { "type": "string" },
+    "description": { "type": "string" }
+  }
+}

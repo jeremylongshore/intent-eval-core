@@ -52,6 +52,7 @@ Files allowed at repo root (anything not in this list triggers a BLOCK on the Ax
 .dependency-cruiser.cjs
 .gitignore
 .harness-hash
+.harness-hash-extra-patterns
 .npmrc
 .nvmrc
 .prettierignore
@@ -87,6 +88,7 @@ Annotations (what each is):
 - `.dependency-cruiser.cjs` — dep-cruiser config (hash-pinned)
 - `.gitignore` — git ignore patterns
 - `.harness-hash` — hash-pinned policy manifest
+- `.harness-hash-extra-patterns` — extra harness-hash glob patterns (self-pins the DR-049 rubric-floor guard)
 - `.npmrc` — (optional) npm registry config; MUST NOT contain tokens
 - `.nvmrc` — Node version pin
 - `.prettierignore` / `.prettierrc.json` — Prettier

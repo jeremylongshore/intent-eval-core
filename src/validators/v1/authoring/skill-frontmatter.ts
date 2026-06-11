@@ -180,6 +180,10 @@ export function isOverlayIssues(artifact: AuthoringArtifact): FoldIssue[] {
     issues.push(...requiredEnvVarIssues(artifact['required_environment_variables']));
   }
 
+  for (const group of [['requires_env', 'fallback_for_env']] as const) {
+    issues.push(...mutuallyExclusiveIssues(artifact, group));
+  }
+
   return issues;
 }
 
@@ -209,6 +213,35 @@ function requiredEnvVarIssues(value: unknown): FoldIssue[] {
       issues.push({ message: 'env-var prompt is required', path: [...entryPath, 'prompt'] });
     }
   });
+  return issues;
+}
+
+function mutuallyExclusiveIssues(
+  artifact: AuthoringArtifact,
+  fields: readonly string[],
+): FoldIssue[] {
+  // Per-variable disjointness: no identifier may appear in more than one of the
+  // listed array fields. Only well-formed string arrays participate — malformed
+  // values are reported by their own type checks, not here.
+  const issues: FoldIssue[] = [];
+  const seen = new Map<string, string>();
+  for (const field of fields) {
+    const value = artifact[field];
+    if (!isStringArray(value)) {
+      continue;
+    }
+    for (const item of value) {
+      const prior = seen.get(item);
+      if (prior !== undefined && prior !== field) {
+        issues.push({
+          message: `"${item}" must not appear in both ${prior} and ${field}`,
+          path: [field],
+        });
+      } else {
+        seen.set(item, field);
+      }
+    }
+  }
   return issues;
 }
 

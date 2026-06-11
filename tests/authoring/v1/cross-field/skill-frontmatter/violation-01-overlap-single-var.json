@@ -1,0 +1,12 @@
+{
+  "name": "overlap-skill",
+  "description": "A skill that wrongly lists API_KEY as both required-present and fallback-bearing.",
+  "allowed-tools": ["Read"],
+  "version": "1.0.0",
+  "author": "Jeremy Longshore",
+  "license": "Apache-2.0",
+  "compatibility": "claude-code",
+  "tags": ["x"],
+  "requires_env": ["API_KEY", "REGION"],
+  "fallback_for_env": ["API_KEY"]
+}

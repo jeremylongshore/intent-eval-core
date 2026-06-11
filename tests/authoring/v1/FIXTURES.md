@@ -57,3 +57,14 @@ follow-on bead** (the full § 14.21.2 validating harness):
 `src/__tests__/authoring-fixtures.test.ts` asserts, every run: 240 total fixtures;
 exactly 40 per contract; the 15/18/7 class split; the per-sub-class counts above; and
 that every fixture parses as JSON. This guards the corpus against silent drift.
+
+## Cross-field corpus (`cross-field/`, kyh9)
+
+The `cross-field/<contract>/` directory holds fixtures for cross-field invariants
+that are NOT part of the counted 240-fixture corpus (so they do not disturb the
+40-per-contract structural counts). Today it carries the `skill-frontmatter`
+per-variable mutual-exclusion invariant (requires_env ⟂ fallback_for_env): a
+`violation-*` identifier appears in both arrays (Zod must reject); a `valid-*`
+keeps them disjoint (Zod must accept). Because the predicate is not expressible
+in vanilla JSON Schema, ajv ACCEPTS the violations — the documented carve-out
+asserted by `src/__tests__/skill-frontmatter-cross-field.test.ts`.

@@ -1,0 +1,12 @@
+{
+  "name": "disjoint-skill",
+  "description": "requires_env and fallback_for_env share no identifier — the invariant holds.",
+  "allowed-tools": ["Read"],
+  "version": "1.0.0",
+  "author": "Jeremy Longshore",
+  "license": "Apache-2.0",
+  "compatibility": "claude-code",
+  "tags": ["x"],
+  "requires_env": ["API_KEY", "REGION"],
+  "fallback_for_env": ["OPTIONAL_TOKEN"]
+}
