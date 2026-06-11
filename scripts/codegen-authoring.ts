@@ -17,17 +17,22 @@
  * makes single-source codegen a hard precondition of contract #2, not #1). This
  * script promotes the walking skeleton to generated output and is the codegen the
  * remaining five contracts (plugin-manifest, agent-definition, mcp-config,
- * hook-config, marketplace-catalog) ride for free.
+ * hook-config, marketplace-catalog) ride for free. plugin-manifest is contract
+ * #2 — the FIRST contract that MUST be codegen-generated.
  *
  * What it emits, per contract C (read from the base + overlay JSON Schemas):
  *
  *   (a) src/validators/v1/authoring/<C>.ts — the FoldIssue[] Zod validator:
  *       the upstreamBase / isOverlay layer checkers + the allOf composition,
  *       generated field-by-field from the schema `required` arrays + the
- *       per-field `type` / `maxLength` / `pattern` / `items` constraints + the
- *       optional IS-overlay extension fields. Reuses the marketplace-tier
- *       universal-folds foundation by reference (it is itself generated-stable;
- *       this codegen does not regenerate the foundation).
+ *       per-field `type` / `minLength` / `maxLength` / `pattern` / `format` /
+ *       `items` / nested-`required` constraints + the optional IS-overlay
+ *       extension fields. The per-field check is dispatched off JSON-Schema
+ *       keywords (NOT off hardcoded field names), so a new contract whose fields
+ *       differ (plugin-manifest's object `author`, URI `homepage`, array
+ *       `keywords`) generates correctly with no per-field special-casing. Reuses
+ *       the marketplace-tier universal-folds foundation by reference (it is
+ *       itself generated-stable; this codegen does not regenerate the foundation).
  *
  *   (b) the inline `$comment` EFFECTIVE-REQUIRED MANIFEST in the published
  *       schemas/authoring/v1/<C>.schema.json — one "REQUIRED HERE / INHERITED"
@@ -68,6 +73,7 @@ const VALIDATORS_DIR = join(REPO_ROOT, 'src/validators/v1/authoring');
 interface FieldSchema {
   readonly $comment?: string;
   readonly type?: string;
+  readonly format?: string;
   readonly minLength?: number;
   readonly maxLength?: number;
   readonly pattern?: string;
@@ -98,15 +104,75 @@ interface ContractSpec {
    * promotion.
    */
   readonly fieldConstPrefix: string;
+  /** 1-based position in the authoring-contract sequence (drives the header prose). */
+  readonly contractIndex: number;
+  /** Short descriptor appended to the module header after the contract number. */
+  readonly headerSuffix: string;
+  /**
+   * Provenance word used in the upstream-base constant doc-comments (e.g.
+   * `agentskills.io` for the skill standard, `code.claude.com plugins-reference`
+   * for the plugin manifest). Keeps each generated module's constant comments
+   * truthful about which upstream it projects.
+   */
+  readonly baseProvenance: string;
+  /**
+   * The inner body of the `upstreamBaseIssues` function's doc-comment — the lines
+   * inside the doc-comment, each `* `-prefixed. Contract-specific provenance
+   * prose, single-sourced here so the generated module is truthful per contract.
+   */
+  readonly baseDoc: string;
+  /** The inner body of the `isOverlayIssues` function's doc-comment. */
+  readonly overlayDoc: string;
 }
 
-/** The authoring contracts this codegen owns. skill-frontmatter is contract #1. */
+/**
+ * The authoring contracts this codegen owns. skill-frontmatter is contract #1
+ * (the grandfathered walking skeleton); plugin-manifest is contract #2 (the
+ * first MUST-be-generated contract — DR-044 D8).
+ */
 const CONTRACTS: readonly ContractSpec[] = [
   {
     name: 'skill-frontmatter',
     symbol: 'SkillFrontmatter',
     constPrefix: 'SKILL_FRONTMATTER',
     fieldConstPrefix: 'SKILL',
+    contractIndex: 1,
+    headerSuffix: 'the walking skeleton',
+    baseProvenance: 'agentskills.io',
+    baseDoc:
+      ' * The agentskills.io + Claude-docs projection. Required presence of the\n' +
+      ' * standardFloor + type/format on the upstream-owned fields. Length of\n' +
+      ' * `description` is intentionally NOT capped here — the universal disclosureMarkers\n' +
+      ' * fold (1536) is the operative cap (encoding the agentskills.io 1024 soft cap\n' +
+      ' * would violate the monotonic-additive invariant against the IS 1536 tier).',
+    overlayDoc:
+      ' * The IS-only delta: overlay-required presence + the type narrowings and the\n' +
+      ' * optional IS extension fields. License/compatibility presence is covered by the\n' +
+      ' * required check; their types are covered by the base — the overlay does not\n' +
+      ' * re-type them, to keep messages single-sourced.',
+  },
+  {
+    name: 'plugin-manifest',
+    symbol: 'PluginManifest',
+    constPrefix: 'PLUGIN_MANIFEST',
+    fieldConstPrefix: 'PLUGIN',
+    contractIndex: 2,
+    headerSuffix: 'the first codegen-generated contract',
+    baseProvenance: 'code.claude.com plugins-reference',
+    baseDoc:
+      ' * The code.claude.com plugins-reference projection. Required presence of the\n' +
+      ' * standardFloor ([name] — the only upstream-required field) + type/format on the\n' +
+      ' * upstream-owned fields (kebab-case name, URI homepage/repository, object author\n' +
+      ' * with a required inner name, array keywords/commands). Length of `description`\n' +
+      ' * is intentionally NOT capped here — the universal disclosureMarkers fold (1536)\n' +
+      ' * is the operative cap (encoding a tighter cap would violate the\n' +
+      ' * monotonic-additive invariant against the IS 1536 tier).',
+    overlayDoc:
+      ' * The IS-only delta: the seven upstream-optional metadata fields promoted to\n' +
+      ' * IS-required (version, description, author, homepage, license, keywords,\n' +
+      ' * commands) + the SemVer narrowing on version. A field whose type is already\n' +
+      ' * enforced by the base (the overlay only adds it to required) is not re-typed\n' +
+      ' * here — its presence is the required check — to keep messages single-sourced.',
   },
 ];
 
@@ -213,34 +279,55 @@ function regenerateSchemaManifest(contract: string, check: boolean): boolean {
 
 // ─── (a) Validator codegen — render the FoldIssue[] layer functions ──────────
 
-const HELPER_FIELDS = new Set([
+/**
+ * The optional IS-overlay "visibility array" extension fields (skill-frontmatter
+ * only). They are looped over with a single `isStringArray` check rather than
+ * emitted one-by-one. A contract that declares none of these omits the loop.
+ */
+const VISIBILITY_FIELDS = new Set([
   'requires_env',
   'requires_tools',
   'fallback_for_env',
   'fallback_for_tools',
 ]);
 
-/** Render the per-field type/constraint checks for a base-layer field. */
+/** Per-field constant-name suffixes for the SCREAMING_SNAKE constant prefix. */
+function constName(fieldConstPrefix: string, field: string, suffix: string): string {
+  // Field is always a single JSON key; uppercase + hyphen→underscore.
+  const upper = field.toUpperCase().replace(/-/g, '_');
+  return `${fieldConstPrefix}_${upper}_${suffix}`;
+}
+
+/**
+ * Render the per-field type/constraint checks for a base-layer field, dispatched
+ * off the field's JSON-Schema keywords (type / pattern / maxLength / format /
+ * items / nested-required) — NOT off the field name. This is what lets a new
+ * contract's distinct fields generate without per-name special-casing.
+ */
 function baseFieldCheck(field: string, schema: FieldSchema, fieldConstPrefix: string): string[] {
   const lines: string[] = [];
   const access = `artifact['${field}']`;
-  if (field === 'name') {
+
+  // String with a kebab-case pattern + a maxLength ceiling (e.g. `name`).
+  if (schema.type === 'string' && schema.pattern !== undefined && schema.maxLength !== undefined) {
+    const maxConst = constName(fieldConstPrefix, field, 'MAX');
+    const patternConst = constName(fieldConstPrefix, field, 'PATTERN');
     lines.push(
-      `  if ('name' in artifact) {`,
-      `    const name = artifact['name'];`,
-      `    if (typeof name !== 'string') {`,
-      `      issues.push({ message: 'name must be a string', path: ['name'] });`,
+      `  if ('${field}' in artifact) {`,
+      `    const ${field} = artifact['${field}'];`,
+      `    if (typeof ${field} !== 'string') {`,
+      `      issues.push({ message: '${field} must be a string', path: ['${field}'] });`,
       `    } else {`,
-      `      if (name.length > ${fieldConstPrefix}_NAME_MAX) {`,
+      `      if (${field}.length > ${maxConst}) {`,
       `        issues.push({`,
-      `          message: \`name must be at most \${${fieldConstPrefix}_NAME_MAX} characters\`,`,
-      `          path: ['name'],`,
+      `          message: \`${field} must be at most \${${maxConst}} characters\`,`,
+      `          path: ['${field}'],`,
       `        });`,
       `      }`,
-      `      if (!${fieldConstPrefix}_NAME_PATTERN.test(name)) {`,
+      `      if (!${patternConst}.test(${field})) {`,
       `        issues.push({`,
-      `          message: 'name must be kebab-case (lowercase letters, digits, hyphens)',`,
-      `          path: ['name'],`,
+      `          message: '${field} must be kebab-case (lowercase letters, digits, hyphens)',`,
+      `          path: ['${field}'],`,
       `        });`,
       `      }`,
       `    }`,
@@ -248,22 +335,62 @@ function baseFieldCheck(field: string, schema: FieldSchema, fieldConstPrefix: st
     );
     return lines;
   }
-  if (field === 'compatibility') {
+
+  // String with only a maxLength ceiling (e.g. `compatibility`).
+  if (schema.type === 'string' && schema.maxLength !== undefined) {
+    const maxConst = constName(fieldConstPrefix, field, 'MAX');
     lines.push(
-      `  if ('compatibility' in artifact) {`,
-      `    const compatibility = artifact['compatibility'];`,
-      `    if (typeof compatibility !== 'string') {`,
-      `      issues.push({ message: 'compatibility must be a string', path: ['compatibility'] });`,
-      `    } else if (compatibility.length > ${fieldConstPrefix}_COMPATIBILITY_MAX) {`,
+      `  if ('${field}' in artifact) {`,
+      `    const ${field} = artifact['${field}'];`,
+      `    if (typeof ${field} !== 'string') {`,
+      `      issues.push({ message: '${field} must be a string', path: ['${field}'] });`,
+      `    } else if (${field}.length > ${maxConst}) {`,
       `      issues.push({`,
-      `        message: \`compatibility must be at most \${${fieldConstPrefix}_COMPATIBILITY_MAX} characters\`,`,
-      `        path: ['compatibility'],`,
+      `        message: \`${field} must be at most \${${maxConst}} characters\`,`,
+      `        path: ['${field}'],`,
       `      });`,
       `    }`,
       `  }`,
     );
     return lines;
   }
+
+  // String with a URI format (e.g. `homepage`, `repository`).
+  if (schema.type === 'string' && schema.format === 'uri') {
+    lines.push(
+      `  if ('${field}' in artifact) {`,
+      `    const ${field} = artifact['${field}'];`,
+      `    if (typeof ${field} !== 'string') {`,
+      `      issues.push({ message: '${field} must be a string', path: ['${field}'] });`,
+      `    } else if (!isUri(${field})) {`,
+      `      issues.push({ message: '${field} must be a valid URI', path: ['${field}'] });`,
+      `    }`,
+      `  }`,
+    );
+    return lines;
+  }
+
+  // Object with a nested `required` set (e.g. plugin `author` = {name,...}).
+  if (schema.type === 'object' && schema.required !== undefined && schema.required.length > 0) {
+    const nestedRequired = schema.required.map((f) => `'${f}'`).join(', ');
+    lines.push(
+      `  if ('${field}' in artifact) {`,
+      `    const ${field} = ${access};`,
+      `    if (!isPlainObject(${field})) {`,
+      `      issues.push({ message: '${field} must be an object', path: ['${field}'] });`,
+      `    } else {`,
+      `      for (const key of [${nestedRequired}] as const) {`,
+      `        if (!(key in ${field})) {`,
+      `          issues.push({ message: \`${field}.\${key} is required\`, path: ['${field}', key] });`,
+      `        }`,
+      `      }`,
+      `    }`,
+      `  }`,
+    );
+    return lines;
+  }
+
+  // Generic object (no nested required) — e.g. `metadata`.
   if (schema.type === 'object') {
     lines.push(
       `  if ('${field}' in artifact && !isPlainObject(${access})) {`,
@@ -272,6 +399,17 @@ function baseFieldCheck(field: string, schema: FieldSchema, fieldConstPrefix: st
     );
     return lines;
   }
+
+  // Array of strings (e.g. plugin `keywords`).
+  if (schema.type === 'array' && schema.items?.type === 'string') {
+    lines.push(
+      `  if ('${field}' in artifact && !isStringArray(${access})) {`,
+      `    issues.push({ message: '${field} must be an array of strings', path: ['${field}'] });`,
+      `  }`,
+    );
+    return lines;
+  }
+
   // Plain scalar-string base field (description, license): type-only check.
   lines.push(
     `  if ('${field}' in artifact && typeof ${access} !== 'string') {`,
@@ -281,45 +419,122 @@ function baseFieldCheck(field: string, schema: FieldSchema, fieldConstPrefix: st
   return lines;
 }
 
-/** Render the per-field narrowing checks for an overlay-layer field. */
-function overlayFieldCheck(field: string, schema: FieldSchema): string[] {
+/**
+ * Render the per-field narrowing checks for an overlay-layer field, dispatched
+ * off JSON-Schema keywords. A field whose TYPE is already enforced by the base
+ * (the overlay only ADDS it to `required`, re-declaring no narrowing constraint)
+ * is skipped here — its presence is the required check, its type the base's — to
+ * keep messages single-sourced.
+ */
+function overlayFieldCheck(
+  field: string,
+  schema: FieldSchema,
+  baseProps: Readonly<Record<string, FieldSchema>>,
+): string[] {
   const lines: string[] = [];
   const access = `artifact['${field}']`;
-  if (schema.type === 'array' && schema.items?.type === 'string') {
+
+  // SemVer-narrowed string (overlay adds a `pattern` the base lacks) — e.g.
+  // `version`.
+  if (schema.type === 'string' && schema.pattern !== undefined) {
     lines.push(
-      `  if ('${field}' in artifact && !isStringArray(${access})) {`,
-      `    issues.push({ message: '${field} must be an array of strings', path: ['${field}'] });`,
-      `  }`,
-    );
-    return lines;
-  }
-  if (field === 'version') {
-    lines.push(
-      `  if ('version' in artifact) {`,
-      `    const version = artifact['version'];`,
-      `    if (typeof version !== 'string') {`,
-      `      issues.push({ message: 'version must be a string', path: ['version'] });`,
-      `    } else if (!SEMVER_PATTERN.test(version)) {`,
-      `      issues.push({ message: 'version must be strict SemVer 2.0.0', path: ['version'] });`,
+      `  if ('${field}' in artifact) {`,
+      `    const ${field} = artifact['${field}'];`,
+      `    if (typeof ${field} !== 'string') {`,
+      `      issues.push({ message: '${field} must be a string', path: ['${field}'] });`,
+      `    } else if (!SEMVER_PATTERN.test(${field})) {`,
+      `      issues.push({ message: '${field} must be strict SemVer 2.0.0', path: ['${field}'] });`,
       `    }`,
       `  }`,
     );
     return lines;
   }
-  // Plain scalar-string overlay field (author): type-only check (license/
-  // compatibility are typed by the base; their presence is the required check).
+
+  // Array of strings narrowed by the overlay — e.g. skill `allowed-tools`/`tags`,
+  // plugin `commands`. Emit the type check only when the base does NOT already
+  // type the field as the same array (otherwise the base's check is canonical).
+  if (schema.type === 'array' && schema.items?.type === 'string') {
+    const baseTypes = baseProps[field]?.type === 'array';
+    if (!baseTypes) {
+      lines.push(
+        `  if ('${field}' in artifact && !isStringArray(${access})) {`,
+        `    issues.push({ message: '${field} must be an array of strings', path: ['${field}'] });`,
+        `  }`,
+      );
+      return lines;
+    }
+    return lines;
+  }
+
+  // A field whose type is enforced by the base (string with minLength only, or
+  // object/uri promoted-to-required): the overlay only ADDS it to required and
+  // emits no type check (single-sourced to the base).
+  if (field in baseProps) {
+    return lines;
+  }
+
+  // Net-new overlay scalar string (e.g. skill `author`): type-only check.
   lines.push(
     `  if ('${field}' in artifact && typeof ${access} !== 'string') {`,
     `    issues.push({ message: '${field} must be a string', path: ['${field}'] });`,
-    `  }`,
   );
+  lines.push(`  }`);
   return lines;
+}
+
+/** Whether any overlay field constrains via SemVer (drives the SEMVER_PATTERN const). */
+function usesSemver(overlayProps: Readonly<Record<string, FieldSchema>>): string | undefined {
+  for (const schema of Object.values(overlayProps)) {
+    if (schema.type === 'string' && schema.pattern !== undefined) {
+      return schema.pattern;
+    }
+  }
+  return undefined;
+}
+
+/** The optional `required_environment_variables` overlay extension (skill only). */
+function envVarSchema(
+  overlayProps: Readonly<Record<string, FieldSchema>>,
+): FieldSchema | undefined {
+  return overlayProps['required_environment_variables'];
+}
+
+/** Whether any base or overlay field is a URI string (drives the isUri helper). */
+function usesUri(
+  baseProps: Readonly<Record<string, FieldSchema>>,
+  overlayProps: Readonly<Record<string, FieldSchema>>,
+): boolean {
+  const all = [...Object.values(baseProps), ...Object.values(overlayProps)];
+  return all.some((s) => s.type === 'string' && s.format === 'uri');
+}
+
+/** Whether any field (base or overlay) is an array-of-strings (drives isStringArray). */
+function usesStringArray(
+  baseProps: Readonly<Record<string, FieldSchema>>,
+  overlayProps: Readonly<Record<string, FieldSchema>>,
+  visibilityFields: readonly string[],
+  hasEnvVars: boolean,
+): boolean {
+  const all = [...Object.values(baseProps), ...Object.values(overlayProps)];
+  if (all.some((s) => s.type === 'array' && s.items?.type === 'string')) {
+    return true;
+  }
+  return visibilityFields.length > 0 || hasEnvVars;
+}
+
+/** Whether any field (base or overlay) needs the isPlainObject helper. */
+function usesPlainObject(
+  baseProps: Readonly<Record<string, FieldSchema>>,
+  hasEnvVars: boolean,
+): boolean {
+  return Object.values(baseProps).some((s) => s.type === 'object') || hasEnvVars;
 }
 
 /**
  * Render the full per-contract validator module. The structure mirrors the
- * walking-skeleton hand-authored shape exactly, but every field check is
- * emitted from the JSON Schema (not hand-typed).
+ * walking-skeleton hand-authored shape exactly, but every field check + helper +
+ * constant is emitted from the JSON Schema (not hand-typed), and the helpers
+ * that a given contract does not use are omitted.
  */
 function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSchema): string {
   const { symbol, constPrefix, fieldConstPrefix } = spec;
@@ -328,148 +543,93 @@ function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSc
   const baseProps = base.properties ?? {};
   const overlayProps = overlay.properties ?? {};
 
-  // Base-layer checks: required fields first carry their type/constraint checks,
-  // then any base-optional typed field (e.g. metadata) that the base declares.
-  // Mirror the hand-authored order: name, description, license, compatibility,
-  // metadata.
-  const baseCheckOrder = ['name', 'description', 'license', 'compatibility', 'metadata'].filter(
-    (f) => f in baseProps,
-  );
-  const baseChecks = baseCheckOrder
+  // Visibility-array + env-var extension fields present in this overlay.
+  const visibilityFields = Object.keys(overlayProps).filter((f) => VISIBILITY_FIELDS.has(f));
+  const envVars = envVarSchema(overlayProps);
+  const hasEnvVars = envVars !== undefined;
+
+  const semverPattern = usesSemver(overlayProps);
+  const needUri = usesUri(baseProps, overlayProps);
+  const needStringArray = usesStringArray(baseProps, overlayProps, visibilityFields, hasEnvVars);
+  const needPlainObject = usesPlainObject(baseProps, hasEnvVars);
+
+  // Base-layer checks: every declared base property gets a check, in declaration
+  // order (the JSON Schema's key order is the canonical order).
+  const baseChecks = Object.keys(baseProps)
     .map((f) => baseFieldCheck(f, baseProps[f] ?? {}, fieldConstPrefix).join('\n'))
     .join('\n\n');
 
-  // Overlay-layer checks: the typed required fields in declaration order
-  // (allowed-tools, version, author, tags), then the visibility arrays loop,
-  // then required_environment_variables.
-  const overlayCheckOrder = ['allowed-tools', 'version', 'author', 'tags'].filter(
-    (f) => f in overlayProps,
-  );
-  const overlayChecks = overlayCheckOrder
-    .map((f) => overlayFieldCheck(f, overlayProps[f] ?? {}).join('\n'))
-    .join('\n\n');
+  // Overlay-layer checks: the overlay-required fields in declaration order, then
+  // the visibility-array loop (if any), then required_environment_variables (if
+  // present). Non-required overlay properties (none today) are not type-checked.
+  const overlayCheckBlocks = overlayReq
+    .map((f) => overlayFieldCheck(f, overlayProps[f] ?? {}, baseProps).join('\n'))
+    .filter((s) => s.length > 0);
+  const overlayChecks = overlayCheckBlocks.join('\n\n');
 
-  return `/**
- * ${spec.name} — IS marketplace-tier authoring contract #1 (the walking skeleton).
- *
- * GENERATED by scripts/codegen-authoring.ts from the three-artifact composition:
- *   schemas/authoring/v1/upstream-base/${spec.name}.v1.json   (authored by THEM)
- *   schemas/authoring/v1/marketplace-tier.schema.json#/$defs/universalFolds
- *   schemas/authoring/v1/is-overlay/${spec.name}.v1.json      (authored by US)
- *   ⇒ schemas/authoring/v1/${spec.name}.schema.json           (pure allOf)
- *
- * DO NOT EDIT BY HAND — re-run \`pnpm run codegen:authoring\` after a schema edit.
- * Per DR-044 D8 the Zod validator AND the D7 inline \`$comment\` effective-required
- * manifest are single-sourced from the JSON Schema: the two layers below are
- * derived field-by-field from the base and overlay \`required\` arrays + the
- * per-field type/constraint surface; the universal folds are reused by reference
- * from marketplace-tier. The monotonic-additive invariant (the overlay only ADDS
- * required fields and NARROWS constraints on the base) is the 2026-04-28-debacle
- * guard, asserted by the property test in
- * src/__tests__/${spec.name}-schema.test.ts.
- */
+  // The overlay `issues` initializer: prettier collapses it to one line when it
+  // fits the 100-char print width, else wraps it. Mirror that so the generated
+  // output is already prettier-clean (otherwise `prettier --write` would drift
+  // the codegen and the --check idempotency gate would flap).
+  const overlaySingle = `  const issues: FoldIssue[] = [...requiredFieldsIssues(artifact, ${constPrefix}_OVERLAY_REQUIRED)];`;
+  const overlayInit =
+    overlaySingle.length <= 100
+      ? overlaySingle
+      : `  const issues: FoldIssue[] = [\n    ...requiredFieldsIssues(artifact, ${constPrefix}_OVERLAY_REQUIRED),\n  ];`;
 
-import {
-  type AuthoringArtifact,
-  type FoldIssue,
-  attach,
-  requiredFieldsIssues,
-  universalFoldsIssues,
-} from './marketplace-tier.js';
-
-// ─── Required-field sets (the source of the effective-required manifest) ─────
-
-/** standardFloor — the upstream-base always-required fields (agentskills.io). */
-export const ${constPrefix}_BASE_REQUIRED = [${baseReq.map((f) => `'${f}'`).join(', ')}] as const;
-
-/** The IS-overlay required delta (beyond the base floor). */
-export const ${constPrefix}_OVERLAY_REQUIRED = [
-${overlayReq.map((f) => `  '${f}',`).join('\n')}
-] as const;
-
-/** Effective required = base ∪ overlay = the IS 8-field marketplace set (NON-NEGOTIABLE). */
-export const ${constPrefix}_REQUIRED_FIELDS = [
-  ...${constPrefix}_BASE_REQUIRED,
-  ...${constPrefix}_OVERLAY_REQUIRED,
-] as const;
-
-// ─── Constraint constants (mirror the JSON Schemas exactly) ──────────────────
-
-/** agentskills.io kebab-case name surface (upstream-base). */
-export const ${fieldConstPrefix}_NAME_PATTERN = ${jsRegexLiteral(baseProps['name']?.pattern)};
-/** agentskills.io name length ceiling (upstream-base). */
-export const ${fieldConstPrefix}_NAME_MAX = ${baseProps['name']?.maxLength ?? 64};
-/** agentskills.io compatibility length ceiling (upstream-base). */
-export const ${fieldConstPrefix}_COMPATIBILITY_MAX = ${baseProps['compatibility']?.maxLength ?? 500};
-/** Strict SemVer 2.0.0 (is-overlay — stricter than the legacy IS prefix match). */
-export const SEMVER_PATTERN =
-  ${jsRegexLiteral(overlayProps['version']?.pattern)};
-/** UPPER_SNAKE_CASE env-var names (is-overlay optional extra). */
-export const ENV_VAR_NAME_PATTERN = ${jsRegexLiteral(
-    overlayProps['required_environment_variables']?.items?.properties?.['name']?.pattern,
-  )};
-
-/** The optional IS visibility arrays (is-overlay) — each is an array of strings. */
-const VISIBILITY_ARRAY_FIELDS = [
-${[...HELPER_FIELDS]
-  .filter((f) => f in overlayProps)
-  .map((f) => `  '${f}',`)
-  .join('\n')}
-] as const;
-
-function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === 'string');
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-// ─── Layer 1: upstream base (authored by THEM) ───────────────────────────────
-
-/**
- * The agentskills.io + Claude-docs projection. Required presence of the
- * standardFloor + type/format on the upstream-owned fields. Length of
- * \`description\` is intentionally NOT capped here — the universal disclosureMarkers
- * fold (1536) is the operative cap (encoding the agentskills.io 1024 soft cap
- * would violate the monotonic-additive invariant against the IS 1536 tier).
- */
-export function upstreamBaseIssues(artifact: AuthoringArtifact): FoldIssue[] {
-  const issues: FoldIssue[] = [...requiredFieldsIssues(artifact, ${constPrefix}_BASE_REQUIRED)];
-
-${baseChecks}
-
-  return issues;
-}
-
-// ─── Layer 3: IS overlay (authored by US) ────────────────────────────────────
-
-/**
- * The IS-only delta: overlay-required presence + the type narrowings and the
- * optional IS extension fields. License/compatibility presence is covered by the
- * required check; their types are covered by the base — the overlay does not
- * re-type them, to keep messages single-sourced.
- */
-export function isOverlayIssues(artifact: AuthoringArtifact): FoldIssue[] {
-  const issues: FoldIssue[] = [
-    ...requiredFieldsIssues(artifact, ${constPrefix}_OVERLAY_REQUIRED),
-  ];
-
-${overlayChecks}
-
-  for (const field of VISIBILITY_ARRAY_FIELDS) {
-    if (field in artifact && !isStringArray(artifact[field])) {
-      issues.push({ message: \`\${field} must be an array of strings\`, path: [field] });
+  // ── Constants block (only the constants this contract references) ──
+  const constLines: string[] = [];
+  const prov = spec.baseProvenance;
+  for (const [field, schema] of Object.entries(baseProps)) {
+    if (
+      schema.type === 'string' &&
+      schema.pattern !== undefined &&
+      schema.maxLength !== undefined
+    ) {
+      constLines.push(
+        `/** ${prov} kebab-case ${field} surface (upstream-base). */`,
+        `export const ${constName(fieldConstPrefix, field, 'PATTERN')} = ${jsRegexLiteral(schema.pattern)};`,
+        `/** ${prov} ${field} length ceiling (upstream-base). */`,
+        `export const ${constName(fieldConstPrefix, field, 'MAX')} = ${schema.maxLength};`,
+      );
+    } else if (schema.type === 'string' && schema.maxLength !== undefined) {
+      constLines.push(
+        `/** ${prov} ${field} length ceiling (upstream-base). */`,
+        `export const ${constName(fieldConstPrefix, field, 'MAX')} = ${schema.maxLength};`,
+      );
     }
   }
-
-  if ('required_environment_variables' in artifact) {
-    issues.push(...requiredEnvVarIssues(artifact['required_environment_variables']));
+  if (semverPattern !== undefined) {
+    constLines.push(
+      `/** Strict SemVer 2.0.0 (is-overlay — stricter than the legacy IS prefix match). */`,
+      `export const SEMVER_PATTERN =`,
+      `  ${jsRegexLiteral(semverPattern)};`,
+    );
+  }
+  if (hasEnvVars) {
+    const envNamePattern = envVars?.items?.properties?.['name']?.pattern;
+    constLines.push(
+      `/** UPPER_SNAKE_CASE env-var names (is-overlay optional extra). */`,
+      `export const ENV_VAR_NAME_PATTERN = ${jsRegexLiteral(envNamePattern)};`,
+    );
   }
 
-  return issues;
-}
+  // ── Visibility-array const + loop (skill only) ──
+  const visibilityConst =
+    visibilityFields.length > 0
+      ? `\n/** The optional IS visibility arrays (is-overlay) — each is an array of strings. */\nconst VISIBILITY_ARRAY_FIELDS = [\n${visibilityFields.map((f) => `  '${f}',`).join('\n')}\n] as const;\n`
+      : '';
+  const visibilityLoop =
+    visibilityFields.length > 0
+      ? `\n  for (const field of VISIBILITY_ARRAY_FIELDS) {\n    if (field in artifact && !isStringArray(artifact[field])) {\n      issues.push({ message: \`\${field} must be an array of strings\`, path: [field] });\n    }\n  }\n`
+      : '';
 
+  // ── Env-var extension block + helper (skill only) ──
+  const envVarBlock = hasEnvVars
+    ? `\n  if ('required_environment_variables' in artifact) {\n    issues.push(...requiredEnvVarIssues(artifact['required_environment_variables']));\n  }\n`
+    : '';
+  const envVarHelper = hasEnvVars
+    ? `
 function requiredEnvVarIssues(value: unknown): FoldIssue[] {
   const path = ['required_environment_variables'];
   if (!Array.isArray(value)) {
@@ -498,7 +658,102 @@ function requiredEnvVarIssues(value: unknown): FoldIssue[] {
   });
   return issues;
 }
+`
+    : '';
 
+  // ── Shared helper functions (only those used) ──
+  const helperFns: string[] = [];
+  if (needStringArray) {
+    helperFns.push(
+      `function isStringArray(value: unknown): value is string[] {\n  return Array.isArray(value) && value.every((item) => typeof item === 'string');\n}`,
+    );
+  }
+  if (needPlainObject) {
+    helperFns.push(
+      `function isPlainObject(value: unknown): value is Record<string, unknown> {\n  return typeof value === 'object' && value !== null && !Array.isArray(value);\n}`,
+    );
+  }
+  if (needUri) {
+    helperFns.push(
+      `function isUri(value: string): boolean {\n  try {\n    new URL(value);\n    return true;\n  } catch {\n    return false;\n  }\n}`,
+    );
+  }
+  const helperBlock = helperFns.length > 0 ? `\n${helperFns.join('\n\n')}\n` : '';
+
+  return `/**
+ * ${spec.name} — IS marketplace-tier authoring contract #${spec.contractIndex} (${spec.headerSuffix}).
+ *
+ * GENERATED by scripts/codegen-authoring.ts from the three-artifact composition:
+ *   schemas/authoring/v1/upstream-base/${spec.name}.v1.json   (authored by THEM)
+ *   schemas/authoring/v1/marketplace-tier.schema.json#/$defs/universalFolds
+ *   schemas/authoring/v1/is-overlay/${spec.name}.v1.json      (authored by US)
+ *   ⇒ schemas/authoring/v1/${spec.name}.schema.json           (pure allOf)
+ *
+ * DO NOT EDIT BY HAND — re-run \`pnpm run codegen:authoring\` after a schema edit.
+ * Per DR-044 D8 the Zod validator AND the D7 inline \`$comment\` effective-required
+ * manifest are single-sourced from the JSON Schema: the two layers below are
+ * derived field-by-field from the base and overlay \`required\` arrays + the
+ * per-field type/constraint surface; the universal folds are reused by reference
+ * from marketplace-tier. The monotonic-additive invariant (the overlay only ADDS
+ * required fields and NARROWS constraints on the base) is the 2026-04-28-debacle
+ * guard, asserted by the property test in
+ * src/__tests__/${spec.name}-schema.test.ts.
+ */
+
+import {
+  type AuthoringArtifact,
+  type FoldIssue,
+  attach,
+  requiredFieldsIssues,
+  universalFoldsIssues,
+} from './marketplace-tier.js';
+
+// ─── Required-field sets (the source of the effective-required manifest) ─────
+
+/** standardFloor — the upstream-base always-required fields (${prov}). */
+export const ${constPrefix}_BASE_REQUIRED = [${baseReq.map((f) => `'${f}'`).join(', ')}] as const;
+
+/** The IS-overlay required delta (beyond the base floor). */
+export const ${constPrefix}_OVERLAY_REQUIRED = [
+${overlayReq.map((f) => `  '${f}',`).join('\n')}
+] as const;
+
+/** Effective required = base ∪ overlay = the IS 8-field marketplace set (NON-NEGOTIABLE). */
+export const ${constPrefix}_REQUIRED_FIELDS = [
+  ...${constPrefix}_BASE_REQUIRED,
+  ...${constPrefix}_OVERLAY_REQUIRED,
+] as const;
+
+// ─── Constraint constants (mirror the JSON Schemas exactly) ──────────────────
+
+${constLines.join('\n')}
+${visibilityConst}${helperBlock}
+// ─── Layer 1: upstream base (authored by THEM) ───────────────────────────────
+
+/**
+${spec.baseDoc}
+ */
+export function upstreamBaseIssues(artifact: AuthoringArtifact): FoldIssue[] {
+  const issues: FoldIssue[] = [...requiredFieldsIssues(artifact, ${constPrefix}_BASE_REQUIRED)];
+
+${baseChecks}
+
+  return issues;
+}
+
+// ─── Layer 3: IS overlay (authored by US) ────────────────────────────────────
+
+/**
+${spec.overlayDoc}
+ */
+export function isOverlayIssues(artifact: AuthoringArtifact): FoldIssue[] {
+${overlayInit}
+
+${overlayChecks}
+${visibilityLoop}${envVarBlock}
+  return issues;
+}
+${envVarHelper}
 // ─── The composition (allOf of base + universal folds + overlay) ─────────────
 
 /** Every issue from the three composed layers, in layer order. */
