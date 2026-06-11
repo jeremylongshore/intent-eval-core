@@ -76,12 +76,14 @@
     "format:check": "prettier --check .",
     "arch": "audit-harness arch",
     "boundaries": "node --experimental-strip-types scripts/check-boundaries.ts",
+    "check:predicate-namespace": "node --experimental-strip-types scripts/check-predicate-namespace-isolation.ts",
+    "check:rubric-floor": "node --experimental-strip-types scripts/check-rubric-floor.ts",
     "api:extract": "pnpm run build && api-extractor run --local",
     "api:check": "pnpm run build && api-extractor run",
     "api:diff": "node --experimental-strip-types scripts/api-diff.ts",
     "harness:verify": "audit-harness verify",
     "harness:init": "audit-harness init",
-    "check": "pnpm run codegen:authoring:check && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run arch && pnpm run boundaries"
+    "check": "pnpm run codegen:authoring:check && pnpm run check:predicate-namespace && pnpm run check:rubric-floor && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run arch && pnpm run boundaries"
   },
   "lint-staged": {
     "*.{ts,js,cjs,mjs}": [

@@ -32,6 +32,7 @@ interface ValidateFn {
 interface AjvInstance {
   addSchema(schema: Record<string, unknown>, key?: string): void;
   getSchema(ref: string): ValidateFn | undefined;
+  addKeyword(def: { keyword: string }): AjvInstance;
 }
 
 const Ajv2020 = (Ajv2020Module as unknown as { default: new (opts: object) => AjvInstance })
@@ -61,6 +62,11 @@ let validateBase: ValidateFn;
 beforeAll(() => {
   const ajv = new Ajv2020({ strict: true, strictRequired: false, allErrors: true });
   addFormats(ajv);
+  // x-mutually-exclusive-fields is a codegen-only vendor annotation (kyh9); ajv
+  // never enforces it (the per-variable disjointness predicate is not
+  // JSON-Schema-expressible — the documented carve-out). Register it as a benign
+  // no-op so strict mode tolerates it on the published overlay.
+  ajv.addKeyword({ keyword: 'x-mutually-exclusive-fields' });
   // Register every layer so the composition's $refs resolve.
   ajv.addSchema(loadJson(join(AUTHORING_DIR, 'marketplace-tier.schema.json')));
   ajv.addSchema(loadJson(join(AUTHORING_DIR, 'upstream-base/skill-frontmatter.v1.json')));

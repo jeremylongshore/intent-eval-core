@@ -1,0 +1,9 @@
+# Extra harness-hash patterns for intent-eval-core (consumed by harness-hash.sh).
+# Each non-comment line is a glob, relative to the repo root, of an
+# engineer-owned policy artifact to hash-pin alongside the canonical defaults.
+
+# 3kye.6 / DR-049 — the rubric-floor anti-realignment guard. Self-pinned so the
+# floor cannot be weakened in the same PR that weakens the guard: any byte change
+# to this file fails `audit-harness verify` until a separate, reviewable
+# `audit-harness init` re-pins it.
+scripts/check-rubric-floor.ts

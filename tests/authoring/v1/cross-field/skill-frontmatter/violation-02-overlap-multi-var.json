@@ -1,0 +1,12 @@
+{
+  "name": "overlap-skill-multi",
+  "description": "Two identifiers each appear in both requires_env and fallback_for_env.",
+  "allowed-tools": ["Read"],
+  "version": "1.0.0",
+  "author": "Jeremy Longshore",
+  "license": "Apache-2.0",
+  "compatibility": "claude-code",
+  "tags": ["x"],
+  "requires_env": ["API_KEY", "DB_URL", "REGION"],
+  "fallback_for_env": ["API_KEY", "DB_URL"]
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v1/bad-sample.schema.json",
+  "title": "sample authoring contract — DELIBERATELY-FAILING fixture",
+  "$comment": "This authoring schema WRONGLY references the predicate namespace https://evals.intentsolutions.io/predicates/skill-conformance/v1 — conflating the deterministic-lint surface with the signed-attestation surface. The predicate-namespace-isolation gate MUST catch this. Do not 'fix' this file; it exists to prove the gate fails on a violation.",
+  "type": "object",
+  "required": ["name"],
+  "properties": {
+    "name": { "type": "string" }
+  }
+}

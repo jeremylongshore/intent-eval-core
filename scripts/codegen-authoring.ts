@@ -85,11 +85,25 @@ interface FieldSchema {
   readonly properties?: Readonly<Record<string, FieldSchema>>;
 }
 
+/**
+ * A declared per-variable mutual-exclusion between two (or more) array fields:
+ * no element may appear in more than one of `fields`. Read from the overlay
+ * schema's `x-mutually-exclusive-fields` annotation. This is an
+ * array-element-disjointness predicate that vanilla JSON Schema cannot express,
+ * so the codegen emits it into the Zod runtime layer as a DOCUMENTED CARVE-OUT
+ * (kyh9 / CTO ruling) — the published JSON Schema does not mirror it.
+ */
+interface MutualExclusion {
+  readonly fields: readonly string[];
+  readonly $comment?: string;
+}
+
 interface LayerSchema {
   readonly $id: string;
   readonly title: string;
   readonly required?: readonly string[];
   readonly properties?: Readonly<Record<string, FieldSchema>>;
+  readonly 'x-mutually-exclusive-fields'?: readonly MutualExclusion[];
 }
 
 /** One per-contract codegen unit. */
@@ -779,6 +793,68 @@ function envVarSchema(
   return overlayProps['required_environment_variables'];
 }
 
+/**
+ * Render the per-variable mutual-exclusion check block (kyh9 — CTO re-scope).
+ * For each declared field pair, no element may appear in more than one of the
+ * arrays. This is an array-element-disjointness predicate that vanilla JSON
+ * Schema 2020-12 cannot express, so it is emitted into the Zod runtime layer as
+ * a DOCUMENTED CARVE-OUT — the fold-agreement (ajv ↔ Zod) backstop carves out
+ * exactly these overlap cases. Keyword-driven: any contract whose overlay
+ * declares `x-mutually-exclusive-fields` gets the check; one that declares none
+ * emits nothing.
+ */
+function mutualExclusionBlock(exclusions: readonly MutualExclusion[]): string {
+  if (exclusions.length === 0) {
+    return '';
+  }
+  const groups = exclusions.map((ex) => `[${ex.fields.map((f) => `'${f}'`).join(', ')}]`);
+  // Mirror prettier: collapse the for-of array header to one line when the whole
+  // header fits the 100-char print width, else wrap one group per line with
+  // trailing commas. Keeps the codegen idempotency gate from flapping.
+  const single = `  for (const group of [${groups.join(', ')}] as const) {`;
+  const header =
+    single.length <= 100
+      ? single
+      : `  for (const group of [\n${groups.map((g) => `    ${g},`).join('\n')}\n  ] as const) {`;
+  return `
+${header}
+    issues.push(...mutuallyExclusiveIssues(artifact, group));
+  }
+`;
+}
+
+/** The Zod-layer helper that implements the per-variable disjointness predicate. */
+const MUTUAL_EXCLUSION_HELPER = `
+function mutuallyExclusiveIssues(
+  artifact: AuthoringArtifact,
+  fields: readonly string[],
+): FoldIssue[] {
+  // Per-variable disjointness: no identifier may appear in more than one of the
+  // listed array fields. Only well-formed string arrays participate — malformed
+  // values are reported by their own type checks, not here.
+  const issues: FoldIssue[] = [];
+  const seen = new Map<string, string>();
+  for (const field of fields) {
+    const value = artifact[field];
+    if (!isStringArray(value)) {
+      continue;
+    }
+    for (const item of value) {
+      const prior = seen.get(item);
+      if (prior !== undefined && prior !== field) {
+        issues.push({
+          message: \`"\${item}" must not appear in both \${prior} and \${field}\`,
+          path: [field],
+        });
+      } else {
+        seen.set(item, field);
+      }
+    }
+  }
+  return issues;
+}
+`;
+
 /** Whether any base or overlay field is a URI string (drives the isUri helper). */
 function usesUri(
   baseProps: Readonly<Record<string, FieldSchema>>,
@@ -832,9 +908,16 @@ function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSc
   const envVars = envVarSchema(overlayProps);
   const hasEnvVars = envVars !== undefined;
 
+  // kyh9: per-variable mutual-exclusion groups declared on the overlay.
+  const exclusions = overlay['x-mutually-exclusive-fields'] ?? [];
+  const hasExclusions = exclusions.length > 0;
+
   const semverPattern = usesSemver(overlayProps);
   const needUri = usesUri(baseProps, overlayProps);
-  const needStringArray = usesStringArray(baseProps, overlayProps, visibilityFields, hasEnvVars);
+  // The disjointness check itself relies on isStringArray, so a contract with
+  // exclusions needs the helper even if no field type-check otherwise would.
+  const needStringArray =
+    usesStringArray(baseProps, overlayProps, visibilityFields, hasEnvVars) || hasExclusions;
   const needPlainObject = usesPlainObject(baseProps, hasEnvVars);
 
   // Base-layer checks: every declared base property gets a check, in declaration
@@ -945,6 +1028,10 @@ function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSc
     visibilityFields.length > 0
       ? `\n  for (const field of VISIBILITY_ARRAY_FIELDS) {\n    if (field in artifact && !isStringArray(artifact[field])) {\n      issues.push({ message: \`\${field} must be an array of strings\`, path: [field] });\n    }\n  }\n`
       : '';
+
+  // ── Per-variable mutual-exclusion block + helper (kyh9 — CTO carve-out) ──
+  const exclusionBlock = mutualExclusionBlock(exclusions);
+  const exclusionHelper = hasExclusions ? MUTUAL_EXCLUSION_HELPER : '';
 
   // ── Env-var extension block + helper (skill only) ──
   const envVarBlock = hasEnvVars
@@ -1070,10 +1157,10 @@ export function isOverlayIssues(artifact: AuthoringArtifact): FoldIssue[] {
 ${overlayInit}
 
 ${overlayChecks}
-${visibilityLoop}${envVarBlock}
+${visibilityLoop}${envVarBlock}${exclusionBlock}
   return issues;
 }
-${envVarHelper}
+${envVarHelper}${exclusionHelper}
 // ─── The composition (allOf of base + universal folds + overlay) ─────────────
 
 /** Every issue from the three composed layers, in layer order. */

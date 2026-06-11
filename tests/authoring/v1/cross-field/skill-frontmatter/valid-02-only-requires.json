@@ -1,0 +1,11 @@
+{
+  "name": "only-requires-skill",
+  "description": "Declares only requires_env (no fallback array) — the invariant is vacuously satisfied.",
+  "allowed-tools": ["Read"],
+  "version": "1.0.0",
+  "author": "Jeremy Longshore",
+  "license": "Apache-2.0",
+  "compatibility": "claude-code",
+  "tags": ["x"],
+  "requires_env": ["API_KEY", "REGION"]
+}
