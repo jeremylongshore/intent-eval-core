@@ -83,7 +83,12 @@ Three artifacts: [`upstream-base/skill-frontmatter.v1.json`](./upstream-base/ski
 (authored by IS), and the published [`skill-frontmatter.schema.json`](./skill-frontmatter.schema.json)
 (pure `allOf`). Zod mirror at
 [`src/validators/v1/authoring/skill-frontmatter.ts`](../../../src/validators/v1/authoring/skill-frontmatter.ts).
-Grandfathered hand-authored per DR-044 D8 (codegen is a hard precondition of contract #2).
+**GENERATED** per DR-044 D8 by [`scripts/codegen-authoring.ts`](../../../scripts/codegen-authoring.ts):
+the Zod validator AND the inline `$comment` effective-required manifest are single-sourced from the
+base + overlay JSON Schemas — never hand-typed. The walking-skeleton was originally grandfathered
+hand-authored (D8 made codegen a hard precondition of contract #2, not #1); it is now promoted to
+generated output, and the generated body is byte-identical to the hand-authored body (only the
+file-header docstring differs). A `--check` stale-codegen gate runs in `pnpm run check` + CI.
 
 ### § upstream-base (authored by THEM)
 
@@ -106,3 +111,4 @@ invariant (overlay only ADDS required + NARROWS) is asserted by the property tes
 | Version | Change |
 | --- | --- |
 | `1.0.0-draft` | Initial `allOf` of `[upstream-base, marketplace-tier#/$defs/universalFolds, is-overlay]`. Inline generated effective-required manifest (REQUIRED HERE / INHERITED). |
+| `1.0.0-draft` (DR-044 D8) | Single-source authoring codegen landed (`scripts/codegen-authoring.ts`). The Zod validator + the inline `$comment` manifest are now GENERATED from the base + overlay schemas; the walking-skeleton is promoted from hand-authored to generated output (body byte-identical). `--check` idempotency gate wired into `pnpm run check` + CI. The remaining five contracts ride this codegen for free. |

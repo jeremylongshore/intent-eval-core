@@ -40,6 +40,13 @@ jobs:
       - name: Harness verify (hash-pinned policy artifacts)
         run: pnpm run harness:verify
 
+      # Single-source authoring codegen (DR-044 D8): the authoring-family Zod
+      # validators + the D7 inline $comment effective-required manifests are
+      # GENERATED from schemas/authoring/v1/*. Fail the build if the committed
+      # generated output is stale (idempotency gate — re-running must be a no-op).
+      - name: Authoring codegen up to date (DR-044 D8 stale-codegen gate)
+        run: pnpm run codegen:authoring:check
+
       # Build BEFORE lint/typecheck: the CI emit helpers (scripts/emit-evidence.ts,
       # scripts/assemble-manifest.ts) import the kernel validators via the package
       # self-reference (@intentsolutions/core/...), which only resolves to typed
