@@ -51,3 +51,54 @@ export {
   PluginManifestSchema,
   type PluginManifest,
 } from './plugin-manifest.js';
+
+// Contract #3 — agent-definition (contract-scoped public surface).
+export {
+  AGENT_DEFINITION_BASE_REQUIRED,
+  AGENT_DEFINITION_OVERLAY_REQUIRED,
+  AGENT_DEFINITION_REQUIRED_FIELDS,
+  AGENT_NAME_PATTERN,
+  AGENT_NAME_MAX,
+  AGENT_MODEL_VALUES,
+  AGENT_COLOR_VALUES,
+  agentDefinitionIssues,
+  AgentDefinitionSchema,
+  type AgentDefinition,
+} from './agent-definition.js';
+
+// Contract #4 — mcp-config (contract-scoped public surface).
+export {
+  MCP_CONFIG_BASE_REQUIRED,
+  MCP_CONFIG_OVERLAY_REQUIRED,
+  MCP_CONFIG_REQUIRED_FIELDS,
+  MCP_NAME_PATTERN,
+  MCP_NAME_MAX,
+  MCP_TRANSPORT_VALUES,
+  mcpConfigIssues,
+  McpConfigSchema,
+  type McpConfig,
+} from './mcp-config.js';
+
+// Contract #5 — hook-config (contract-scoped public surface).
+export {
+  HOOK_CONFIG_BASE_REQUIRED,
+  HOOK_CONFIG_OVERLAY_REQUIRED,
+  HOOK_CONFIG_REQUIRED_FIELDS,
+  HOOK_EVENT_VALUES,
+  HOOK_TYPE_VALUES,
+  hookConfigIssues,
+  HookConfigSchema,
+  type HookConfig,
+} from './hook-config.js';
+
+// Contract #6 — marketplace-catalog (contract-scoped public surface).
+export {
+  MARKETPLACE_CATALOG_BASE_REQUIRED,
+  MARKETPLACE_CATALOG_OVERLAY_REQUIRED,
+  MARKETPLACE_CATALOG_REQUIRED_FIELDS,
+  MARKETPLACE_NAME_PATTERN,
+  MARKETPLACE_NAME_MAX,
+  marketplaceCatalogIssues,
+  MarketplaceCatalogSchema,
+  type MarketplaceCatalog,
+} from './marketplace-catalog.js';

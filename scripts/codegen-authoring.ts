@@ -76,7 +76,10 @@ interface FieldSchema {
   readonly format?: string;
   readonly minLength?: number;
   readonly maxLength?: number;
+  readonly minimum?: number;
+  readonly minItems?: number;
   readonly pattern?: string;
+  readonly enum?: readonly string[];
   readonly items?: FieldSchema;
   readonly required?: readonly string[];
   readonly properties?: Readonly<Record<string, FieldSchema>>;
@@ -173,6 +176,100 @@ const CONTRACTS: readonly ContractSpec[] = [
       ' * commands) + the SemVer narrowing on version. A field whose type is already\n' +
       ' * enforced by the base (the overlay only adds it to required) is not re-typed\n' +
       ' * here — its presence is the required check — to keep messages single-sourced.',
+  },
+  {
+    name: 'agent-definition',
+    symbol: 'AgentDefinition',
+    constPrefix: 'AGENT_DEFINITION',
+    fieldConstPrefix: 'AGENT',
+    contractIndex: 3,
+    headerSuffix: 'subagent frontmatter',
+    baseProvenance: 'code.claude.com sub-agents',
+    baseDoc:
+      ' * The code.claude.com sub-agents projection. Required presence of the\n' +
+      ' * standardFloor ([name, description] — the only upstream-required fields) +\n' +
+      ' * type/constraint on the upstream-owned fields (kebab-case name, array tools,\n' +
+      ' * model alias enum {sonnet,opus,haiku,fable,inherit}, color enum). Length of\n' +
+      ' * `description` is intentionally NOT capped here — the universal disclosureMarkers\n' +
+      ' * fold (1536) is the operative cap (encoding a tighter cap would violate the\n' +
+      ' * monotonic-additive invariant against the IS 1536 tier).',
+    overlayDoc:
+      ' * The IS-only delta: three upstream-optional fields promoted to IS-required\n' +
+      ' * (tools, model, color) + three net-new IS-required tracking fields (version,\n' +
+      ' * author, tags — the same trio skill-frontmatter carries) + the SemVer narrowing\n' +
+      ' * on version. A field whose type is already enforced by the base (the overlay\n' +
+      ' * only adds it to required) is not re-typed here — its presence is the required\n' +
+      ' * check — to keep messages single-sourced.',
+  },
+  {
+    name: 'mcp-config',
+    symbol: 'McpConfig',
+    constPrefix: 'MCP_CONFIG',
+    fieldConstPrefix: 'MCP',
+    contractIndex: 4,
+    headerSuffix: 'mcpServers entry',
+    baseProvenance: 'MCP spec + code.claude.com mcp',
+    baseDoc:
+      ' * The MCP-spec + code.claude.com mcp projection. Required presence of the\n' +
+      ' * launch surface ([name, command, args, transport, env]) + type/constraint on\n' +
+      ' * the upstream-owned fields (kebab-case name, non-empty command, array args,\n' +
+      ' * transport enum {stdio,http,sse,ws}, object env). Length of `description` is\n' +
+      ' * intentionally NOT capped here — the universal disclosureMarkers fold (1536)\n' +
+      ' * is the operative cap (encoding a tighter cap would violate the\n' +
+      ' * monotonic-additive invariant against the IS 1536 tier).',
+    overlayDoc:
+      ' * The IS-only delta: three net-new IS-required tracking/operational fields\n' +
+      ' * (description, version, enabled) + the SemVer narrowing on version. A field\n' +
+      ' * whose type is already enforced by the base (the overlay only adds it to\n' +
+      ' * required) is not re-typed here — its presence is the required check — to keep\n' +
+      ' * messages single-sourced.',
+  },
+  {
+    name: 'hook-config',
+    symbol: 'HookConfig',
+    constPrefix: 'HOOK_CONFIG',
+    fieldConstPrefix: 'HOOK',
+    contractIndex: 5,
+    headerSuffix: 'hooks.json handler entry',
+    baseProvenance: 'code.claude.com hooks',
+    baseDoc:
+      ' * The code.claude.com hooks projection (one flattened handler entry). Required\n' +
+      ' * presence of the trigger+handler surface ([event, matcher, type, command]) +\n' +
+      ' * type/constraint on the upstream-owned fields (event enum, non-empty matcher,\n' +
+      ' * type enum {command,http,mcp_tool,prompt,agent}, non-empty command). This\n' +
+      ' * contract carries no `name` — a hook handler has no public identifier, so the\n' +
+      ' * universal securityChecks name fold simply does not fire. Length of\n' +
+      ' * `description` is intentionally NOT capped here — the universal disclosureMarkers\n' +
+      ' * fold (1536) is the operative cap.',
+    overlayDoc:
+      ' * The IS-only delta: `timeout` promoted from upstream-optional to IS-required\n' +
+      ' * (non-negative integer) + three net-new IS-required operational/tracking fields\n' +
+      ' * (description, enabled, blocking). A field whose type is already enforced by the\n' +
+      ' * base (the overlay only adds it to required) is not re-typed here — its presence\n' +
+      ' * is the required check — to keep messages single-sourced.',
+  },
+  {
+    name: 'marketplace-catalog',
+    symbol: 'MarketplaceCatalog',
+    constPrefix: 'MARKETPLACE_CATALOG',
+    fieldConstPrefix: 'MARKETPLACE',
+    contractIndex: 6,
+    headerSuffix: 'marketplace.json catalog',
+    baseProvenance: 'code.claude.com plugin-marketplaces',
+    baseDoc:
+      ' * The code.claude.com plugin-marketplaces projection. Required presence of the\n' +
+      ' * standardFloor ([name, owner, plugins]) + type/constraint on the upstream-owned\n' +
+      ' * fields (kebab-case name, object owner with a required inner name, non-empty\n' +
+      ' * array of plugin entries each requiring [name, source]). Length of `description`\n' +
+      ' * is intentionally NOT capped here — the universal disclosureMarkers fold (1536)\n' +
+      ' * is the operative cap (encoding a tighter cap would violate the\n' +
+      ' * monotonic-additive invariant against the IS 1536 tier).',
+    overlayDoc:
+      ' * The IS-only delta: five fields promoted to IS-required (version, description,\n' +
+      ' * license, homepage, keywords) + the SemVer narrowing on version. A field whose\n' +
+      ' * type is already enforced by the base (the overlay only adds it to required) is\n' +
+      ' * not re-typed here — its presence is the required check — to keep messages\n' +
+      ' * single-sourced.',
   },
 ];
 
@@ -355,6 +452,129 @@ function baseFieldCheck(field: string, schema: FieldSchema, fieldConstPrefix: st
     return lines;
   }
 
+  // String constrained to an enum (e.g. agent `model`/`color`, mcp `transport`,
+  // hook `event`/`type`). Type-check + membership-check; the const carries the
+  // allowed set.
+  if (schema.type === 'string' && schema.enum !== undefined) {
+    const enumConst = constName(fieldConstPrefix, field, 'VALUES');
+    lines.push(
+      `  if ('${field}' in artifact) {`,
+      `    const ${field} = artifact['${field}'];`,
+      `    if (typeof ${field} !== 'string') {`,
+      `      issues.push({ message: '${field} must be a string', path: ['${field}'] });`,
+      `    } else if (!(${enumConst} as readonly string[]).includes(${field})) {`,
+      `      issues.push({`,
+      `        message: \`${field} must be one of: \${${enumConst}.join(', ')}\`,`,
+      `        path: ['${field}'],`,
+      `      });`,
+      `    }`,
+      `  }`,
+    );
+    return lines;
+  }
+
+  // String with only a minLength floor — non-empty, no pattern/maxLength/format
+  // (e.g. mcp `command`, hook `matcher`/`command`). Type-check + non-empty check.
+  // `description` is excluded: it is the universal-fold-owned field (the
+  // marketplace-tier foundation governs `description` AND `name` by name — see
+  // securityChecksIssues / disclosureMarkersIssues), so its base-layer check is
+  // type-only across every contract. This keeps the codegen keyword-driven for
+  // every author-owned field while leaving the two foundation tokens to the fold.
+  if (
+    field !== 'description' &&
+    schema.type === 'string' &&
+    schema.minLength !== undefined &&
+    schema.minLength > 0 &&
+    schema.pattern === undefined &&
+    schema.maxLength === undefined &&
+    schema.format === undefined &&
+    schema.enum === undefined
+  ) {
+    lines.push(
+      `  if ('${field}' in artifact) {`,
+      `    const ${field} = artifact['${field}'];`,
+      `    if (typeof ${field} !== 'string') {`,
+      `      issues.push({ message: '${field} must be a string', path: ['${field}'] });`,
+      `    } else if (${field}.length < ${schema.minLength}) {`,
+      `      issues.push({ message: '${field} must not be empty', path: ['${field}'] });`,
+      `    }`,
+      `  }`,
+    );
+    return lines;
+  }
+
+  // Boolean field (e.g. mcp `enabled`, hook `enabled`/`blocking`).
+  if (schema.type === 'boolean') {
+    lines.push(
+      `  if ('${field}' in artifact && typeof ${access} !== 'boolean') {`,
+      `    issues.push({ message: '${field} must be a boolean', path: ['${field}'] });`,
+      `  }`,
+    );
+    return lines;
+  }
+
+  // Integer field with a numeric floor (e.g. hook `timeout` — non-negative).
+  if (schema.type === 'integer') {
+    const minConst = constName(fieldConstPrefix, field, 'MIN');
+    lines.push(
+      `  if ('${field}' in artifact) {`,
+      `    const ${field} = artifact['${field}'];`,
+      `    if (typeof ${field} !== 'number' || !Number.isInteger(${field})) {`,
+      `      issues.push({ message: '${field} must be an integer', path: ['${field}'] });`,
+      `    } else if (${field} < ${minConst}) {`,
+      `      issues.push({`,
+      `        message: \`${field} must be at least \${${minConst}}\`,`,
+      `        path: ['${field}'],`,
+      `      });`,
+      `    }`,
+      `  }`,
+    );
+    return lines;
+  }
+
+  // Array of objects, each with a nested `required` set, plus an optional
+  // minItems floor (e.g. marketplace `plugins` = [{name, source}, ...], minItems 1).
+  if (schema.type === 'array' && schema.items?.type === 'object') {
+    const nestedRequired = (schema.items.required ?? []).map((f) => `'${f}'`).join(', ');
+    const minItems = schema.minItems ?? 0;
+    lines.push(
+      `  if ('${field}' in artifact) {`,
+      `    const ${field} = ${access};`,
+      `    if (!Array.isArray(${field})) {`,
+      `      issues.push({ message: '${field} must be an array', path: ['${field}'] });`,
+      `    } else {`,
+    );
+    if (minItems > 0) {
+      lines.push(
+        `      if (${field}.length < ${minItems}) {`,
+        `        issues.push({ message: '${field} must not be empty', path: ['${field}'] });`,
+        `      }`,
+      );
+    }
+    lines.push(
+      `      ${field}.forEach((entry, index) => {`,
+      `        if (!isPlainObject(entry)) {`,
+      `          issues.push({`,
+      `            message: '${field} entry must be an object',`,
+      `            path: ['${field}', String(index)],`,
+      `          });`,
+      `          return;`,
+      `        }`,
+      `        for (const key of [${nestedRequired}] as const) {`,
+      `          if (!(key in entry)) {`,
+      `            issues.push({`,
+      `              message: \`${field}[\${index}].\${key} is required\`,`,
+      `              path: ['${field}', String(index), key],`,
+      `            });`,
+      `          }`,
+      `        }`,
+      `      });`,
+      `    }`,
+      `  }`,
+    );
+    return lines;
+  }
+
   // String with a URI format (e.g. `homepage`, `repository`).
   if (schema.type === 'string' && schema.format === 'uri') {
     lines.push(
@@ -473,7 +693,55 @@ function overlayFieldCheck(
     return lines;
   }
 
-  // Net-new overlay scalar string (e.g. skill `author`): type-only check.
+  // ── Net-new overlay fields (not in the base) — the overlay both ADDS them to
+  // required AND owns their type. Dispatched off JSON-Schema keywords. ──
+
+  // Net-new boolean (e.g. mcp `enabled`, hook `enabled`/`blocking`).
+  if (schema.type === 'boolean') {
+    lines.push(
+      `  if ('${field}' in artifact && typeof ${access} !== 'boolean') {`,
+      `    issues.push({ message: '${field} must be a boolean', path: ['${field}'] });`,
+      `  }`,
+    );
+    return lines;
+  }
+
+  // Net-new integer with a numeric floor (e.g. hook `timeout` — non-negative).
+  if (schema.type === 'integer') {
+    const min = schema.minimum ?? 0;
+    lines.push(
+      `  if ('${field}' in artifact) {`,
+      `    const ${field} = artifact['${field}'];`,
+      `    if (typeof ${field} !== 'number' || !Number.isInteger(${field})) {`,
+      `      issues.push({ message: '${field} must be an integer', path: ['${field}'] });`,
+      `    } else if (${field} < ${min}) {`,
+      `      issues.push({ message: '${field} must be at least ${min}', path: ['${field}'] });`,
+      `    }`,
+      `  }`,
+    );
+    return lines;
+  }
+
+  // Net-new URI string (e.g. marketplace `homepage`).
+  if (schema.type === 'string' && schema.format === 'uri') {
+    lines.push(
+      `  if ('${field}' in artifact) {`,
+      `    const ${field} = artifact['${field}'];`,
+      `    if (typeof ${field} !== 'string') {`,
+      `      issues.push({ message: '${field} must be a string', path: ['${field}'] });`,
+      `    } else if (!isUri(${field})) {`,
+      `      issues.push({ message: '${field} must be a valid URI', path: ['${field}'] });`,
+      `    }`,
+      `  }`,
+    );
+    return lines;
+  }
+
+  // Net-new overlay scalar string (e.g. skill `author`, mcp/hook/marketplace
+  // `description`, marketplace `license`): type-only check. (`description` is the
+  // foundation-owned token-budget field; its non-emptiness is governed by the
+  // overlay required-presence check, not a base non-empty check — consistent with
+  // the base layer leaving `description` to the universal folds.)
   lines.push(
     `  if ('${field}' in artifact && typeof ${access} !== 'string') {`,
     `    issues.push({ message: '${field} must be a string', path: ['${field}'] });`,
@@ -527,7 +795,11 @@ function usesPlainObject(
   baseProps: Readonly<Record<string, FieldSchema>>,
   hasEnvVars: boolean,
 ): boolean {
-  return Object.values(baseProps).some((s) => s.type === 'object') || hasEnvVars;
+  return (
+    Object.values(baseProps).some(
+      (s) => s.type === 'object' || (s.type === 'array' && s.items?.type === 'object'),
+    ) || hasEnvVars
+  );
 }
 
 /**
@@ -577,6 +849,21 @@ function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSc
       ? overlaySingle
       : `  const issues: FoldIssue[] = [\n    ...requiredFieldsIssues(artifact, ${constPrefix}_OVERLAY_REQUIRED),\n  ];`;
 
+  // The base `issues` initializer (same prettier wrap rule as the overlay init —
+  // a long contract const name like MARKETPLACE_CATALOG_BASE_REQUIRED pushes the
+  // single-line form past 100 chars).
+  const baseSingle = `  const issues: FoldIssue[] = [...requiredFieldsIssues(artifact, ${constPrefix}_BASE_REQUIRED)];`;
+  const baseInit =
+    baseSingle.length <= 100
+      ? baseSingle
+      : `  const issues: FoldIssue[] = [\n    ...requiredFieldsIssues(artifact, ${constPrefix}_BASE_REQUIRED),\n  ];`;
+
+  // The two required-field-set const declarations: prettier collapses a const
+  // array to one line when the whole declaration fits 100 chars, else wraps it
+  // one element per line. Mirror that for BOTH the base and overlay arrays.
+  const baseReqDecl = arrayConstDecl(`${constPrefix}_BASE_REQUIRED`, baseReq);
+  const overlayReqDecl = arrayConstDecl(`${constPrefix}_OVERLAY_REQUIRED`, overlayReq);
+
   // ── Constants block (only the constants this contract references) ──
   const constLines: string[] = [];
   const prov = spec.baseProvenance;
@@ -596,6 +883,29 @@ function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSc
       constLines.push(
         `/** ${prov} ${field} length ceiling (upstream-base). */`,
         `export const ${constName(fieldConstPrefix, field, 'MAX')} = ${schema.maxLength};`,
+      );
+    } else if (schema.type === 'string' && schema.enum !== undefined) {
+      // Mirror prettier: a const array that fits the 100-char print width is
+      // collapsed to one line, else wrapped one-element-per-line. Emitting the
+      // post-prettier form here keeps the codegen idempotency gate from flapping
+      // (codegen-writes ⇒ prettier-no-ops).
+      const name = constName(fieldConstPrefix, field, 'VALUES');
+      const single = `export const ${name} = [${schema.enum.map((v) => `'${v}'`).join(', ')}] as const;`;
+      constLines.push(`/** ${prov} ${field} allowed values (upstream-base). */`);
+      if (single.length <= 100) {
+        constLines.push(single);
+      } else {
+        constLines.push(
+          `export const ${name} = [`,
+          ...schema.enum.map((v) => `  '${v}',`),
+          `] as const;`,
+        );
+      }
+    } else if (schema.type === 'integer') {
+      const min = schema.minimum ?? 0;
+      constLines.push(
+        `/** ${prov} ${field} numeric floor (upstream-base). */`,
+        `export const ${constName(fieldConstPrefix, field, 'MIN')} = ${min};`,
       );
     }
   }
@@ -711,12 +1021,10 @@ import {
 // ─── Required-field sets (the source of the effective-required manifest) ─────
 
 /** standardFloor — the upstream-base always-required fields (${prov}). */
-export const ${constPrefix}_BASE_REQUIRED = [${baseReq.map((f) => `'${f}'`).join(', ')}] as const;
+${baseReqDecl}
 
 /** The IS-overlay required delta (beyond the base floor). */
-export const ${constPrefix}_OVERLAY_REQUIRED = [
-${overlayReq.map((f) => `  '${f}',`).join('\n')}
-] as const;
+${overlayReqDecl}
 
 /** Effective required = base ∪ overlay = the IS 8-field marketplace set (NON-NEGOTIABLE). */
 export const ${constPrefix}_REQUIRED_FIELDS = [
@@ -734,7 +1042,7 @@ ${visibilityConst}${helperBlock}
 ${spec.baseDoc}
  */
 export function upstreamBaseIssues(artifact: AuthoringArtifact): FoldIssue[] {
-  const issues: FoldIssue[] = [...requiredFieldsIssues(artifact, ${constPrefix}_BASE_REQUIRED)];
+${baseInit}
 
 ${baseChecks}
 
@@ -783,6 +1091,19 @@ function jsRegexLiteral(pattern: string | undefined): string {
 
 function lowerFirst(s: string): string {
   return s.charAt(0).toLowerCase() + s.slice(1);
+}
+
+/**
+ * Render an `export const NAME = [...] as const;` declaration prettier-clean: one
+ * line when the whole declaration fits the 100-char print width, else wrapped one
+ * element per line. Mirrors prettier so the codegen idempotency gate never flaps.
+ */
+function arrayConstDecl(name: string, items: readonly string[]): string {
+  const single = `export const ${name} = [${items.map((f) => `'${f}'`).join(', ')}] as const;`;
+  if (single.length <= 100) {
+    return single;
+  }
+  return `export const ${name} = [\n${items.map((f) => `  '${f}',`).join('\n')}\n] as const;`;
 }
 
 function regenerateValidator(spec: ContractSpec, check: boolean): boolean {
