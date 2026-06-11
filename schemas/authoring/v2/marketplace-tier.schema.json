@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/marketplace-tier.schema.json",
+  "title": "IS marketplace authoring tier v2 — 3 universal folds + universalFolds composition (STRICT profile)",
+  "description": "The STRICT v2 fold family. A self-contained copy of the v1 marketplace-tier foundation (DR-044 D7 — three universal folds: deprecationRegistry, securityChecks, disclosureMarkers — plus the universalFolds composition) with THREE fold tightenings relative to v1: (1) securityChecks `description` rejects `$(` and backtick shell-substitution sequences in addition to `${` and XML tags; (2) securityChecks `name` additionally rejects any name whose lowercase contains `claude` or `anthropic` as a SUBSTRING (a stricter reserved-PREFIX rule than v1's exact-word enum, catching up to the CCP prose validator's substring reserved-word ERROR); (3) disclosureMarkers `description` token budget is lowered from 1536 to 1024 chars (the agentskills.io documented soft cap, and the CCP prose validator's ERROR cap). v2 has ZERO `$ref` into v1 (copy-then-tighten): v1 is BYTE-FROZEN at @intentsolutions/core@0.4.1 and a `$ref` back into it would let a future v1 patch silently mutate v2. The folds are intentionally open-world (no additionalProperties:false). DR-049 + the CCP kernel-shadow finding.",
+  "$comment": "PREDICATE valid_universalFolds_v2(artifact) := deprecationRegistry(artifact) ∧ securityChecks_v2(artifact) ∧ disclosureMarkers_v2(artifact). Monotone; order-independent. securityChecks_v2 ⊇ securityChecks_v1 (add-only within the v2 version per D7); disclosureMarkers_v2 is a TIGHTER cap (1024 ⊂ 1536). A per-contract v2 schema composes valid_C_v2(artifact) := requiredFields_C(artifact) ∧ universalFolds_v2(artifact) ∧ upstreamBase_C(artifact) ∧ overlay_C_v2(artifact). securityChecks is UNIVERSAL-IMMUTABLE within a version (D7(b)): add-only, never overridable, never subtracted. Co-located changelogs: schemas/authoring/v2/CHANGELOG.md.",
+  "type": "object",
+  "$defs": {
+    "deprecationRegistry": {
+      "$comment": "UNIVERSAL FOLD 1/3 — field-deprecation migrations. Carried BYTE-IDENTICAL from v1 (no v2 tightening). A present deprecated key fails the fold; the message names the replacement. CHANGELOG: schemas/authoring/v2/CHANGELOG.md § deprecationRegistry. v2 (= v1 carried): compatible-with → compatibility; when_to_use → description.",
+      "type": "object",
+      "not": {
+        "anyOf": [{ "required": ["compatible-with"] }, { "required": ["when_to_use"] }]
+      }
+    },
+    "securityChecks": {
+      "$comment": "UNIVERSAL FOLD 2/3 — UNIVERSAL-IMMUTABLE per DR-044 D7(b). Supply-chain hardening (CISO-owned). Add-only within v2. v2 TIGHTENINGS vs v1: (a) name additionally rejects any name whose lowercase contains `claude` or `anthropic` as a substring (stricter than v1's exact-word enum — catches `claude-reflect`, `anthropic-tool` etc., matching the CCP prose validator L1706); (b) description additionally rejects `$(` and backtick shell-substitution sequences (v1 caught only `${` and XML tags — matching the CCP prose validator RE_YAML_SHELL_SUBST). The exact-word enum, the `[<>]` name guard, and the XML/`${` description guards are all CARRIED from v1. CHANGELOG: schemas/authoring/v2/CHANGELOG.md § securityChecks.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "allOf": [
+            {
+              "not": {
+                "type": "string",
+                "enum": ["skill", "claude", "anthropic", "mcp", "plugin", "agent"]
+              }
+            },
+            { "not": { "type": "string", "pattern": "[<>]" } },
+            {
+              "not": {
+                "type": "string",
+                "pattern": "[Cc][Ll][Aa][Uu][Dd][Ee]|[Aa][Nn][Tt][Hh][Rr][Oo][Pp][Ii][Cc]"
+              }
+            }
+          ]
+        },
+        "description": {
+          "not": { "type": "string", "pattern": "<[^>]+>|\\$\\{|\\$\\(|`" }
+        }
+      }
+    },
+    "disclosureMarkers": {
+      "$comment": "UNIVERSAL FOLD 3/3 — progressive disclosure / token-economy (Karpathy-axis). v2 TIGHTENING vs v1: description token budget lowered from 1536 to 1024 chars (the agentskills.io documented soft cap AND the CCP prose validator ERROR cap; the v1 1536 budget was the looser tier that deliberately omitted the upstream 1024 cap). Only strings are constrained (non-strings pass — type is enforced by the per-contract schema). CHANGELOG: schemas/authoring/v2/CHANGELOG.md § disclosureMarkers.",
+      "type": "object",
+      "properties": {
+        "description": {
+          "not": { "type": "string", "minLength": 1025 }
+        }
+      }
+    },
+    "universalFolds": {
+      "$comment": "COMPOSITION — allOf of the three v2 universal folds. Every per-contract v2 schema $refs THIS (by reference, within the v2 family). Adding/removing a fold is an architectural change requiring ISEDC review. CHANGELOG: schemas/authoring/v2/CHANGELOG.md § universalFolds (composition).",
+      "allOf": [
+        { "$ref": "#/$defs/deprecationRegistry" },
+        { "$ref": "#/$defs/securityChecks" },
+        { "$ref": "#/$defs/disclosureMarkers" }
+      ]
+    }
+  }
+}

@@ -65,8 +65,51 @@ import { fileURLToPath } from 'node:url';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(SCRIPT_DIR, '..');
-const AUTHORING_DIR = join(REPO_ROOT, 'schemas/authoring/v1');
-const VALIDATORS_DIR = join(REPO_ROOT, 'src/validators/v1/authoring');
+
+/**
+ * Authoring family — a versioned, frozen-aware addressing of the schema +
+ * validator trees. `v1` is the original (now BYTE-FROZEN at
+ * @intentsolutions/core@0.4.1) family; `v2` is the STRICT IS-marketplace fork
+ * (DR-049). A typed union (not a free string) so a path is never concatenated
+ * from an untyped value — the write-guard below refuses to emit into a frozen
+ * tree, so a v2 typo can never mutate a v1 file.
+ */
+type AuthoringVersion = 'v1' | 'v2';
+
+/** The schemas/authoring/<version> directory for a family. */
+function authoringDir(version: AuthoringVersion): string {
+  return join(REPO_ROOT, 'schemas/authoring', version);
+}
+
+/**
+ * The validator output directory for a family. v1 emits at the canonical
+ * `src/validators/v1/authoring`; v2 emits at the chamber-version subdir
+ * `src/validators/v1/authoring/v2` (the package's runtime `schemas/v1` chamber
+ * does not move — only the authoring chamber advances its internal family
+ * pointer, per DR-049 D-SAK-1 per-chamber $schemaVersion).
+ */
+function validatorsDir(version: AuthoringVersion): string {
+  const base = join(REPO_ROOT, 'src/validators/v1/authoring');
+  return version === 'v1' ? base : join(base, version);
+}
+
+/**
+ * The is-overlay filename suffix per family. v1 overlays are `<contract>.v1.json`;
+ * the v2 skill-frontmatter overlay is `<contract>.v2.json` (it carries the
+ * scoped-Bash narrowing — a distinct file from the frozen v1 overlay). The
+ * upstream-base filename stays `<contract>.v1.json` in BOTH families (the v2 base
+ * is a byte-copy of the v1 base modulo `$id` — same upstream projection).
+ */
+function overlayFileSuffix(version: AuthoringVersion): string {
+  return version === 'v1' ? 'v1' : 'v2';
+}
+
+/**
+ * The frozen trees the codegen must NEVER write into. Any attempt to write a path
+ * inside one of these is a bug (a v2 family misrouting into v1); the write-guard
+ * throws rather than mutating a byte-frozen file.
+ */
+const FROZEN_WRITE_PREFIXES: readonly string[] = [join(REPO_ROOT, 'schemas/authoring/v1') + '/'];
 
 // ─── JSON-Schema subset we read (the authoring base/overlay shape) ───────────
 
@@ -92,6 +135,27 @@ interface FieldSchema {
    * unrecognized so it cannot silently mis-generate.
    */
   readonly anyOf?: readonly FieldSchema[];
+  /**
+   * An `allOf` intersection of sub-schemas. The codegen recognizes exactly one
+   * allOf shape today (feature-gated by `isScopedToolAllOf`): the STRICT v2
+   * `allowed-tools` narrowing = the v1 string|array union (a nested anyOf member)
+   * AND the scoped-tool reject members (string-form negative pattern + array-form
+   * not-contains-const). Any other allOf shape is left unrecognized so it cannot
+   * silently mis-generate.
+   */
+  readonly allOf?: readonly FieldSchema[];
+  /**
+   * Vendor annotation (v2): the bare tool token this field narrows to a scoped
+   * form (e.g. `"Bash"` ⇒ a bare `Bash` is rejected, only `Bash(scope:*)` is
+   * accepted). Drives the codegen's scoped-tool Zod emit + records the carve-out
+   * token. Structurally enforced in the JSON Schema too (NOT a Zod-only carve-out,
+   * unlike kyh9) — the negative pattern + not-contains-const are ECMA-262 / ajv
+   * expressible (proven). The annotation just names the token for the codegen.
+   */
+  readonly 'x-scoped-tool'?: string;
+  readonly const?: string;
+  readonly contains?: FieldSchema;
+  readonly not?: FieldSchema;
 }
 
 /**
@@ -117,6 +181,14 @@ interface LayerSchema {
 
 /** One per-contract codegen unit. */
 interface ContractSpec {
+  /**
+   * Authoring family this spec belongs to. Defaults conceptually to `v1` (the
+   * six original contracts); a `v2` spec emits into the STRICT v2 fork tree. The
+   * field parameterizes the schema-dir / validator-dir / overlay-file resolution
+   * so the SAME keyword-driven codegen emits both families with no per-rule
+   * branching.
+   */
+  readonly version: AuthoringVersion;
   /** kebab-case contract name (= file basenames). */
   readonly name: string;
   /** UpperCamel symbol prefix (e.g. `SkillFrontmatter`). */
@@ -158,6 +230,7 @@ interface ContractSpec {
  */
 const CONTRACTS: readonly ContractSpec[] = [
   {
+    version: 'v1',
     name: 'skill-frontmatter',
     symbol: 'SkillFrontmatter',
     constPrefix: 'SKILL_FRONTMATTER',
@@ -178,6 +251,7 @@ const CONTRACTS: readonly ContractSpec[] = [
       ' * re-type them, to keep messages single-sourced.',
   },
   {
+    version: 'v1',
     name: 'plugin-manifest',
     symbol: 'PluginManifest',
     constPrefix: 'PLUGIN_MANIFEST',
@@ -201,6 +275,7 @@ const CONTRACTS: readonly ContractSpec[] = [
       ' * here — its presence is the required check — to keep messages single-sourced.',
   },
   {
+    version: 'v1',
     name: 'agent-definition',
     symbol: 'AgentDefinition',
     constPrefix: 'AGENT_DEFINITION',
@@ -225,6 +300,7 @@ const CONTRACTS: readonly ContractSpec[] = [
       ' * check — to keep messages single-sourced.',
   },
   {
+    version: 'v1',
     name: 'mcp-config',
     symbol: 'McpConfig',
     constPrefix: 'MCP_CONFIG',
@@ -248,6 +324,7 @@ const CONTRACTS: readonly ContractSpec[] = [
       ' * messages single-sourced.',
   },
   {
+    version: 'v1',
     name: 'hook-config',
     symbol: 'HookConfig',
     constPrefix: 'HOOK_CONFIG',
@@ -272,6 +349,7 @@ const CONTRACTS: readonly ContractSpec[] = [
       ' * is the required check — to keep messages single-sourced.',
   },
   {
+    version: 'v1',
     name: 'marketplace-catalog',
     symbol: 'MarketplaceCatalog',
     constPrefix: 'MARKETPLACE_CATALOG',
@@ -294,6 +372,33 @@ const CONTRACTS: readonly ContractSpec[] = [
       ' * not re-typed here — its presence is the required check — to keep messages\n' +
       ' * single-sourced.',
   },
+  {
+    // ── STRICT v2 fork (DR-049 / CCP-shadow parity) ──
+    // skill-frontmatter ALONE is forked to v2; the other five contracts stay at
+    // v1/SHIPPED-INTERNAL untouched. The v2 overlay carries the scoped-Bash
+    // narrowing (x-scoped-tool annotation) which the codegen's keyword-driven
+    // dispatch emits as a structural check; the v2 marketplace-tier Zod mirror
+    // (hand-authored, NOT codegen-emitted) carries the 3 fold tightenings.
+    version: 'v2',
+    name: 'skill-frontmatter',
+    symbol: 'SkillFrontmatter',
+    constPrefix: 'SKILL_FRONTMATTER',
+    fieldConstPrefix: 'SKILL',
+    contractIndex: 1,
+    headerSuffix: 'the STRICT v2 walking skeleton',
+    baseProvenance: 'agentskills.io',
+    baseDoc:
+      ' * The agentskills.io + Claude-docs projection (v2 base = v1 base byte-for-byte\n' +
+      ' * modulo $id). Required presence of the standardFloor + type/format on the\n' +
+      ' * upstream-owned fields. Length of `description` is intentionally NOT capped\n' +
+      ' * here — the universal disclosureMarkers fold (v2: 1024) is the operative cap.',
+    overlayDoc:
+      ' * The IS-only v2 delta: overlay-required presence + the type narrowings + the\n' +
+      ' * scoped-Bash narrowing on `allowed-tools` (a bare unscoped `Bash` token is\n' +
+      ' * rejected; only `Bash(scope:*)` is accepted) + the optional IS extension\n' +
+      ' * fields. License/compatibility presence is covered by the required check;\n' +
+      ' * their types are covered by the base — the overlay does not re-type them.',
+  },
 ];
 
 // ─── Schema IO ───────────────────────────────────────────────────────────────
@@ -302,11 +407,35 @@ function loadJson<T>(path: string): T {
   return JSON.parse(readFileSync(path, 'utf-8')) as T;
 }
 
-function baseSchema(contract: string): LayerSchema {
-  return loadJson<LayerSchema>(join(AUTHORING_DIR, 'upstream-base', `${contract}.v1.json`));
+/** Refuse to write into a BYTE-FROZEN tree (a v2-misroute-into-v1 guard). */
+function guardedWrite(path: string, contents: string): void {
+  for (const frozen of FROZEN_WRITE_PREFIXES) {
+    if (path.startsWith(frozen)) {
+      throw new Error(
+        `codegen-authoring: refusing to write a FROZEN path "${relative(REPO_ROOT, path)}" ` +
+          `(under ${relative(REPO_ROOT, frozen)}). The v1 authoring family is byte-frozen at ` +
+          `@intentsolutions/core@0.4.1; only the v2 family may be regenerated.`,
+      );
+    }
+  }
+  writeFileSync(path, contents);
 }
-function overlaySchema(contract: string): LayerSchema {
-  return loadJson<LayerSchema>(join(AUTHORING_DIR, 'is-overlay', `${contract}.v1.json`));
+
+/** The upstream-base is `<contract>.v1.json` in BOTH families (v2 base = v1 base modulo $id). */
+function baseSchema(spec: ContractSpec): LayerSchema {
+  return loadJson<LayerSchema>(
+    join(authoringDir(spec.version), 'upstream-base', `${spec.name}.v1.json`),
+  );
+}
+/** The is-overlay filename suffix is family-specific (v1 → `.v1.json`; v2 → `.v2.json`). */
+function overlaySchema(spec: ContractSpec): LayerSchema {
+  return loadJson<LayerSchema>(
+    join(
+      authoringDir(spec.version),
+      'is-overlay',
+      `${spec.name}.${overlayFileSuffix(spec.version)}.json`,
+    ),
+  );
 }
 
 // ─── (b) Effective-required manifest ($comment block) ────────────────────────
@@ -390,11 +519,11 @@ function renderSchemaComment(
 }
 
 function regenerateSchemaManifest(spec: ContractSpec, check: boolean): boolean {
-  const path = join(AUTHORING_DIR, `${spec.name}.schema.json`);
+  const path = join(authoringDir(spec.version), `${spec.name}.schema.json`);
   const raw = readFileSync(path, 'utf-8');
   const schema = JSON.parse(raw) as { $comment: string };
-  const base = baseSchema(spec.name);
-  const overlay = overlaySchema(spec.name);
+  const base = baseSchema(spec);
+  const overlay = overlaySchema(spec);
   const nextComment = renderSchemaComment(schema.$comment, base, overlay, spec.baseProvenance);
   if (nextComment === schema.$comment) {
     return true;
@@ -404,7 +533,7 @@ function regenerateSchemaManifest(spec: ContractSpec, check: boolean): boolean {
     return false;
   }
   schema.$comment = nextComment;
-  writeFileSync(path, `${JSON.stringify(schema, null, 2)}\n`);
+  guardedWrite(path, `${JSON.stringify(schema, null, 2)}\n`);
   process.stdout.write(`wrote ${relative(REPO_ROOT, path)} ($comment manifest)\n`);
   return true;
 }
@@ -689,6 +818,33 @@ function overlayFieldCheck(
   const lines: string[] = [];
   const access = `artifact['${field}']`;
 
+  // x-scoped-tool (v2) — the STRICT scoped-tool narrowing on a string|array field
+  // (e.g. `allowed-tools` narrowed so a BARE unscoped `Bash` is rejected; only
+  // `Bash(scope:*)` is accepted). Feature-gated to EXACTLY the shape the v2 overlay
+  // uses: an `x-scoped-tool` annotation naming the token + an `allOf` whose first
+  // member is the v1 string|array union. Emit the v1 string|array type check PLUS
+  // the per-form scoped-tool reject (string-form token-boundary check + array-form
+  // exact-token check) via the shared scopedToolIssues helper. Unlike kyh9, this is
+  // also structurally enforced in the JSON Schema — the Zod check just mirrors it
+  // for fold agreement. Any other allOf/x-scoped-tool shape is left unrecognized.
+  if (isScopedToolAllOf(schema)) {
+    const token = schema['x-scoped-tool']!;
+    lines.push(
+      `  if ('${field}' in artifact) {`,
+      `    const ${camel(field)} = ${access};`,
+      `    if (typeof ${camel(field)} !== 'string' && !isStringArray(${camel(field)})) {`,
+      `      issues.push({`,
+      `        message: '${field} must be a string or an array of strings',`,
+      `        path: ['${field}'],`,
+      `      });`,
+      `    } else {`,
+      `      issues.push(...scopedToolIssues(${camel(field)}, '${token}', '${field}'));`,
+      `    }`,
+      `  }`,
+    );
+    return lines;
+  }
+
   // anyOf [ string, array-of-strings ] — the v0.4.1 non-breaking relaxation that
   // lets a field accept BOTH the upstream CSV/space-delimited string form AND the
   // YAML array form (e.g. `allowed-tools`). Feature-gated to exactly this union
@@ -830,6 +986,24 @@ function isStringOrStringArrayAnyOf(schema: FieldSchema): boolean {
   return (isBareString(a) && isStringArrayMember(b)) || (isStringArrayMember(a) && isBareString(b));
 }
 
+/**
+ * The feature-gate for the v2 scoped-tool narrowing: is this field annotated with
+ * `x-scoped-tool` AND shaped as an `allOf` whose FIRST member is the v1
+ * string | array-of-strings union (the narrowed string|array `allowed-tools`)?
+ * Recognizing only this precise shape keeps the codegen keyword-driven and
+ * prevents any other allOf shape from silently mis-generating. The remaining allOf
+ * members are the structural JSON-Schema reject (string-form negative pattern +
+ * array-form not-contains-const); the codegen does not re-read them — the
+ * `x-scoped-tool` token drives the equivalent Zod check via scopedToolIssues.
+ */
+function isScopedToolAllOf(schema: FieldSchema): boolean {
+  if (typeof schema['x-scoped-tool'] !== 'string' || schema['x-scoped-tool'].length === 0) {
+    return false;
+  }
+  const first = schema.allOf?.[0];
+  return first !== undefined && isStringOrStringArrayAnyOf(first);
+}
+
 /** Convert a (possibly hyphenated) JSON key into a valid camelCase JS identifier. */
 function camel(field: string): string {
   return field.replace(/-([a-z0-9])/g, (_m, c: string) => c.toUpperCase());
@@ -914,6 +1088,38 @@ function mutuallyExclusiveIssues(
 }
 `;
 
+/**
+ * The Zod-layer helper that implements the scoped-tool narrowing (v2). Rejects a
+ * BARE, unscoped instance of `token` (e.g. `Bash`) in the string OR array form;
+ * a scoped `token(scope:*)` (e.g. `Bash(git:*)`) and any non-`token` value are
+ * accepted. This MIRRORS the structural JSON-Schema reject (the string-form
+ * negative pattern + the array-form not-contains-const) so ajv ↔ Zod agree. The
+ * value is already known to be a string or string[] (the caller's type check ran
+ * first). String form: split on whitespace/comma into tokens; reject if any whole
+ * token equals `token`. Array form: reject if any item equals `token`. `Bashful`
+ * and `Bash(git:*)` are NOT a bare `Bash` token.
+ */
+const SCOPED_TOOL_HELPER = `
+function scopedToolIssues(value: string | string[], token: string, field: string): FoldIssue[] {
+  const tokens =
+    typeof value === 'string' ? value.split(/[\\s,]+/).filter((t) => t.length > 0) : value;
+  if (tokens.includes(token)) {
+    return [
+      {
+        message: \`\${field}: bare unscoped "\${token}" is not allowed — use a scoped \${token}(scope:*)\`,
+        path: [field],
+      },
+    ];
+  }
+  return [];
+}
+`;
+
+/** Whether any overlay field is a scoped-tool narrowing (drives the scopedToolIssues helper). */
+function usesScopedTool(overlayProps: Readonly<Record<string, FieldSchema>>): boolean {
+  return Object.values(overlayProps).some((s) => isScopedToolAllOf(s));
+}
+
 /** Whether any base or overlay field is a URI string (drives the isUri helper). */
 function usesUri(
   baseProps: Readonly<Record<string, FieldSchema>>,
@@ -937,6 +1143,11 @@ function usesStringArray(
   // The string | array-of-strings anyOf relaxation (v0.4.1 `allowed-tools`)
   // relies on isStringArray to accept the array form.
   if (all.some((s) => isStringOrStringArrayAnyOf(s))) {
+    return true;
+  }
+  // The v2 scoped-tool narrowing wraps the same string|array union (in an allOf)
+  // and likewise relies on isStringArray for its array-form type check.
+  if (all.some((s) => isScopedToolAllOf(s))) {
     return true;
   }
   return visibilityFields.length > 0 || hasEnvVars;
@@ -975,6 +1186,9 @@ function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSc
   // kyh9: per-variable mutual-exclusion groups declared on the overlay.
   const exclusions = overlay['x-mutually-exclusive-fields'] ?? [];
   const hasExclusions = exclusions.length > 0;
+
+  // v2: scoped-tool narrowing (e.g. allowed-tools `x-scoped-tool: Bash`).
+  const hasScopedTool = usesScopedTool(overlayProps);
 
   const semverPattern = usesSemver(overlayProps);
   const needUri = usesUri(baseProps, overlayProps);
@@ -1097,6 +1311,9 @@ function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSc
   const exclusionBlock = mutualExclusionBlock(exclusions);
   const exclusionHelper = hasExclusions ? MUTUAL_EXCLUSION_HELPER : '';
 
+  // ── Scoped-tool helper (v2 — structurally enforced, mirrored in Zod) ──
+  const scopedToolHelper = hasScopedTool ? SCOPED_TOOL_HELPER : '';
+
   // ── Env-var extension block + helper (skill only) ──
   const envVarBlock = hasEnvVars
     ? `\n  if ('required_environment_variables' in artifact) {\n    issues.push(...requiredEnvVarIssues(artifact['required_environment_variables']));\n  }\n`
@@ -1153,14 +1370,24 @@ function requiredEnvVarIssues(value: unknown): FoldIssue[] {
   }
   const helperBlock = helperFns.length > 0 ? `\n${helperFns.join('\n\n')}\n` : '';
 
+  // Family-aware header paths. v1 keeps its EXACT historical strings (the v1
+  // generated output must stay byte-identical); v2 references its own family tree
+  // + the `.v2.json` overlay + the v2 test file.
+  const schemaDir = `schemas/authoring/${spec.version}`;
+  const overlayName = `${spec.name}.${overlayFileSuffix(spec.version)}.json`;
+  const testName =
+    spec.version === 'v1'
+      ? `${spec.name}-schema.test.ts`
+      : `${spec.name}-${spec.version}-schema.test.ts`;
+
   return `/**
  * ${spec.name} — IS marketplace-tier authoring contract #${spec.contractIndex} (${spec.headerSuffix}).
  *
  * GENERATED by scripts/codegen-authoring.ts from the three-artifact composition:
- *   schemas/authoring/v1/upstream-base/${spec.name}.v1.json   (authored by THEM)
- *   schemas/authoring/v1/marketplace-tier.schema.json#/$defs/universalFolds
- *   schemas/authoring/v1/is-overlay/${spec.name}.v1.json      (authored by US)
- *   ⇒ schemas/authoring/v1/${spec.name}.schema.json           (pure allOf)
+ *   ${schemaDir}/upstream-base/${spec.name}.v1.json   (authored by THEM)
+ *   ${schemaDir}/marketplace-tier.schema.json#/$defs/universalFolds
+ *   ${schemaDir}/is-overlay/${overlayName}      (authored by US)
+ *   ⇒ ${schemaDir}/${spec.name}.schema.json           (pure allOf)
  *
  * DO NOT EDIT BY HAND — re-run \`pnpm run codegen:authoring\` after a schema edit.
  * Per DR-044 D8 the Zod validator AND the D7 inline \`$comment\` effective-required
@@ -1170,7 +1397,7 @@ function requiredEnvVarIssues(value: unknown): FoldIssue[] {
  * from marketplace-tier. The monotonic-additive invariant (the overlay only ADDS
  * required fields and NARROWS constraints on the base) is the 2026-04-28-debacle
  * guard, asserted by the property test in
- * src/__tests__/${spec.name}-schema.test.ts.
+ * src/__tests__/${testName}.
  */
 
 import {
@@ -1224,7 +1451,7 @@ ${overlayChecks}
 ${visibilityLoop}${envVarBlock}${exclusionBlock}
   return issues;
 }
-${envVarHelper}${exclusionHelper}
+${envVarHelper}${exclusionHelper}${scopedToolHelper}
 // ─── The composition (allOf of base + universal folds + overlay) ─────────────
 
 /** Every issue from the three composed layers, in layer order. */
@@ -1270,9 +1497,9 @@ function arrayConstDecl(name: string, items: readonly string[]): string {
 }
 
 function regenerateValidator(spec: ContractSpec, check: boolean): boolean {
-  const path = join(VALIDATORS_DIR, `${spec.name}.ts`);
-  const base = baseSchema(spec.name);
-  const overlay = overlaySchema(spec.name);
+  const path = join(validatorsDir(spec.version), `${spec.name}.ts`);
+  const base = baseSchema(spec);
+  const overlay = overlaySchema(spec);
   const next = renderValidator(spec, base, overlay);
   const existing = (() => {
     try {
@@ -1288,7 +1515,7 @@ function regenerateValidator(spec: ContractSpec, check: boolean): boolean {
     process.stderr.write(`DRIFT: ${relative(REPO_ROOT, path)} validator is stale\n`);
     return false;
   }
-  writeFileSync(path, next);
+  guardedWrite(path, next);
   process.stdout.write(`wrote ${relative(REPO_ROOT, path)} (validator)\n`);
   return true;
 }

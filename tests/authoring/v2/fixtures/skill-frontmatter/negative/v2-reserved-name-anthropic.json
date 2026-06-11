@@ -1,0 +1,10 @@
+{
+  "name": "my-anthropic-tool",
+  "description": "A tool referencing the vendor name in its identifier.",
+  "allowed-tools": ["Read"],
+  "version": "1.0.0",
+  "author": "Community",
+  "license": "MIT",
+  "compatibility": "claude-code",
+  "tags": ["tool"]
+}

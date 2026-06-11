@@ -1,6 +1,6 @@
 {
   "name": "@intentsolutions/core",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "publishConfig": {
     "access": "public",
     "provenance": true,
@@ -35,6 +35,8 @@
     "./schemas/v1": "./schemas/v1/index.json",
     "./schemas/authoring/v1/*.json": "./schemas/authoring/v1/*.json",
     "./schemas/authoring/v1": "./schemas/authoring/v1/index.json",
+    "./schemas/authoring/v2/*.json": "./schemas/authoring/v2/*.json",
+    "./schemas/authoring/v2": "./schemas/authoring/v2/index.json",
     "./validators/v1": {
       "types": "./dist/validators/v1/index.d.ts",
       "import": "./dist/validators/v1/index.js"
@@ -42,6 +44,10 @@
     "./validators/v1/authoring": {
       "types": "./dist/validators/v1/authoring/index.d.ts",
       "import": "./dist/validators/v1/authoring/index.js"
+    },
+    "./validators/v1/authoring/v2": {
+      "types": "./dist/validators/v1/authoring/v2/index.d.ts",
+      "import": "./dist/validators/v1/authoring/v2/index.js"
     },
     "./validators/v1/*": {
       "types": "./dist/validators/v1/*.d.ts",

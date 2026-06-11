@@ -1,0 +1,10 @@
+{
+  "name": "deploy-helper",
+  "description": "Helps deploy a service using scoped tools only.",
+  "allowed-tools": "Read, Write, Bash(npm:*)",
+  "version": "2.3.1",
+  "author": "Community",
+  "license": "MIT",
+  "compatibility": "claude-code >= 1.0",
+  "tags": ["deploy", "ops"]
+}

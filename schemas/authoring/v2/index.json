@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/index.json",
+  "title": "@intentsolutions/core authoring schema index v2 (STRICT profile)",
+  "description": "Catalog of the STRICT v2 authoring-contract schemas — the strict IS-marketplace contract that closes the 4 CCP-shadow frontmatter gaps. v2 is a fresh, self-contained sibling of authoring/v1 with ZERO $ref into v1 (copy-then-tighten); v1 is BYTE-FROZEN at @intentsolutions/core@0.4.1. ONLY skill-frontmatter is forked to v2 — the other 5 contracts (plugin-manifest, agent-definition, mcp-config, hook-config, marketplace-catalog) stay at v1/SHIPPED-INTERNAL untouched and gain a v2 sibling only if/when one needs a tightening (per-contract, behind CFO sign-off; DR-049 D-SAK-1). The v2 marketplace-tier foundation carries the THREE universal folds with two security tightenings (shell-substitution-widen + reserved-name-substring-hardening) + one disclosure tightening (description cap 1024). skill-frontmatter v2 additionally narrows allowed-tools (scoped-Bash). Source of truth: DR-049 + the CCP kernel-shadow finding.",
+  "version": "2.0.0-draft",
+  "schemas": {
+    "marketplace-tier": {
+      "path": "marketplace-tier.schema.json",
+      "title": "IS marketplace authoring tier v2 — 3 universal folds + universalFolds composition (STRICT profile)",
+      "kind": "authoring-foundation",
+      "spec": "DR-049 / DR-044 D7 / plan 033 § 14.10",
+      "universalFolds": ["deprecationRegistry", "securityChecks", "disclosureMarkers"]
+    },
+    "skill-frontmatter": {
+      "path": "skill-frontmatter.schema.json",
+      "title": "skill-frontmatter — IS marketplace-tier v2 contract (STRICT composition)",
+      "kind": "authoring-contract",
+      "contractIndex": 1,
+      "lifecycle": "SHIPPED-INTERNAL",
+      "spec": "DR-049 / DR-044 D7 / plan 033 § 14.2 / 6767-b §4",
+      "supersedes": "authoring/v1/skill-frontmatter.schema.json (v1 frozen at 0.4.1; v1 stays the looser PUBLISHED contract)",
+      "v2Tightenings": [
+        "allowed-tools: reject a bare unscoped `Bash` token (scoped Bash(scope:*) only) — is-overlay narrowing",
+        "securityChecks.description: reject `$(` and backtick shell-substitution in addition to `${` and XML — fold",
+        "securityChecks.name: reject names whose lowercase contains `claude`/`anthropic` as a substring — fold",
+        "disclosureMarkers.description: token budget lowered 1536 → 1024 chars — fold"
+      ],
+      "layers": {
+        "upstreamBase": "upstream-base/skill-frontmatter.v1.json",
+        "universalFolds": "marketplace-tier.schema.json#/$defs/universalFolds",
+        "isOverlay": "is-overlay/skill-frontmatter.v2.json"
+      },
+      "baseRequired": ["name", "description"],
+      "overlayRequired": ["allowed-tools", "version", "author", "license", "compatibility", "tags"]
+    }
+  }
+}

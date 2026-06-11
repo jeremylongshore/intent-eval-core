@@ -1,0 +1,10 @@
+{
+  "name": "claude-reflect",
+  "description": "Reflect on usage patterns and surface insights.",
+  "allowed-tools": ["Read"],
+  "version": "1.0.0",
+  "author": "Community",
+  "license": "MIT",
+  "compatibility": "claude-code",
+  "tags": ["reflection"]
+}
