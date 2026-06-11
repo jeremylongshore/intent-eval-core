@@ -295,7 +295,7 @@ const MANIFEST_HEAD = 'EFFECTIVE-REQUIRED MANIFEST';
  * arrays. A base-required field is INHERITED (the upstream standardFloor); an
  * overlay-required field is REQUIRED HERE (promoted or net-new IS).
  */
-function manifestRows(base: LayerSchema, overlay: LayerSchema): string[] {
+function manifestRows(base: LayerSchema, overlay: LayerSchema, baseProvenance: string): string[] {
   const baseReq = base.required ?? [];
   const overlayReq = overlay.required ?? [];
   const overlayProps = overlay.properties ?? {};
@@ -307,11 +307,13 @@ function manifestRows(base: LayerSchema, overlay: LayerSchema): string[] {
   // provenance columns are independently spaced (matching the D7 manifest).
   const rows: string[] = [];
   for (const field of baseReq) {
-    rows.push(`${field.padEnd(width)}  INHERITED   ${provenance(field, baseProps, 'base')}`);
+    rows.push(
+      `${field.padEnd(width)}  INHERITED   ${provenance(field, baseProps, 'base', baseProvenance)}`,
+    );
   }
   for (const field of overlayReq) {
     rows.push(
-      `${field.padEnd(width)}  REQUIRED HERE ${provenance(field, overlayProps, 'overlay')}`,
+      `${field.padEnd(width)}  REQUIRED HERE ${provenance(field, overlayProps, 'overlay', baseProvenance)}`,
     );
   }
   return rows;
@@ -319,15 +321,20 @@ function manifestRows(base: LayerSchema, overlay: LayerSchema): string[] {
 
 /**
  * Human-readable provenance suffix for a manifest row, derived from whether the
- * field also exists in the base (promotion) vs is net-new in the overlay.
+ * field also exists in the base (promotion) vs is net-new in the overlay. The
+ * base/INHERITED row names the contract's own upstream (`baseProvenance` from the
+ * CONTRACTS table) — e.g. `agentskills.io` for skill-frontmatter,
+ * `code.claude.com plugins-reference` for plugin-manifest — not a single
+ * hardcoded literal.
  */
 function provenance(
   field: string,
   props: Readonly<Record<string, FieldSchema>>,
   layer: 'base' | 'overlay',
+  baseProvenance: string,
 ): string {
   if (layer === 'base') {
-    return '(upstream-base · agentskills.io standardFloor)';
+    return `(upstream-base · ${baseProvenance} standardFloor)`;
   }
   // Overlay row: classify from the field's own $comment provenance keywords.
   const comment = props[field]?.$comment ?? '';
@@ -346,21 +353,26 @@ function provenance(
  * arrays. Only the manifest block (head sentence → "Effective required") is
  * regenerated; the surrounding prose is preserved verbatim.
  */
-function renderSchemaComment(existing: string, base: LayerSchema, overlay: LayerSchema): string {
-  const rows = manifestRows(base, overlay).map((r) => `  ${r}`);
+function renderSchemaComment(
+  existing: string,
+  base: LayerSchema,
+  overlay: LayerSchema,
+  baseProvenance: string,
+): string {
+  const rows = manifestRows(base, overlay, baseProvenance).map((r) => `  ${r}`);
   const head = existing.slice(0, existing.indexOf(MANIFEST_HEAD) + MANIFEST_HEAD.length);
   const tailIdx = existing.indexOf('Effective required');
   const tail = existing.slice(tailIdx);
   return `${head} (the answer to 'what does ${base.title.split(' —')[0]} require?' from one file — DR-044 D7(e)). This block is the generated effective-required surface; the source of truth is the \`required\` arrays of the two composed layers below.\n${rows.join('\n')}\n${tail}`;
 }
 
-function regenerateSchemaManifest(contract: string, check: boolean): boolean {
-  const path = join(AUTHORING_DIR, `${contract}.schema.json`);
+function regenerateSchemaManifest(spec: ContractSpec, check: boolean): boolean {
+  const path = join(AUTHORING_DIR, `${spec.name}.schema.json`);
   const raw = readFileSync(path, 'utf-8');
   const schema = JSON.parse(raw) as { $comment: string };
-  const base = baseSchema(contract);
-  const overlay = overlaySchema(contract);
-  const nextComment = renderSchemaComment(schema.$comment, base, overlay);
+  const base = baseSchema(spec.name);
+  const overlay = overlaySchema(spec.name);
+  const nextComment = renderSchemaComment(schema.$comment, base, overlay, spec.baseProvenance);
   if (nextComment === schema.$comment) {
     return true;
   }
@@ -1137,7 +1149,7 @@ function main(): void {
   let ok = true;
   for (const spec of CONTRACTS) {
     ok = regenerateValidator(spec, check) && ok;
-    ok = regenerateSchemaManifest(spec.name, check) && ok;
+    ok = regenerateSchemaManifest(spec, check) && ok;
   }
   if (!ok) {
     if (check) {
