@@ -12,6 +12,29 @@ versioning follows [SemVer 2.0.0](https://semver.org/).
 - Evidence Bundle predicate compatibility policy (forward/backward/mixing/deprecation rules) MUST land before first prod-Rekor anchor — bd `bd_000-projects-uprg` (P0)
 - OTel semantic conventions pinned in `schemas/v1/otel-attributes.yaml` to prevent attribute drift across consumer emitters — bd `bd_000-projects-9pi3` (P0)
 
+## [0.5.0] - 2026-06-11
+
+The **STRICT v2 authoring fork**. Lands `schemas/authoring/v2/skill-frontmatter` — the strict IS-marketplace contract that closes the 4 CCP-shadow frontmatter gaps — as a fresh, self-contained, **immutable fork** of v1 (copy-then-tighten, zero `$ref` into v1). Purely **additive**: a new export subpath `./schemas/authoring/v2/*` + `./validators/v1/authoring/v2`; no v1 import-meaning changes. SemVer MINOR. DR-049 + the CCP kernel-shadow finding. Lifecycle **SHIPPED-INTERNAL** (not canonical yet — canonical-promotion is gated on the DR-049 recall eval + corpus migration).
+
+### Added
+
+- **`schemas/authoring/v2/` STRICT authoring family** — `skill-frontmatter` ALONE is forked to v2 (the other 5 contracts stay at v1/SHIPPED-INTERNAL untouched, per DR-049 D-SAK-1: the permanent structure governs, it is not a clock to author all six). The v2 tree is a full self-contained mirror: `marketplace-tier.schema.json` (3 fold tightenings), `upstream-base/skill-frontmatter.v1.json` (byte-copy of v1 base modulo `$id`), `is-overlay/skill-frontmatter.v2.json` (v1 overlay + scoped-Bash narrowing), the composed `skill-frontmatter.schema.json` (pure `allOf` of the 3 v2 layers), `index.json`, `CHANGELOG.md`, and a non-normative `MIGRATION.md`. **Zero `$ref` into v1** — a `$ref` back into the frozen v1 family would let a future v1 patch silently mutate v2 and would make a stricter v2 fold inexpressible. Importable as `@intentsolutions/core/schemas/authoring/v2/<name>.schema.json` and via the Zod barrel `@intentsolutions/core/validators/v1/authoring/v2`.
+- **The 4 v2 tightenings vs frozen v1** (each catches the kernel up to the CCP prose validator `validate-skills-schema.py`):
+  - **Scoped-Bash** (is-overlay NARROW) — `allowed-tools` rejects a BARE unscoped `Bash` token in BOTH the string and array forms; only `Bash(scope:*)` is accepted (`Bashful` and any non-Bash token are fine). **Structurally JSON-Schema-expressible** (string-form negative `pattern` with token-boundary anchoring + array-form `not contains const`) — proven against ajv strict mode, so a plain ajv consumer AND the CCP kernel-shadow enforce it with **no Zod-only carve-out**. An `x-scoped-tool: "Bash"` annotation drives the matching Zod check for fold agreement.
+  - **Shell-substitution widen** (securityChecks fold) — `description` rejects `$(` and backticks in addition to `${` and XML tags.
+  - **Reserved-name hardening** (securityChecks fold) — `name` additionally rejects any name whose lowercase contains `claude` or `anthropic` as a SUBSTRING (per-letter char-class pattern; ECMA-262 has no `(?i)` inline flag). This is a genuine NEW rule, not a v1 bug: v1's exact-word enum (`skill`/`claude`/`anthropic`/`mcp`/`plugin`/`agent`) was a deliberate, internally consistent design that PASSED `claude-reflect`; the CCP prose validator (L1706) rejects the substring, so v2 adds the conjunct on top.
+  - **Description cap 1024** (disclosureMarkers fold) — token budget lowered 1536 → 1024 chars (the agentskills.io documented soft cap + the CCP prose-validator ERROR cap).
+- **v1 BYTE-FROZEN at `0.4.1`** — `schemas/authoring/v1/**` + `src/validators/v1/authoring/{skill-frontmatter,marketplace-tier}.ts` are byte-frozen and machine-enforced by a new test (`src/__tests__/authoring-v1-frozen.test.ts`) that git-diffs every frozen path against the `v0.4.1` tag and fails on any change. v1 stays the looser PUBLISHED contract (it accepts bare `Bash`, 1025–1536-char descriptions, `claude-reflect`, and `$(...)`/backtick descriptions forever).
+- **Codegen parameterized by authoring family** (`scripts/codegen-authoring.ts`) — `ContractSpec` gained a typed `version: 'v1' | 'v2'` field; the schema-dir / validator-dir / overlay-file / header-path resolution derive from it, and a runtime write-guard refuses to emit any path under the frozen `schemas/authoring/v1/` tree (a v2-misroute-into-v1 guard). The codegen gained a keyword-driven scoped-tool emit path (feature-gated to the exact `x-scoped-tool` + `allOf[string|array]` shape, mirroring the existing kyh9 `x-mutually-exclusive-fields` carve-out pattern), generating `src/validators/v1/authoring/v2/skill-frontmatter.ts`. **The v1 generated output is byte-identical** — adding the v2 family does not perturb v1 codegen.
+
+### Verification
+
+- `pnpm run check` fully green: codegen idempotency (v1 + v2), predicate-namespace isolation, **DR-049 rubric-floor self-pin** (no required field removed — v2 NARROWS a type and ADDS fold conjuncts, never demotes a field; the floor guard reads v1 only and stays green), lint, typecheck, tests, arch (0 violations), boundaries (0 violations).
+- **Monotonic-additive** property test — v2 rejects a strict SUPERSET of what v1 rejects: every v1-negative fixture is also v2-rejected, AND the 4 new violation classes are v1-ACCEPTED but v2-REJECTED (proving they are genuinely new tightenings).
+- **ajv ↔ Zod fold agreement** for v2 on its fixtures — all 4 v2 rules are STRUCTURALLY enforced (scoped-Bash needs no Zod-only carve-out).
+- **v1 byte-frozen** vs the `v0.4.1` tag (13 frozen paths) — machine-checked.
+- 100% coverage floor held; `pnpm run build` + `api:check` + `test:types` + `harness:verify` pass.
+
 ## [0.4.1] - 2026-06-11
 
 A **non-breaking relaxation** of the `skill-frontmatter` authoring contract's `allowed-tools` type. SemVer PATCH — purely widening; every artifact valid under `0.4.0` stays valid. Acting-CTO authorization.

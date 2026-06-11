@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/skill-frontmatter.schema.json",
+  "title": "skill-frontmatter — IS marketplace-tier v2 contract (STRICT composition)",
+  "description": "The STRICT v2 skill-frontmatter authoring contract. PURE COMPOSITION — zero authored fields of its own. It is the allOf of three v2 layers: (1) the upstream base (agentskills.io + Claude docs, byte-copied from v1 modulo $id); (2) the three v2 universal folds (deprecationRegistry carried; securityChecks + shell-substitution-widen + reserved-name-hardening; disclosureMarkers description cap 1024) by $ref to the v2 marketplace-tier foundation; (3) the v2 IS overlay (v1 overlay + scoped-Bash narrowing on allowed-tools). v2 has ZERO `$ref` into the v1 family (copy-then-tighten); v1 is BYTE-FROZEN at @intentsolutions/core@0.4.1. Lifecycle SHIPPED-INTERNAL — NOT canonical yet; canonical-promotion is gated on the DR-049 recall eval + corpus migration. The strict v2 contract closes the 4 CCP-shadow frontmatter gaps: scoped-Bash, widened shell-substitution, description cap 1024, reserved-name substring hardening. DR-049 + the CCP kernel-shadow finding.",
+  "$comment": "EFFECTIVE-REQUIRED MANIFEST (the answer to 'what does skill-frontmatter require?' from one file — DR-044 D7(e)). This block is the generated effective-required surface; the source of truth is the `required` arrays of the two composed layers below.\n  name           INHERITED   (upstream-base · agentskills.io standardFloor)\n  description    INHERITED   (upstream-base · agentskills.io standardFloor)\n  allowed-tools  REQUIRED HERE (is-overlay · promoted from upstream-optional)\n  version        REQUIRED HERE (is-overlay · net-new IS tracking field)\n  author         REQUIRED HERE (is-overlay · net-new IS tracking field)\n  license        REQUIRED HERE (is-overlay · promoted from upstream-optional)\n  compatibility  REQUIRED HERE (is-overlay · promoted from upstream-optional)\n  tags           REQUIRED HERE (is-overlay · pure IS invention, zero upstream provenance)\nEffective required = base ∪ overlay = the IS 8-field marketplace set (the SCHEMA_CHANGELOG NON-NEGOTIABLE). securityChecks is inherited UNIVERSAL-IMMUTABLE (v2 add-only). v2 DELTAS vs v1: scoped-Bash on allowed-tools (overlay), shell-substitution-widen + reserved-name-substring-hardening on securityChecks (fold), description cap 1024 on disclosureMarkers (fold). Resolving the $refs requires the v2 base, v2 overlay, and v2 marketplace-tier schemas to be registered (e.g. ajv addSchema by $id). Citations: 6767-b §4; agentskills.io/specification; platform.claude.com agent-skills; code.claude.com/docs/en/skills; DR-049.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/upstream-base/skill-frontmatter.v1.json"
+    },
+    {
+      "$ref": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/marketplace-tier.schema.json#/$defs/universalFolds"
+    },
+    {
+      "$ref": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/is-overlay/skill-frontmatter.v2.json"
+    }
+  ]
+}

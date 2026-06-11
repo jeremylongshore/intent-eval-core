@@ -1,0 +1,10 @@
+{
+  "name": "my-skill",
+  "description": "Run the `whoami` command.",
+  "allowed-tools": ["Read"],
+  "version": "1.0.0",
+  "author": "Jeremy Longshore",
+  "license": "Apache-2.0",
+  "compatibility": "claude-code",
+  "tags": ["example"]
+}

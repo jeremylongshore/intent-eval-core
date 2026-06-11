@@ -1,0 +1,10 @@
+{
+  "name": "doc-writer",
+  "description": "Writes documentation from source files.",
+  "allowed-tools": ["Read", "Write"],
+  "version": "0.1.0",
+  "author": "Jeremy Longshore",
+  "license": "Apache-2.0",
+  "compatibility": "claude-code",
+  "tags": ["docs"]
+}

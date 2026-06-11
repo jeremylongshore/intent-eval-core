@@ -1,0 +1,10 @@
+{
+  "name": "my-skill",
+  "description": "A clean, third-person description with no shell substitution.",
+  "allowed-tools": ["Read", "Write", "Bash(git:*)"],
+  "version": "1.0.0",
+  "author": "Jeremy Longshore",
+  "license": "Apache-2.0",
+  "compatibility": "claude-code",
+  "tags": ["example"]
+}

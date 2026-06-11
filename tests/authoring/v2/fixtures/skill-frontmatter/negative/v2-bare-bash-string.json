@@ -1,0 +1,10 @@
+{
+  "name": "my-skill",
+  "description": "A clean description.",
+  "allowed-tools": "Read, Bash",
+  "version": "1.0.0",
+  "author": "Jeremy Longshore",
+  "license": "Apache-2.0",
+  "compatibility": "claude-code",
+  "tags": ["example"]
+}

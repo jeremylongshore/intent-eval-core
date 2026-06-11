@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/is-overlay/skill-frontmatter.v2.json",
+  "title": "skill-frontmatter — IS OVERLAY v2 (authored by Intent Solutions)",
+  "description": "The Intent-Solutions-only delta on top of upstream-base/skill-frontmatter.v1.json — the STRICT v2 profile. Identical to the v1 overlay (same required set, same field types, same optional IS extensions) EXCEPT for one tightening: `allowed-tools` is narrowed so a BARE, unscoped `Bash` tool token is rejected — only scoped `Bash(scope:*)` forms are accepted. By the monotonic-additive invariant (DR-044 D7 + CSO position) the overlay may only ADD required fields and NARROW constraints relative to the base; the scoped-Bash narrowing is exactly such a NARROW (every v1-accepted artifact except a bare-`Bash` author stays accepted). This is a v2-only delta: v1 stays the looser PUBLISHED contract (it accepts bare `Bash` forever) and is BYTE-FROZEN at @intentsolutions/core@0.4.1.",
+  "$comment": "OVERLAY REQUIRED DELTA (beyond the base floor [name, description]): [allowed-tools, version, author, license, compatibility, tags]. Union with the base floor = the IS 8-field marketplace required set {name, description, allowed-tools, version, author, license, compatibility, tags} — the SCHEMA_CHANGELOG NON-NEGOTIABLE. v2 DELTA: allowed-tools rejects a bare unscoped `Bash` token (string-form negative pattern + array-form items not-const), catching up to the CCP prose validator's unscoped-Bash ERROR (validate-skills-schema.py ~L1843). Evolves under ISEDC Class-1 ratification only. Citations: 6767-b §4; DR-049; the CCP kernel-shadow finding.",
+  "type": "object",
+  "required": ["allowed-tools", "version", "author", "license", "compatibility", "tags"],
+  "x-mutually-exclusive-fields": [
+    {
+      "$comment": "kyh9 cross-field invariant (CTO re-scope of the original infeasible cross-field bead). requires_env and fallback_for_env are mutually exclusive PER VARIABLE: a single identifier must not appear in BOTH arrays (a variable cannot be declared required-present AND simultaneously carry a fallback). This is an array-element-disjointness predicate, which vanilla JSON Schema 2020-12 cannot express (no cross-array intersection keyword; ajv can only do it with the non-standard `$data` extension, which would break the language-agnostic wire contract and silently no-op for any standard validator). DOCUMENTED CARVE-OUT per the CTO ruling: the predicate is enforced in the Zod runtime layer (generated from this annotation by codegen-authoring.ts) and is intentionally NOT mirrored in the published JSON Schema. The fold-agreement (ajv ↔ Zod) backstop carves out exactly these overlap cases — see src/__tests__/skill-frontmatter-v2-schema.test.ts.",
+      "fields": ["requires_env", "fallback_for_env"]
+    }
+  ],
+  "properties": {
+    "allowed-tools": {
+      "$comment": "IS v2: promoted from upstream-OPTIONAL to IS-REQUIRED, AND narrowed to reject a bare unscoped `Bash` tool token. Type still accepts EITHER a CSV/space-delimited STRING (the upstream prose form + the published-plugin corpus form) OR a YAML array of tool identifiers — but a bare `Bash` (in either form) is now rejected; only scoped `Bash(scope:*)` is permitted (e.g. `Bash(git:*)`, `Bash(npm:*)`). UNLIKE the kyh9 carve-out, this narrowing IS structurally expressible in vanilla JSON Schema 2020-12: the string form uses a negative `pattern` with token-boundary anchoring (a bare `Bash` token = `Bash` at start/whitespace/comma and not followed by `(`), and the array form uses `items.not.const`. So a plain ajv consumer AND the CCP kernel-shadow enforce it WITHOUT a Zod-only carve-out. The `x-scoped-tool` annotation records the narrowed token so codegen emits the matching Zod check (fold-agreement holds for both forms). v2 DELTA vs v1: v1 accepts a bare `Bash`; v2 does not. CONVERGENCE TRIGGER: if agentskills.io promotes allowed-tools out of EXPERIMENTAL and into its required set, move the required-membership to upstream-base.",
+      "x-scoped-tool": "Bash",
+      "allOf": [
+        {
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+        },
+        {
+          "$comment": "Scoped-Bash narrowing, STRING form. Reject if a bare `Bash` token appears at a token boundary (start / whitespace / comma) and is not part of `Bash(...)`. `Bashful`, `Bash(git:*)`, and any non-Bash token are accepted. `not { type:string, pattern }` is vacuously true for non-string values, so this allOf member is inert on the array form. ECMA-262 / ajv-strict expressible (proven).",
+          "not": { "type": "string", "pattern": "(^|[\\s,])Bash([\\s,]|$)" }
+        },
+        {
+          "$comment": "Scoped-Bash narrowing, ARRAY form. Reject any array that CONTAINS an item exactly equal to the string `Bash`. `not { type:array, contains }` is vacuously true for non-array values, so this allOf member is inert on the string form. ECMA-262 / ajv-strict expressible (proven).",
+          "not": { "type": "array", "contains": { "const": "Bash" } }
+        }
+      ]
+    },
+    "version": {
+      "$comment": "IS: net-new IS-required tracking field (NOT a top-level agentskills.io field; the standard only allows metadata.version). Strict SemVer 2.0.0 — stricter than the legacy IS validator's prefix match (which accepted 1.2.3.4 / 1.2.3-anything-unanchored). CONVERGENCE TRIGGER: if agentskills.io adds a top-level required `version`, move it to upstream-base.",
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
+    "author": {
+      "$comment": "IS: net-new IS-required tracking field (the standard only allows metadata.author). CONVERGENCE TRIGGER: if agentskills.io adds a top-level required `author`, move it to upstream-base.",
+      "type": "string",
+      "minLength": 1
+    },
+    "tags": {
+      "$comment": "IS: net-new IS-required tracking field with ZERO upstream provenance — not in agentskills.io (not even under metadata) nor any Anthropic surface. Pure IS invention; convergence is unlikely. CONVERGENCE TRIGGER: only if the open standard introduces a top-level `tags` array.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "license": {
+      "$comment": "IS: promoted from upstream-OPTIONAL to IS-REQUIRED (type unchanged from base). CONVERGENCE TRIGGER: if agentskills.io makes license required, move the required-membership to upstream-base.",
+      "type": "string",
+      "minLength": 1
+    },
+    "compatibility": {
+      "$comment": "IS: promoted from upstream-OPTIONAL to IS-REQUIRED (type unchanged from base). CONVERGENCE TRIGGER: if agentskills.io makes compatibility required, move the required-membership to upstream-base.",
+      "type": "string",
+      "minLength": 1
+    },
+    "requires_env": {
+      "$comment": "IS OPTIONAL extension (validator schema 3.5.0). Environment variables this skill needs. Cross-field invariant (an identifier must not appear in both requires_env and fallback_for_env) is enforced PER VARIABLE in the Zod runtime layer via the x-mutually-exclusive-fields annotation above (kyh9 — generated by codegen-authoring.ts as a documented carve-out; not structurally expressible in vanilla JSON Schema).",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "requires_tools": {
+      "$comment": "IS OPTIONAL extension (3.5.0). Tools this skill needs.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "fallback_for_env": {
+      "$comment": "IS OPTIONAL extension (3.5.0).",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "fallback_for_tools": {
+      "$comment": "IS OPTIONAL extension (3.5.0).",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "required_environment_variables": {
+      "$comment": "IS OPTIONAL extension (validator schema 3.6.0). Each entry prompts the user on first run. name is UPPER_SNAKE_CASE; name + prompt are required per entry.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "prompt"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" },
+          "prompt": { "type": "string" },
+          "help": { "type": "string" },
+          "required_for": { "type": "string" }
+        }
+      }
+    }
+  }
+}
