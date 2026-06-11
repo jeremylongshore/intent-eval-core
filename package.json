@@ -64,6 +64,8 @@
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "codegen:validators": "for f in schemas/v1/*.schema.json; do name=$(basename \"$f\" .schema.json); pnpm exec json-schema-to-zod -i \"$f\" -o \"src/validators/v1/_generated/${name}.ts\"; done",
+    "codegen:authoring": "node --experimental-strip-types scripts/codegen-authoring.ts",
+    "codegen:authoring:check": "node --experimental-strip-types scripts/codegen-authoring.ts --check",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:types": "tsd",
@@ -79,7 +81,7 @@
     "api:diff": "node --experimental-strip-types scripts/api-diff.ts",
     "harness:verify": "audit-harness verify",
     "harness:init": "audit-harness init",
-    "check": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run arch && pnpm run boundaries"
+    "check": "pnpm run codegen:authoring:check && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run arch && pnpm run boundaries"
   },
   "lint-staged": {
     "*.{ts,js,cjs,mjs}": [
