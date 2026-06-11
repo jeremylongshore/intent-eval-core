@@ -111,7 +111,7 @@ The boundary at which this repo hands off to peer repos: the kernel **defines** 
 | Richer `ScoringConfig` (weights / thresholds) | TBD — ISEDC review | `iec-deferral-C` bead (`bd_000-projects-21re`) |
 | `gate-result/v1.coverage` element schema lockup | v0.2 if consumer demand | `iec-deferral-D` bead (`bd_000-projects-9xyk`) |
 | `ToolInvocationError.enum_class` registry | TBD — multi-tool deployment trigger | `iec-deferral-E` bead (`bd_000-projects-84li`) |
-| `CompositionDag` wire-format normative spec | v0.2 if downstream forks | `iec-deferral-F` bead (`bd_000-projects-3sjx`) |
+| `CompositionDag` wire-format normative spec | DISCHARGED — see `000-docs/009-DR-RFC-compositiondag-wire-format-2026-06-10.md` | `iec-deferral-F` bead (`bd_000-projects-3sjx`) |
 | `tenant_id` reservation (Architect W1) | TBD — ISEDC decision needed | `iec-deferral-G` bead (`bd_000-projects-k0fj`) |
 
 ### § 3.4 Anti-goals (binding-scope-control)
