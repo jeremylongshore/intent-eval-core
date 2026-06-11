@@ -48,6 +48,66 @@
         "keywords",
         "commands"
       ]
+    },
+    "agent-definition": {
+      "path": "agent-definition.schema.json",
+      "title": "agent-definition — IS marketplace-tier contract (composition)",
+      "kind": "authoring-contract",
+      "contractIndex": 3,
+      "lifecycle": "SHIPPED-INTERNAL",
+      "spec": "DR-044 D8 / plan 033 § 14.A / code.claude.com/docs/en/sub-agents",
+      "layers": {
+        "upstreamBase": "upstream-base/agent-definition.v1.json",
+        "universalFolds": "marketplace-tier.schema.json#/$defs/universalFolds",
+        "isOverlay": "is-overlay/agent-definition.v1.json"
+      },
+      "baseRequired": ["name", "description"],
+      "overlayRequired": ["tools", "model", "color", "version", "author", "tags"]
+    },
+    "mcp-config": {
+      "path": "mcp-config.schema.json",
+      "title": "mcp-config — IS marketplace-tier contract (composition)",
+      "kind": "authoring-contract",
+      "contractIndex": 4,
+      "lifecycle": "SHIPPED-INTERNAL",
+      "spec": "DR-044 D8 / plan 033 § 14.A / modelcontextprotocol.io/specification (2025-11-25) + code.claude.com/docs/en/mcp",
+      "layers": {
+        "upstreamBase": "upstream-base/mcp-config.v1.json",
+        "universalFolds": "marketplace-tier.schema.json#/$defs/universalFolds",
+        "isOverlay": "is-overlay/mcp-config.v1.json"
+      },
+      "baseRequired": ["name", "command", "args", "transport", "env"],
+      "overlayRequired": ["description", "version", "enabled"]
+    },
+    "hook-config": {
+      "path": "hook-config.schema.json",
+      "title": "hook-config — IS marketplace-tier contract (composition)",
+      "kind": "authoring-contract",
+      "contractIndex": 5,
+      "lifecycle": "SHIPPED-INTERNAL",
+      "spec": "DR-044 D8 / plan 033 § 14.A / code.claude.com/docs/en/hooks + code.claude.com/docs/en/settings",
+      "layers": {
+        "upstreamBase": "upstream-base/hook-config.v1.json",
+        "universalFolds": "marketplace-tier.schema.json#/$defs/universalFolds",
+        "isOverlay": "is-overlay/hook-config.v1.json"
+      },
+      "baseRequired": ["event", "matcher", "type", "command"],
+      "overlayRequired": ["description", "enabled", "timeout", "blocking"]
+    },
+    "marketplace-catalog": {
+      "path": "marketplace-catalog.schema.json",
+      "title": "marketplace-catalog — IS marketplace-tier contract (composition)",
+      "kind": "authoring-contract",
+      "contractIndex": 6,
+      "lifecycle": "SHIPPED-INTERNAL",
+      "spec": "DR-044 D8 / plan 033 § 14.A / code.claude.com/docs/en/plugin-marketplaces + anthropics/claude-plugins-official",
+      "layers": {
+        "upstreamBase": "upstream-base/marketplace-catalog.v1.json",
+        "universalFolds": "marketplace-tier.schema.json#/$defs/universalFolds",
+        "isOverlay": "is-overlay/marketplace-catalog.v1.json"
+      },
+      "baseRequired": ["name", "owner", "plugins"],
+      "overlayRequired": ["version", "description", "license", "homepage", "keywords"]
     }
   }
 }
