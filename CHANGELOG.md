@@ -12,6 +12,22 @@ versioning follows [SemVer 2.0.0](https://semver.org/).
 - Evidence Bundle predicate compatibility policy (forward/backward/mixing/deprecation rules) MUST land before first prod-Rekor anchor — bd `bd_000-projects-uprg` (P0)
 - OTel semantic conventions pinned in `schemas/v1/otel-attributes.yaml` to prevent attribute drift across consumer emitters — bd `bd_000-projects-9pi3` (P0)
 
+## [0.4.1] - 2026-06-11
+
+A **non-breaking relaxation** of the `skill-frontmatter` authoring contract's `allowed-tools` type. SemVer PATCH — purely widening; every artifact valid under `0.4.0` stays valid. Acting-CTO authorization.
+
+### Changed
+
+- **`schemas/authoring/v1/is-overlay/skill-frontmatter.v1.json` — `allowed-tools` now accepts a CSV/space-delimited string OR a YAML array** (non-breaking relaxation; faithful to the upstream prose spec + the published-plugin corpus; resolves the 23% CCP kernel-shadow deviation — 836/838 disagreements were this one field). The overlay type changed from `{"type":"array","items":{"type":"string"}}` to `{"anyOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}]}`. This is a **SUPERSET** relaxation: array-authored skills stay valid AND string-authored skills now validate too. The upstream prose form is the agentskills.io EXPERIMENTAL space-separated string + Claude-docs `6767-h §3.1`, which the entire published-plugin corpus authors; the kernel previously narrowed to array-only, which the just-merged CCP kernel-shadow measured at **23.12% deviation against the published corpus (836/838 disagreements were this single field)**. `allowed-tools` stays **required** (the marketplace-required floor is untouched — DR-049 rubric-floor guard stays green); only the accepted *type* widened. A malformed value (number, null, object, array containing a non-string) still rejects.
+- **`scripts/codegen-authoring.ts`** — extended keyword-driven (feature-gated to the exact `anyOf: [string, array-of-strings]` union via `isStringOrStringArrayAnyOf`) so the generated Zod validator (`src/validators/v1/authoring/skill-frontmatter.ts`) emits the combined `string | string[]` check. The other five contracts' generated output is **byte-identical** (no contract uses `anyOf`); codegen stays idempotent under `codegen:authoring:check`.
+
+### Verification
+
+- `pnpm run check` fully green: codegen idempotency, predicate-namespace isolation, **DR-049 rubric-floor self-pin** (no required field removed — the relaxation widens a type, never demotes a field), lint, typecheck, 526 tests, arch (0 violations), boundaries (0 violations).
+- **Monotonicity property test** (the 2026-04-28-debacle guard) stays green — loosening an OVERLAY field's accepted type is a relaxation of the overlay, not a demotion of a base-required field; `name`/`description` base requirements and the IS 8-field effective-required set are unchanged.
+- **ajv ↔ Zod fold-agreement** (the D8 40-fixture backstop) stays green for both the string and array forms; the corpus carries a CSV-string positive fixture (`positive/canonical-02.json`) and a malformed-type negative (`negative/type-allowed-tools.json`).
+- 100% coverage floor held; `pnpm run build` + `api:check` + `harness:verify` pass; `pnpm pack` ships `schemas/authoring/v1/` (21 files) including the relaxed overlay.
+
 ## [0.4.0] - 2026-06-11
 
 The **bicameral kernel** release. Lands the new `schemas/authoring/v1/` family alongside the unchanged `schemas/v1/` runtime family — the kernel now serves two chambers: runtime contracts (Evidence Bundle, gate-result/v1, the 13 entities) and authoring contracts (the Spec Authority Kernel surface that validates skills, plugins, agents, MCP configs, hooks, and marketplace catalogs). Purely **additive** — no `schemas/v1/` runtime contract is changed, renamed, or removed; every prior EvidenceBundle and gate-result/v1 row stays valid. SemVer MINOR. ISEDC Session 8 charter DR-044 (Spec Authority Kernel charter) + Session 9 charter DR-049 (kernel-hardening gates). Acting-CTO publish authorization.

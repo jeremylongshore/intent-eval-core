@@ -105,6 +105,7 @@ invariant (overlay only ADDS required + NARROWS) is asserted by the property tes
 | Version | Change |
 | --- | --- |
 | `1.0.0-draft` | Overlay-required delta `[allowed-tools, version, author, license, compatibility, tags]` (union with base floor = the IS 8-field set). `allowed-tools` narrowed to a string array; `version` strict SemVer 2.0.0; optional IS extras `requires_env`/`requires_tools`/`fallback_for_env`/`fallback_for_tools` + `required_environment_variables`. |
+| `1.0.0-draft` (pkg `0.4.1`) | **Non-breaking relaxation:** `allowed-tools` type widened from `{"type":"array","items":{"type":"string"}}` to `{"anyOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}]}` — accepts EITHER a CSV/space-delimited string (the upstream prose form per agentskills.io EXPERIMENTAL + `6767-h §3.1`, and the published-plugin corpus form) OR a YAML array. SUPERSET widening: array-authored skills stay valid, string-authored skills now also validate. Resolves the 23% CCP kernel-shadow deviation (836/838 disagreements were this one field). `allowed-tools` stays REQUIRED — the marketplace floor is untouched (rubric-floor guard green); only the accepted *type* widened. Malformed values (number, null, object, array-with-non-string) still reject. |
 
 ### § skill-frontmatter (composition)
 
@@ -112,6 +113,7 @@ invariant (overlay only ADDS required + NARROWS) is asserted by the property tes
 | --- | --- |
 | `1.0.0-draft` | Initial `allOf` of `[upstream-base, marketplace-tier#/$defs/universalFolds, is-overlay]`. Inline generated effective-required manifest (REQUIRED HERE / INHERITED). |
 | `1.0.0-draft` (DR-044 D8) | Single-source authoring codegen landed (`scripts/codegen-authoring.ts`). The Zod validator + the inline `$comment` manifest are now GENERATED from the base + overlay schemas; the walking-skeleton is promoted from hand-authored to generated output (body byte-identical). `--check` idempotency gate wired into `pnpm run check` + CI. The remaining five contracts ride this codegen for free. |
+| `1.0.0-draft` (pkg `0.4.1`) | Generated Zod validator regenerated for the `allowed-tools` string\|array relaxation: the codegen gained a feature-gated `anyOf: [string, array-of-strings]` branch (`isStringOrStringArrayAnyOf`) emitting a combined `string \| string[]` check. The effective-required `$comment` manifest is byte-identical (required membership unchanged); the other five contracts' generated output is byte-identical (none uses `anyOf`); codegen stays idempotent under `codegen:authoring:check`. |
 
 ## Contract #2 — `plugin-manifest`
 
