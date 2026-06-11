@@ -17,6 +17,7 @@
       "title": "skill-frontmatter — IS marketplace-tier contract (composition)",
       "kind": "authoring-contract",
       "contractIndex": 1,
+      "lifecycle": "PUBLISHED",
       "spec": "DR-044 D7 / plan 033 § 14.2 / 6767-b §4",
       "layers": {
         "upstreamBase": "upstream-base/skill-frontmatter.v1.json",

@@ -12,6 +12,44 @@ versioning follows [SemVer 2.0.0](https://semver.org/).
 - Evidence Bundle predicate compatibility policy (forward/backward/mixing/deprecation rules) MUST land before first prod-Rekor anchor — bd `bd_000-projects-uprg` (P0)
 - OTel semantic conventions pinned in `schemas/v1/otel-attributes.yaml` to prevent attribute drift across consumer emitters — bd `bd_000-projects-9pi3` (P0)
 
+## [0.4.0] - 2026-06-11
+
+The **bicameral kernel** release. Lands the new `schemas/authoring/v1/` family alongside the unchanged `schemas/v1/` runtime family — the kernel now serves two chambers: runtime contracts (Evidence Bundle, gate-result/v1, the 13 entities) and authoring contracts (the Spec Authority Kernel surface that validates skills, plugins, agents, MCP configs, hooks, and marketplace catalogs). Purely **additive** — no `schemas/v1/` runtime contract is changed, renamed, or removed; every prior EvidenceBundle and gate-result/v1 row stays valid. SemVer MINOR. ISEDC Session 8 charter DR-044 (Spec Authority Kernel charter) + Session 9 charter DR-049 (kernel-hardening gates). Acting-CTO publish authorization.
+
+### Added
+
+- **`schemas/authoring/v1/` bicameral authoring-contract family** (DR-044 D7/D8). Six per-contract schemas, each composed as an `allOf` of an upstream-base layer (authored by the open standard), the three universal folds (`deprecationRegistry`, `securityChecks`, `disclosureMarkers`), and an is-overlay layer (authored by IS). Each contract is importable as `@intentsolutions/core/schemas/authoring/v1/<name>.schema.json` and via its Zod validator under `@intentsolutions/core/validators/v1/authoring`:
+  - **`skill-frontmatter`** — contract #1, the walking skeleton. **STABLE — promoted to `lifecycle: "PUBLISHED"`** (deepest upstream capture; the stable, consumer-endorsed contract). Upstream sources: agentskills.io specification + code.claude.com/docs/en/skills (per `6767-b §4`).
+  - **`plugin-manifest`** — contract #2, EXPERIMENTAL (`lifecycle: "SHIPPED-INTERNAL"`). Upstream source: code.claude.com/docs/en/plugins-reference.
+  - **`agent-definition`** — contract #3, EXPERIMENTAL (`lifecycle: "SHIPPED-INTERNAL"`). Upstream source: code.claude.com/docs/en/sub-agents.
+  - **`mcp-config`** — contract #4, EXPERIMENTAL (`lifecycle: "SHIPPED-INTERNAL"`). Upstream sources: modelcontextprotocol.io/specification (2025-11-25) + code.claude.com/docs/en/mcp.
+  - **`hook-config`** — contract #5, EXPERIMENTAL (`lifecycle: "SHIPPED-INTERNAL"`). Upstream sources: code.claude.com/docs/en/hooks + code.claude.com/docs/en/settings.
+  - **`marketplace-catalog`** — contract #6, EXPERIMENTAL (`lifecycle: "SHIPPED-INTERNAL"`). Upstream sources: code.claude.com/docs/en/plugin-marketplaces + anthropics/claude-plugins-official.
+- **Single-source authoring codegen** (`pnpm run codegen:authoring`, DR-044 D8) — generates each contract's composed `*.schema.json` (with the effective-required `$comment` manifest) and its Zod validator from the two composed layers, so the upstream-base + is-overlay are the single source of truth. Idempotent; the `codegen:authoring:check` gate (in `pnpm run check`) fails on stale generated output.
+- **Three DR-049 kernel-hardening CI gates** (wired into `pnpm run check` + `ci.yml`):
+  - **predicate-namespace isolation** (`scripts/check-predicate-namespace-isolation.ts`) — fails if any `schemas/authoring/v1/**` field, `$comment`, or `$id` references the `evals.intentsolutions.io` predicate namespace. Authoring conformance is a deterministic lint, never a signed attestation; the two namespaces stay isolated.
+  - **rubric-floor self-pin** (`scripts/check-rubric-floor.ts`) — fails if a required field is removed or weakened from any contract's marketplace (is-overlay) required set or the `securityChecks` fold without an explicit `RUBRIC-FLOOR-ADR:` marker. Self-pinned in `.harness-hash` (via `.harness-hash-extra-patterns`) so the guard cannot be weakened in the same PR that weakens the floor.
+  - **predicate-comment coherence** (`src/__tests__/authoring-comment-coherence.test.ts`, runs under `pnpm run test`) — mechanically verifies each contract's generated `$comment` effective-required manifest agrees with the schema's actual ajv accept/reject on the canonical fixtures (drop-one coherence) and with the validator's required constants. Proven non-vacuous by mutation.
+
+### Lifecycle posture
+
+- **`skill-frontmatter` is STABLE/published** (`lifecycle: "PUBLISHED"` in `schemas/authoring/v1/index.json`, CFO binding under acting-CTO sign-off) — endorsed as the stable, consumer-endorsed authoring contract.
+- **Contracts #2–#6 (`plugin-manifest`, `agent-definition`, `mcp-config`, `hook-config`, `marketplace-catalog`) ship in the package but are EXPERIMENTAL** (`lifecycle: "SHIPPED-INTERNAL"`). Their `authoring/v1` stability is **pending the vendored deep-capture + the § 14.A policy-eval refinement** (planned for a future minor) before they are endorsed as stable. Treat their shape as subject to change.
+
+### Unchanged
+
+- The `schemas/v1/` runtime family (Evidence Bundle, `gate-result/v1`, the 13 canonical entities, and all v0.1–v0.3 predicate bodies) is **untouched**. No runtime contract is changed, renamed, or removed.
+
+### Cross-references
+
+- DR-044 (ISEDC Session 8 — Spec Authority Kernel charter): `intent-eval-lab/000-docs/044-AT-DECR-isedc-council-session-8-sak-charter-2026-06-09.md`.
+- DR-049 (ISEDC Session 9 — kernel-hardening gates + lifecycle binding): the predicate-namespace isolation, rubric-floor self-pin, and predicate-comment coherence gates plus the `skill-frontmatter` PUBLISHED / contracts #2–#6 SHIPPED-INTERNAL lifecycle posture.
+- Engineering beads: `bd_000-projects-3kye` (.5/.6/.7 DR-049 gates) + `bd_000-projects-kyh9`.
+
+### Breaking changes
+
+- None. New `schemas/authoring/v1/` exports + new CI gates only; the runtime surface is byte-stable.
+
 ## [0.3.1] - 2026-06-08
 
 Release-engineering patch. **No API or schema change** — the published package is byte-identical to v0.3.0 (the fixes are CI-only). Its purpose is to emit a **dashboard-verifiable** evidence manifest, closing the loop with the intent-eval-dashboard ingest.
