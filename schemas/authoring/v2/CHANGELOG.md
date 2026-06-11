@@ -32,15 +32,16 @@ family pointer v1 → v2.)
 | # | Rule | Surface | CCP prose-validator parity |
 | --- | --- | --- | --- |
 | 1 | Scoped-Bash: reject a bare unscoped `Bash` token (only `Bash(scope:*)` permitted) | `is-overlay` `allowed-tools` (NARROW) | `validate-skills-schema.py` ~L1843 (unscoped `Bash` is an enterprise-tier ERROR) |
-| 2 | Shell-substitution widen: `description` rejects `$(` and backticks in addition to `${` and XML | `securityChecks` fold (ADD conjunct) | `RE_YAML_SHELL_SUBST = re.compile(r"(?:\$\(|`)")` (L199) |
+| 2 | Shell-substitution widen: `description` rejects `$(` and backticks in addition to `${` and XML | `securityChecks` fold (ADD conjunct) | `RE_YAML_SHELL_SUBST` at L199 (catches `$(` and backticks) |
 | 3 | Reserved-name hardening: reject `name` whose lowercase contains `claude`/`anthropic` as a substring | `securityChecks` fold (ADD conjunct) | L1706 (`"claude"`/`"anthropic"` substring in name → ERROR) |
 | 4 | Description cap 1024: token budget lowered 1536 → 1024 | `disclosureMarkers` fold (TIGHTEN) | L1729-1730 (`len(desc) > 1024` → ERROR); also the agentskills.io documented soft cap |
 
 All four are **structurally expressible in vanilla JSON Schema 2020-12 / ECMA-262** (verified against
-ajv strict mode) — including scoped-Bash (string-form negative `pattern` with token-boundary anchoring
-+ array-form `not contains const`). So a plain ajv consumer AND the CCP kernel-shadow enforce every v2
-rule **without a Zod-only carve-out**. (Contrast the kyh9 `x-mutually-exclusive-fields` annotation,
-which is the one predicate that is genuinely not JSON-Schema-expressible and stays Zod-only.)
+ajv strict mode) — including scoped-Bash (a string-form negative `pattern` with token-boundary
+anchoring plus an array-form `not contains const`). So a plain ajv consumer AND the CCP kernel-shadow
+enforce every v2 rule **without a Zod-only carve-out**. (Contrast the kyh9 `x-mutually-exclusive-fields`
+annotation, which is the one predicate that is genuinely not JSON-Schema-expressible and stays
+Zod-only.)
 
 ---
 
@@ -58,7 +59,7 @@ Add-only within v2. v2 ADDS two conjuncts relative to the frozen v1 fold; nothin
 
 | Version | Change |
 | --- | --- |
-| `2.0.0-draft` | Carries every v1 securityChecks conjunct: `name` not a reserved word (`skill`/`claude`/`anthropic`/`mcp`/`plugin`/`agent`) and no `[<>]`; `description` no XML and no `${…}`. **ADDS (v2):** (a) `name` additionally rejects any name whose lowercase contains `claude` or `anthropic` as a substring (per-letter char-class pattern — ECMA-262 has no `(?i)` inline flag); (b) `description` shell-substitution pattern widened from `<[^>]+>\|\$\{` to `<[^>]+>\|\$\{\|\$\(\|\`` (also catches `$(` and backticks). |
+| `2.0.0-draft` | Carries every v1 securityChecks conjunct: `name` not a reserved word (`skill`/`claude`/`anthropic`/`mcp`/`plugin`/`agent`) and no angle brackets; `description` no XML and no `${…}`. **ADDS (v2):** (a) `name` additionally rejects any name whose lowercase contains `claude` or `anthropic` as a substring (per-letter char-class pattern — ECMA-262 has no `(?i)` inline flag); (b) `description` shell-substitution detection widened to also catch `$(` and backtick sequences (v1 caught only `${` and XML tags). |
 
 ## § disclosureMarkers (UNIVERSAL FOLD 3/3 — Karpathy-axis)
 

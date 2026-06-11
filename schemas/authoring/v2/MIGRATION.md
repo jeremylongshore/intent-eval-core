@@ -49,7 +49,7 @@ consistent design), so v2 adds the substring conjunct rather than back-patching 
 
 Register the three v2 layers by `$id` and resolve the composition:
 
-```
+```text
 authoring/v2/marketplace-tier.schema.json
 authoring/v2/upstream-base/skill-frontmatter.v1.json
 authoring/v2/is-overlay/skill-frontmatter.v2.json
