@@ -71,3 +71,22 @@ export {
   McpConfigSchema as McpConfigV2Schema,
   type McpConfig as McpConfigV2,
 } from './mcp-config.js';
+
+// Contract #2 — plugin-manifest (DR-062 projection-mirrored v2 base;
+// contract-scoped public surface). The v2 base mirrors the captured projection
+// (the full documented 23-field surface incl. the 11 component-path fields and
+// $schema/defaultEnabled/displayName; `commands` carries upstream's
+// string|array union; `name` is a bare string — kebab-case is prose-only
+// upstream); the relocated IS narrowings (commands array form, kebab name
+// pattern + 64-char cap, the `metadata` extension) bind via the overlay +
+// composition.
+export {
+  PLUGIN_MANIFEST_BASE_REQUIRED as PLUGIN_MANIFEST_V2_BASE_REQUIRED,
+  PLUGIN_MANIFEST_OVERLAY_REQUIRED as PLUGIN_MANIFEST_V2_OVERLAY_REQUIRED,
+  PLUGIN_MANIFEST_REQUIRED_FIELDS as PLUGIN_MANIFEST_V2_REQUIRED_FIELDS,
+  PLUGIN_NAME_PATTERN as PLUGIN_NAME_PATTERN_V2,
+  PLUGIN_NAME_MAX as PLUGIN_NAME_MAX_V2,
+  pluginManifestIssues as pluginManifestV2Issues,
+  PluginManifestSchema as PluginManifestV2Schema,
+  type PluginManifest as PluginManifestV2,
+} from './plugin-manifest.js';

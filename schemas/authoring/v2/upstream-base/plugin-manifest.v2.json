@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/upstream-base/plugin-manifest.v2.json",
+  "title": "plugin-manifest — UPSTREAM BASE v2 (authored by Anthropic/Claude Code, not by IS)",
+  "description": "The v2 upstream projection of the plugin-manifest contract: the `.claude-plugin/plugin.json` field shape owned by Claude Code. THIS FILE IS A REGENERATION OF THE CAPTURED PROJECTION (DR-062 § 5.1) — it encodes ONLY what the upstream documents (documented fields only, upstream requiredness, upstream wire forms), never an IS-specific rule. IS-specific required fields and constraints live in is-overlay/plugin-manifest.v2.json. Per DR-062 the v2 base adopts the two Class-1 findings of the plugin-manifest deep capture (058 #1: the 11 unmodeled component-path fields — agents, channels, dependencies, experimental.monitors, experimental.themes, hooks, lspServers, mcpServers, outputStyles, skills, userConfig; 058 #3: the documented metadata fields $schema, defaultEnabled, displayName) and the Class-2 widening (058 #2: `commands` accepts the documented string|array union — the array-only narrowing was an IS projection choice and is relocated to the overlay). The Class-3 relocations REMOVE two v1-base encodings with no documented machine-readable provenance: the structural kebab pattern + 64-char cap on `name` (upstream documents kebab-case in PROSE only — 058 #5) and the kernel-only `metadata` extension object (058 #4) — both now live in the overlay. Upstream requiredness: 'If you include a manifest, `name` is the only required field' ⇒ required:[name].",
+  "$comment": "PROVENANCE (v2 — DR-062). REGENERATION SOURCE: intent-eval-lab specs/_vendor/upstream/plugin-manifest/projection.json (projection_version spec-projection/v1, spec_version unversioned-2026-06-12, sha256 a6a67a15e5ddc67c9797e1264481124f42dcf0187e4b85ffea5e27bfad56d632) — per DR-062 § 5.1 the projection is the regeneration source for this base, not a reference. Adjudication: 062-AT-DECR-tier3-reconciliation-authoring-v2-bases-2026-06-12 (acting-CTO ruling; plugin-manifest rows: C1 = 058 #1/#3, C2 = 058 #2, C3 = 058 #4/#5). Authority: code.claude.com/docs/en/plugins-reference § 'Plugin manifest schema' (Required fields + Metadata fields + Component path fields tables). VERBATIM upstream facts encoded here, per the projection's fields table: (1) 'If you include a manifest, name is the only required field' (projection name_only_required: true; manifest itself optional — manifest_optional: true). (2) name = string, 'Unique identifier (kebab-case, no spaces)' — kebab-case is PROSE ONLY (projection name_kebab_case_prose: true), so the v2 base types name as a bare string; the structural pattern + cap are the OVERLAY's (DR-062 C3, 058 #5). (3) Metadata table: $schema string; version string ('Semantic version' — no pinned grammar); description string; displayName string; author OBJECT (documented example {name,email,url} — the inner name requiredness carries from the v1 base, an AGREEMENT in the 058 cross-check, not a divergence); homepage string ('Documentation URL', format:uri carried as an agreement); repository string ('Source code URL', format:uri carried); license string; keywords array ('Discovery tags', items string carried — 'a keywords value that is a string instead of an array is a load error'); defaultEnabled boolean. (4) Component-path table: commands/agents/skills/outputStyles = string|array (058 #2 widens commands to the documented union; the same union is the documented form for the other three); hooks/mcpServers/lspServers = string|array|object (a config path, an array of paths, or an inline object); channels/dependencies = array (no documented item shape — the base mirrors the projection's bare `array`); experimental = the dotted projection rows experimental.monitors + experimental.themes, each string|array, folded into one object property; userConfig = object. (5) 'Unrecognized top-level fields are ignored' (projection unrecognized_top_level_ignored: true) ⇒ no additionalProperties:false. (6) 'Fields with the wrong type still fail' (projection wrong_type_fails: true) ⇒ every documented field carries its documented type. NOTE: the base intentionally does NOT cap description length — the universal disclosureMarkers fold (v2: 1024) is the operative IS cap. NOTE: the kernel-only `metadata` extension object moved to the overlay per DR-062 Class 3 (058 #4 — documented fields only in the base).",
+  "type": "object",
+  "required": ["name"],
+  "properties": {
+    "name": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Required fields table): string, 'Unique identifier (kebab-case, no spaces)'. The ONLY required field upstream. kebab-case is documented in PROSE only (projection name_kebab_case_prose: true) — per DR-062 C3 (058 #5) the structural kebab pattern + 64-char cap are NOT encoded here; they live in is-overlay/plugin-manifest.v2.json with a convergence trigger.",
+      "type": "string"
+    },
+    "$schema": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Metadata fields): OPTIONAL string — the JSON-Schema reference for editor tooling. DR-062 C1 adoption (058 #3): documented upstream, unmodeled in v1.",
+      "type": "string"
+    },
+    "version": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Metadata fields): OPTIONAL string, 'Semantic version'. SemVer grammar is narrowed by the IS overlay; the base only types it as a string (upstream pins no grammar).",
+      "type": "string"
+    },
+    "description": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Metadata fields): OPTIONAL string, 'Brief explanation of plugin purpose'. Length cap deliberately NOT encoded here — the universal disclosureMarkers fold (v2: 1024) is the operative IS cap.",
+      "type": "string"
+    },
+    "displayName": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Metadata fields): OPTIONAL string — human-readable display name. DR-062 C1 adoption (058 #3): documented upstream, unmodeled in v1.",
+      "type": "string"
+    },
+    "author": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Metadata fields): OPTIONAL OBJECT, 'Author information', documented example {name,email,url} (projection author: object; samples observed subfields email/name/url). The inner required name carries from the v1 base — an AGREEMENT in the 058 cross-check, not one of the 5 pinned divergences.",
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "email": { "type": "string" },
+        "url": { "type": "string" }
+      }
+    },
+    "homepage": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Metadata fields): OPTIONAL string, 'Documentation URL'. URI format carried from the v1 base (an agreement in the 058 cross-check).",
+      "type": "string",
+      "format": "uri"
+    },
+    "repository": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Metadata fields): OPTIONAL string, 'Source code URL'. URI format carried for parity with homepage.",
+      "type": "string",
+      "format": "uri"
+    },
+    "license": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Metadata fields): OPTIONAL string, 'License identifier' (e.g. MIT, Apache-2.0).",
+      "type": "string"
+    },
+    "keywords": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Metadata fields): OPTIONAL array, 'Discovery tags'. 'A keywords value that is a string instead of an array is a load error' ⇒ typed as an array of strings (carried from the v1 base as an agreement).",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "defaultEnabled": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Metadata fields): OPTIONAL boolean — whether the plugin is enabled by default on install. DR-062 C1 adoption (058 #3): documented upstream, unmodeled in v1.",
+      "type": "boolean"
+    },
+    "commands": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Component path fields): OPTIONAL string|array — custom command file path(s). DR-062 C2 WIDENING (058 #2): the v2 base accepts the DOCUMENTED union (the v1 base narrowed to array-only — an IS projection choice now relocated to the overlay with a convergence trigger).",
+      "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+    },
+    "agents": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Component path fields): OPTIONAL string|array — custom agent file path(s) (projection agents: string|array). DR-062 C1 adoption (058 #1).",
+      "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+    },
+    "skills": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Component path fields): OPTIONAL string|array — custom skill path(s) (projection skills: string|array). DR-062 C1 adoption (058 #1).",
+      "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+    },
+    "hooks": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Component path fields): OPTIONAL string|array|object — hooks configuration file path(s) or inline object (projection hooks: string|array|object). DR-062 C1 adoption (058 #1).",
+      "anyOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } },
+        { "type": "object" }
+      ]
+    },
+    "mcpServers": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Component path fields): OPTIONAL string|array|object — MCP server config path(s) or inline object (projection mcpServers: string|array|object). DR-062 C1 adoption (058 #1).",
+      "anyOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } },
+        { "type": "object" }
+      ]
+    },
+    "lspServers": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Component path fields): OPTIONAL string|array|object — LSP server config path(s) or inline object (projection lspServers: string|array|object). DR-062 C1 adoption (058 #1).",
+      "anyOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } },
+        { "type": "object" }
+      ]
+    },
+    "outputStyles": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Component path fields): OPTIONAL string|array — output-style path(s) (projection outputStyles: string|array). DR-062 C1 adoption (058 #1).",
+      "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+    },
+    "channels": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Component path fields): OPTIONAL array (projection channels: array — no documented item shape; the base mirrors the projection's bare array). DR-062 C1 adoption (058 #1).",
+      "type": "array"
+    },
+    "dependencies": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Component path fields): OPTIONAL array — other plugins this plugin depends on (projection dependencies: array — no documented item shape; the base mirrors the projection's bare array). DR-062 C1 adoption (058 #1).",
+      "type": "array"
+    },
+    "experimental": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Component path fields): the dotted projection rows experimental.monitors + experimental.themes (each string|array), folded into one object property. DR-062 C1 adoption (058 #1).",
+      "type": "object",
+      "properties": {
+        "monitors": {
+          "$comment": "Projection experimental.monitors: string|array — monitor path(s).",
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+        },
+        "themes": {
+          "$comment": "Projection experimental.themes: string|array — theme path(s).",
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+        }
+      }
+    },
+    "userConfig": {
+      "$comment": "code.claude.com/docs/en/plugins-reference (Component path fields): OPTIONAL object — user-configurable settings schema (projection userConfig: object). DR-062 C1 adoption (058 #1).",
+      "type": "object"
+    }
+  }
+}

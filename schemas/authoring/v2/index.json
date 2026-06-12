@@ -56,6 +56,37 @@
       },
       "baseRequired": ["name"],
       "overlayRequired": ["type", "command", "args", "env", "description", "version", "enabled"]
+    },
+    "plugin-manifest": {
+      "path": "plugin-manifest.schema.json",
+      "title": "plugin-manifest — IS marketplace-tier v2 contract (projection-mirrored composition)",
+      "kind": "authoring-contract",
+      "contractIndex": 2,
+      "lifecycle": "SHIPPED-INTERNAL",
+      "spec": "DR-062 (plugin-manifest rows: C1 = 058 #1/#3, C2 = 058 #2, C3 = 058 #4/#5) / DR-049 structure / spec-projection/v1 spec_version unversioned-2026-06-12",
+      "supersedes": "authoring/v1 plugin-manifest composition (v1 frozen at 0.4.1; v1 stays the PUBLISHED contract with the narrower 10-field base)",
+      "v2Deltas": [
+        "base: the 11 unmodeled component-path fields adopted (agents, channels, dependencies, experimental.monitors, experimental.themes, hooks, lspServers, mcpServers, outputStyles, skills, userConfig) (058 #1, C1 adopt)",
+        "base: the documented metadata fields $schema, defaultEnabled, displayName adopted (058 #3, C1 adopt)",
+        "base: `commands` accepts upstream's documented string|array union; the array-only narrowing relocates to the overlay with a convergence trigger (058 #2, C2 widen)",
+        "overlay: kernel-only `metadata` extension object relocated from the base (058 #4, C3 — documented fields only in the base)",
+        "overlay: the structural kebab name pattern + 64-char cap relocated from the base (058 #5, C3 — upstream documents kebab-case in prose only)"
+      ],
+      "layers": {
+        "upstreamBase": "upstream-base/plugin-manifest.v2.json",
+        "universalFolds": "marketplace-tier.schema.json#/$defs/universalFolds",
+        "isOverlay": "is-overlay/plugin-manifest.v2.json"
+      },
+      "baseRequired": ["name"],
+      "overlayRequired": [
+        "version",
+        "description",
+        "author",
+        "homepage",
+        "license",
+        "keywords",
+        "commands"
+      ]
     }
   }
 }

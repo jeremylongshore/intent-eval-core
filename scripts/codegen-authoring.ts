@@ -464,6 +464,53 @@ const CONTRACTS: readonly ContractSpec[] = [
       ' * not re-typed here — its presence is the required check — to keep messages\n' +
       ' * single-sourced.',
   },
+  {
+    // ── DR-062 projection-mirrored v2 (tier-3 reconciliation) ──
+    // plugin-manifest is the second of the five contracts whose v2 base is
+    // REGENERATED from the captured projection (intent-eval-lab
+    // specs/_vendor/upstream/plugin-manifest/projection.json) rather than
+    // byte-copied from v1: the full documented surface lands in the base (the
+    // 11 unmodeled component-path fields + $schema/defaultEnabled/displayName,
+    // 058 #1/#3 C1), `commands` widens to upstream's string|array union (058 #2
+    // C2), and the IS-only structural encodings relocate to the v2 overlay with
+    // convergence triggers (the kebab name pattern + 64-char cap, 058 #5 C3;
+    // the `metadata` extension object, 058 #4 C3).
+    version: 'v2',
+    baseFileSuffix: 'v2',
+    name: 'plugin-manifest',
+    symbol: 'PluginManifest',
+    constPrefix: 'PLUGIN_MANIFEST',
+    fieldConstPrefix: 'PLUGIN',
+    contractIndex: 2,
+    headerSuffix: 'plugin.json manifest — DR-062 projection-mirrored v2 base',
+    baseProvenance: 'code.claude.com plugins-reference',
+    baseDoc:
+      ' * The DR-062 projection-mirrored v2 base (REGENERATED from the captured\n' +
+      ' * projection, spec_version unversioned-2026-06-12 — not a byte-copy of the\n' +
+      " * frozen v1 base). Required presence of upstream's standardFloor ([name] —\n" +
+      " * 'name is the only required field') + type/format on the FULL documented\n" +
+      ' * surface: the metadata table ($schema, version, description, displayName,\n' +
+      ' * author object with a required inner name, homepage/repository URIs,\n' +
+      ' * license, keywords, defaultEnabled) + the component-path table\n' +
+      ' * (commands/agents/skills/outputStyles string|array; hooks/mcpServers/\n' +
+      ' * lspServers string|array|object; channels/dependencies arrays;\n' +
+      ' * experimental {monitors, themes} each string|array; userConfig object).\n' +
+      ' * The kebab-case name pattern + 64-char cap are NOT here — upstream\n' +
+      ' * documents kebab-case in prose only, so the structural encoding lives in\n' +
+      ' * the overlay (DR-062 C3, 058 #5). Length of `description` is intentionally\n' +
+      ' * NOT capped here — the universal disclosureMarkers fold (v2: 1024) is the\n' +
+      ' * operative cap.',
+    overlayDoc:
+      ' * The IS-only v2 delta: the seven upstream-optional metadata fields promoted\n' +
+      ' * to IS-required (version, description, author, homepage, license, keywords,\n' +
+      ' * commands) + the SemVer narrowing on version + the RELOCATED commands\n' +
+      " * array-only narrowing (DR-062 C2, 058 #2 — the v2 base carries upstream's\n" +
+      ' * string|array union) + the RELOCATED structural name encoding (kebab\n' +
+      ' * pattern + 64-char cap; DR-062 C3, 058 #5 — prose-only upstream) + the\n' +
+      ' * RELOCATED optional `metadata` extension object (DR-062 C3, 058 #4). A\n' +
+      ' * field whose type is already enforced by the base is not re-typed here —\n' +
+      ' * its presence is the required check — to keep messages single-sourced.',
+  },
 ];
 
 // ─── Schema IO ───────────────────────────────────────────────────────────────
@@ -701,6 +748,60 @@ function baseFieldCheck(field: string, schema: FieldSchema, fieldConstPrefix: st
     return lines;
   }
 
+  // anyOf [ string, array-of-strings ] — the documented string|array latitude on
+  // a BASE field (DR-062 projection-mirrored v2: plugin-manifest component-path
+  // fields like `commands`/`agents`/`skills`/`outputStyles`, and the
+  // `experimental` sub-fields). Same feature-gated union shape the overlay
+  // branch recognizes (isStringOrStringArrayAnyOf); accepts a string OR a
+  // string[]; everything else is an issue.
+  if (isStringOrStringArrayAnyOf(schema)) {
+    lines.push(
+      `  if ('${field}' in artifact) {`,
+      `    const ${camel(field)} = ${access};`,
+      `    if (typeof ${camel(field)} !== 'string' && !isStringArray(${camel(field)})) {`,
+      `      issues.push({`,
+      `        message: '${field} must be a string or an array of strings',`,
+      `        path: ['${field}'],`,
+      `      });`,
+      `    }`,
+      `  }`,
+    );
+    return lines;
+  }
+
+  // anyOf [ string, array-of-strings, object ] — the documented
+  // string|array|object latitude on a BASE field (DR-062 projection-mirrored
+  // v2: plugin-manifest `hooks`/`mcpServers`/`lspServers` — a config file path,
+  // an array of paths, or an inline object). Feature-gated to exactly this
+  // 3-member union (isStringOrStringArrayOrObjectAnyOf).
+  if (isStringOrStringArrayOrObjectAnyOf(schema)) {
+    const v = camel(field);
+    const cond = `typeof ${v} !== 'string' && !isStringArray(${v}) && !isPlainObject(${v})`;
+    const single = `    if (${cond}) {`;
+    const condLines =
+      single.length <= 100
+        ? [single]
+        : [
+            `    if (`,
+            `      typeof ${v} !== 'string' &&`,
+            `      !isStringArray(${v}) &&`,
+            `      !isPlainObject(${v})`,
+            `    ) {`,
+          ];
+    lines.push(
+      `  if ('${field}' in artifact) {`,
+      `    const ${v} = ${access};`,
+      ...condLines,
+      `      issues.push({`,
+      `        message: '${field} must be a string, an array of strings, or an object',`,
+      `        path: ['${field}'],`,
+      `      });`,
+      `    }`,
+      `  }`,
+    );
+    return lines;
+  }
+
   // String with only a minLength floor — non-empty, no pattern/maxLength/format
   // (e.g. mcp `command`, hook `matcher`/`command`). Type-check + non-empty check.
   // `description` is excluded: it is the universal-fold-owned field (the
@@ -803,6 +904,19 @@ function baseFieldCheck(field: string, schema: FieldSchema, fieldConstPrefix: st
     return lines;
   }
 
+  // Generic array — NO documented item shape (DR-062 projection-mirrored v2:
+  // plugin-manifest `channels`/`dependencies`, whose projection type is the
+  // bare `array`). The base mirrors the projection: Array.isArray only —
+  // inventing an item type would exceed the documented surface.
+  if (schema.type === 'array' && schema.items === undefined) {
+    lines.push(
+      `  if ('${field}' in artifact && !Array.isArray(${access})) {`,
+      `    issues.push({ message: '${field} must be an array', path: ['${field}'] });`,
+      `  }`,
+    );
+    return lines;
+  }
+
   // String with a URI format (e.g. `homepage`, `repository`).
   if (schema.type === 'string' && schema.format === 'uri') {
     lines.push(
@@ -830,6 +944,37 @@ function baseFieldCheck(field: string, schema: FieldSchema, fieldConstPrefix: st
       `      for (const key of [${nestedRequired}] as const) {`,
       `        if (!(key in ${field})) {`,
       `          issues.push({ message: \`${field}.\${key} is required\`, path: ['${field}', key] });`,
+      `        }`,
+      `      }`,
+      `    }`,
+      `  }`,
+    );
+    return lines;
+  }
+
+  // Object whose declared properties are ALL optional string|array unions and
+  // which has no nested required (DR-062 projection-mirrored v2: plugin-manifest
+  // `experimental` = {monitors?, themes?}, each string|array per the projection's
+  // dotted `experimental.monitors`/`experimental.themes` rows). Emits the nested
+  // per-key union checks so the Zod layer mirrors ajv's nested validation.
+  if (isObjectOfUnionProps(schema)) {
+    const v = camel(field);
+    const keys = Object.keys(schema.properties ?? {})
+      .map((k) => `'${k}'`)
+      .join(', ');
+    lines.push(
+      `  if ('${field}' in artifact) {`,
+      `    const ${v} = ${access};`,
+      `    if (!isPlainObject(${v})) {`,
+      `      issues.push({ message: '${field} must be an object', path: ['${field}'] });`,
+      `    } else {`,
+      `      for (const key of [${keys}] as const) {`,
+      `        const value = ${v}[key];`,
+      `        if (key in ${v} && typeof value !== 'string' && !isStringArray(value)) {`,
+      `          issues.push({`,
+      `            message: \`${field}.\${key} must be a string or an array of strings\`,`,
+      `            path: ['${field}', key],`,
+      `          });`,
       `        }`,
       `      }`,
       `    }`,
@@ -1051,6 +1196,54 @@ function isStringOrStringArrayAnyOf(schema: FieldSchema): boolean {
 }
 
 /**
+ * The feature-gate for the DR-062 string|array|object base latitude (plugin-manifest
+ * `hooks`/`mcpServers`/`lspServers`): is this field an `anyOf` that is EXACTLY the
+ * 3-member union of a bare string, an array-of-strings, and a bare object (no
+ * nested required/properties)? Recognizing only this precise shape keeps the
+ * codegen keyword-driven; any other 3-member anyOf falls through unrecognized
+ * rather than silently mis-generating.
+ */
+function isStringOrStringArrayOrObjectAnyOf(schema: FieldSchema): boolean {
+  if (schema.anyOf?.length !== 3) {
+    return false;
+  }
+  const isBareString = (s: FieldSchema): boolean =>
+    s.type === 'string' &&
+    s.pattern === undefined &&
+    s.enum === undefined &&
+    s.format === undefined &&
+    s.minLength === undefined &&
+    s.maxLength === undefined;
+  const isStringArrayMember = (s: FieldSchema): boolean =>
+    s.type === 'array' && s.items?.type === 'string';
+  const isBareObject = (s: FieldSchema): boolean =>
+    s.type === 'object' && s.required === undefined && s.properties === undefined;
+  const members = schema.anyOf;
+  return (
+    members.some(isBareString) && members.some(isStringArrayMember) && members.some(isBareObject)
+  );
+}
+
+/**
+ * The feature-gate for the DR-062 nested-union object (plugin-manifest
+ * `experimental`): an object field with NO nested required whose declared
+ * properties are ALL the string|array union. Drives the nested per-key union
+ * emit in baseFieldCheck (the ajv ↔ Zod fold-agreement mirror for the nested
+ * property types). An object with a nested `required` (e.g. `author`) or with
+ * non-union properties is NOT recognized here.
+ */
+function isObjectOfUnionProps(schema: FieldSchema): boolean {
+  if (schema.type !== 'object' || schema.properties === undefined) {
+    return false;
+  }
+  if (schema.required !== undefined && schema.required.length > 0) {
+    return false;
+  }
+  const props = Object.values(schema.properties);
+  return props.length > 0 && props.every((p) => isStringOrStringArrayAnyOf(p));
+}
+
+/**
  * The feature-gate for the v2 scoped-tool narrowing: is this field annotated with
  * `x-scoped-tool` AND shaped as an `allOf` whose FIRST member is the v1
  * string | array-of-strings union (the narrowed string|array `allowed-tools`)?
@@ -1152,10 +1345,20 @@ function conditionalRequiredBlock(conditionals: readonly ParsedConditionalRequir
   return `\n${blocks.join('\n\n')}\n`;
 }
 
-/** Whether any overlay field constrains via SemVer (drives the SEMVER_PATTERN const). */
+/**
+ * Whether any overlay field constrains via SemVer (drives the SEMVER_PATTERN
+ * const). A pattern-bearing string field that ALSO carries a maxLength is NOT a
+ * SemVer narrowing — it is the DR-062-relocated structural name encoding (kebab
+ * pattern + length cap), which emits via the base-shaped kebab branch + its own
+ * per-field constants, never via SEMVER_PATTERN.
+ */
 function usesSemver(overlayProps: Readonly<Record<string, FieldSchema>>): string | undefined {
   for (const schema of Object.values(overlayProps)) {
-    if (schema.type === 'string' && schema.pattern !== undefined) {
+    if (
+      schema.type === 'string' &&
+      schema.pattern !== undefined &&
+      schema.maxLength === undefined
+    ) {
       return schema.pattern;
     }
   }
@@ -1293,6 +1496,11 @@ function usesStringArray(
   if (all.some((s) => isScopedToolAllOf(s))) {
     return true;
   }
+  // The DR-062 3-member union + the nested-union object both emit isStringArray
+  // calls (the array-form member / the nested per-key union checks).
+  if (all.some((s) => isStringOrStringArrayOrObjectAnyOf(s) || isObjectOfUnionProps(s))) {
+    return true;
+  }
   return visibilityFields.length > 0 || hasEnvVars;
 }
 
@@ -1304,8 +1512,13 @@ function usesPlainObject(
 ): boolean {
   const all = [...Object.values(baseProps), ...Object.values(overlayProps)];
   return (
-    all.some((s) => s.type === 'object' || (s.type === 'array' && s.items?.type === 'object')) ||
-    hasEnvVars
+    all.some(
+      (s) =>
+        s.type === 'object' ||
+        (s.type === 'array' && s.items?.type === 'object') ||
+        // The DR-062 3-member union's object-form check needs isPlainObject too.
+        isStringOrStringArrayOrObjectAnyOf(s),
+    ) || hasEnvVars
   );
 }
 
@@ -1439,6 +1652,24 @@ function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSc
       constLines.push(
         `/** ${prov} ${field} numeric floor (upstream-base). */`,
         `export const ${constName(fieldConstPrefix, field, 'MIN')} = ${min};`,
+      );
+    }
+  }
+  // DR-062-relocated structural encodings on the OVERLAY (e.g. plugin-manifest
+  // v2 `name`: the kebab pattern + 64-char cap live in the overlay because
+  // upstream documents kebab-case in prose only — DR-062 C3). Same const shape
+  // as the base kebab emission, provenance-labelled as overlay policy.
+  for (const [field, schema] of Object.entries(overlayProps)) {
+    if (
+      schema.type === 'string' &&
+      schema.pattern !== undefined &&
+      schema.maxLength !== undefined
+    ) {
+      constLines.push(
+        `/** IS kebab-case ${field} surface (is-overlay — DR-062 relocated structural encoding). */`,
+        `export const ${constName(fieldConstPrefix, field, 'PATTERN')} = ${jsRegexLiteral(schema.pattern)};`,
+        `/** IS ${field} length ceiling (is-overlay — DR-062 relocated structural encoding). */`,
+        `export const ${constName(fieldConstPrefix, field, 'MAX')} = ${schema.maxLength};`,
       );
     }
   }
