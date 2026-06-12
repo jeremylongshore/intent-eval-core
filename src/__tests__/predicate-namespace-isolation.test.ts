@@ -19,7 +19,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -41,6 +41,25 @@ describe('predicate-namespace-isolation (3kye.5)', () => {
     const { status, stdout } = runGate();
     expect(status, `gate failed:\n${stdout}`).toBe(0);
     expect(stdout).toContain('OK');
+  });
+
+  it('default scan root is the WHOLE authoring family, not just v1 [f-iec-scripts-1]', () => {
+    // The default-run gate (what `pnpm run check` + CI invoke, no args) must
+    // cover every authoring version dir — v2 lives under the scanned root.
+    expect(statSync(join(REPO_ROOT, 'schemas/authoring/v1')).isDirectory()).toBe(true);
+    expect(statSync(join(REPO_ROOT, 'schemas/authoring/v2')).isDirectory()).toBe(true);
+    // The CLI names the family root (NOT a single version dir) as what it
+    // scanned — pre-fix the default was schemas/authoring/v1 only.
+    const { status, stdout } = runGate();
+    expect(status).toBe(0);
+    expect(stdout).toContain('scanned schemas/authoring;');
+  });
+
+  it('CATCHES a violation nested under a v2 version dir [f-iec-scripts-1]', () => {
+    const { status, stderr } = runGate(join(FIXTURE_ROOT, 'violation-v2'));
+    expect(status).toBe(1);
+    expect(stderr.toLowerCase()).toContain(PREDICATE_NAMESPACE);
+    expect(stderr).toContain('sample-v2-authoring.schema.json');
   });
 
   it('CATCHES a deliberate violation — exit 1, names the file (not vacuous)', () => {

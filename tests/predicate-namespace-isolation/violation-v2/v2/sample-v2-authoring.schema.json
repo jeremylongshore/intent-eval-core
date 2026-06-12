@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/sample-v2-authoring.schema.json",
+  "title": "Deliberate violation nested under a v2 version dir",
+  "$comment": "Forbidden: predicate URIs live at https://evals.intentsolutions.io/gate-result/v1 — authoring schemas must never reference that namespace.",
+  "type": "object"
+}

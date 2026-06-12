@@ -25,7 +25,10 @@
  *   node --experimental-strip-types scripts/check-predicate-namespace-isolation.ts <dir>
  *
  * The optional <dir> arg overrides the scan root (used by the test harness to
- * point at a fixture tree). Default: schemas/authoring/v1 at the repo root.
+ * point at a fixture tree). Default: schemas/authoring at the repo root — the
+ * WHOLE authoring family (v1, v2, and any future vN), not a single version dir,
+ * so new version forks are covered without touching this gate.
+ * [f-iec-scripts-1]
  */
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
@@ -42,6 +45,14 @@ const REPO_ROOT = join(SCRIPT_DIR, '..');
  * a `$id`, `$ref`, `$comment`, or any field value is caught.
  */
 export const PREDICATE_NAMESPACE = 'evals.intentsolutions.io';
+
+/**
+ * Default scan root (repo-relative): the ENTIRE authoring family. Scanning the
+ * family root rather than one version dir means schemas/authoring/v2 (and any
+ * future vN fork) is covered by `pnpm run check` and CI without editing this
+ * gate. [f-iec-scripts-1]
+ */
+export const DEFAULT_SCAN_ROOT = 'schemas/authoring';
 
 export interface NamespaceViolation {
   readonly file: string;
@@ -82,7 +93,8 @@ export function scanForPredicateNamespace(root: string): NamespaceViolation[] {
 }
 
 function main(): void {
-  const root = process.argv[2] ?? join(REPO_ROOT, 'schemas/authoring/v1');
+  const root = process.argv[2] ?? join(REPO_ROOT, DEFAULT_SCAN_ROOT);
+  const relRoot = root.startsWith(REPO_ROOT) ? relative(REPO_ROOT, root) : root;
 
   let entryStat;
   try {
@@ -99,7 +111,7 @@ function main(): void {
   const violations = scanForPredicateNamespace(root);
   if (violations.length === 0) {
     process.stdout.write(
-      `predicate-namespace-isolation: OK — no authoring schema references ${PREDICATE_NAMESPACE}.\n`,
+      `predicate-namespace-isolation: OK — scanned ${relRoot}; no authoring schema references ${PREDICATE_NAMESPACE}.\n`,
     );
     process.exit(0);
   }
