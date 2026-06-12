@@ -1,0 +1,193 @@
+{
+  "$comment": "Vendored projection of the section-heading inventory of 6767-h-SPEC-DR-STND-claude-code-extensions-master.md (the 6767-h master spec, which lives in the claude-code-plugins repo and is unreadable from this repo at CI time). Consumed by scripts/check-prose-anchors.ts (pnpm run check:prose-anchors) to verify every 6767-h section cited in a schema $comment resolves to a real heading. Regenerate with: pnpm run codegen:prose-anchors -- <path-to>/6767-h-SPEC-DR-STND-claude-code-extensions-master.md --out schemas/prose-anchors/6767-h.headings.json. Renumbering a 6767-h section requires regenerating this file in the same commit (033-PP-PLAN v7 § 14.16.1 stability discipline).",
+  "source": "6767-h-SPEC-DR-STND-claude-code-extensions-master.md",
+  "source_sha256": "b0c974d4f84df0db2ee9b4015c9498e419562ea10a53a896b7741ace8c4b0987",
+  "generated_at": "2026-06-12T16:20:15.263Z",
+  "generator": "scripts/parse-spec-headings.ts",
+  "parser": "markdown-it@14.1.0",
+  "headings": [
+    {
+      "level": 1,
+      "text": "Global Master Standard – Claude Code Extensions (Plugins + Skills) Specification",
+      "line": 1,
+      "numeric_id": null,
+      "anchors": ["global-master-standard-claude-code-extensions-plugins-skills-specification"]
+    },
+    {
+      "level": 2,
+      "text": "Executive Summary",
+      "line": 33,
+      "numeric_id": null,
+      "anchors": ["executive-summary"]
+    },
+    {
+      "level": 3,
+      "text": "What Is a Claude Code Extension?",
+      "line": 35,
+      "numeric_id": null,
+      "anchors": ["what-is-a-claude-code-extension"]
+    },
+    {
+      "level": 3,
+      "text": "What Is a Skill?",
+      "line": 44,
+      "numeric_id": null,
+      "anchors": ["what-is-a-skill"]
+    },
+    {
+      "level": 3,
+      "text": "Non‑Negotiable Invariants (Enterprise Mode)",
+      "line": 51,
+      "numeric_id": null,
+      "anchors": ["non-negotiable-invariants-enterprise-mode"]
+    },
+    {
+      "level": 2,
+      "text": "1) Canonical Directory Structure",
+      "line": 74,
+      "numeric_id": "1",
+      "anchors": ["1", "1-canonical-directory-structure", "canonical-directory-structure"]
+    },
+    {
+      "level": 3,
+      "text": "1.1 Plugin Root Anatomy (Repository Standard)",
+      "line": 76,
+      "numeric_id": "1.1",
+      "anchors": [
+        "1.1",
+        "1-1-plugin-root-anatomy-repository-standard",
+        "plugin-root-anatomy-repository-standard"
+      ]
+    },
+    {
+      "level": 3,
+      "text": "1.2 Skill Folder Anatomy",
+      "line": 96,
+      "numeric_id": "1.2",
+      "anchors": ["1.2", "1-2-skill-folder-anatomy", "skill-folder-anatomy"]
+    },
+    {
+      "level": 2,
+      "text": "2) Plugin Manifest: .claude-plugin/plugin.json",
+      "line": 108,
+      "numeric_id": "2",
+      "anchors": [
+        "2",
+        "2-plugin-manifest-claude-plugin-plugin-json",
+        "plugin-manifest-claude-plugin-plugin-json"
+      ]
+    },
+    {
+      "level": 3,
+      "text": "2.1 Required Fields (Enterprise Marketplace)",
+      "line": 110,
+      "numeric_id": "2.1",
+      "anchors": [
+        "2.1",
+        "2-1-required-fields-enterprise-marketplace",
+        "required-fields-enterprise-marketplace"
+      ]
+    },
+    {
+      "level": 3,
+      "text": "2.2 Path Resolution",
+      "line": 121,
+      "numeric_id": "2.2",
+      "anchors": ["2.2", "2-2-path-resolution", "path-resolution"]
+    },
+    {
+      "level": 2,
+      "text": "3) Skill Definition: skills/<skill-name>/SKILL.md",
+      "line": 127,
+      "numeric_id": "3",
+      "anchors": [
+        "3",
+        "3-skill-definition-skills-skill-name-skill-md",
+        "skill-definition-skills-skill-name-skill-md"
+      ]
+    },
+    {
+      "level": 3,
+      "text": "3.1 YAML Frontmatter (Required)",
+      "line": 129,
+      "numeric_id": "3.1",
+      "anchors": ["3.1", "3-1-yaml-frontmatter-required", "yaml-frontmatter-required"]
+    },
+    {
+      "level": 3,
+      "text": "3.2 Instruction Body (Required Sections)",
+      "line": 149,
+      "numeric_id": "3.2",
+      "anchors": [
+        "3.2",
+        "3-2-instruction-body-required-sections",
+        "instruction-body-required-sections"
+      ]
+    },
+    {
+      "level": 3,
+      "text": "3.3 {baseDir} and Bundled Files (References/Assets/Scripts)",
+      "line": 160,
+      "numeric_id": "3.3",
+      "anchors": [
+        "3.3",
+        "3-3-basedir-and-bundled-files-references-assets-scripts",
+        "basedir-and-bundled-files-references-assets-scripts"
+      ]
+    },
+    {
+      "level": 2,
+      "text": "4) Marketplace & Website (claudecodeplugins.io) Safety Contract",
+      "line": 174,
+      "numeric_id": "4",
+      "anchors": [
+        "4",
+        "4-marketplace-website-claudecodeplugins-io-safety-contract",
+        "marketplace-website-claudecodeplugins-io-safety-contract"
+      ]
+    },
+    {
+      "level": 3,
+      "text": "4.1 Source of Truth for Published Plugins",
+      "line": 176,
+      "numeric_id": "4.1",
+      "anchors": [
+        "4.1",
+        "4-1-source-of-truth-for-published-plugins",
+        "source-of-truth-for-published-plugins"
+      ]
+    },
+    {
+      "level": 3,
+      "text": "4.2 Skills/Explore Index Generation",
+      "line": 182,
+      "numeric_id": "4.2",
+      "anchors": ["4.2", "4-2-skills-explore-index-generation", "skills-explore-index-generation"]
+    },
+    {
+      "level": 3,
+      "text": "4.3 Required Website Gates (Zero Warnings Policy)",
+      "line": 190,
+      "numeric_id": "4.3",
+      "anchors": [
+        "4.3",
+        "4-3-required-website-gates-zero-warnings-policy",
+        "required-website-gates-zero-warnings-policy"
+      ]
+    },
+    {
+      "level": 2,
+      "text": "5) Compliance Checklist (PASS/FAIL)",
+      "line": 209,
+      "numeric_id": "5",
+      "anchors": ["5", "5-compliance-checklist-pass-fail", "compliance-checklist-pass-fail"]
+    },
+    {
+      "level": 2,
+      "text": "Appendix A: In-Repo Canonical References",
+      "line": 223,
+      "numeric_id": null,
+      "anchors": ["appendix-a-in-repo-canonical-references", "appendix-a"]
+    }
+  ]
+}

@@ -84,12 +84,14 @@
     "boundaries": "node --experimental-strip-types scripts/check-boundaries.ts",
     "check:predicate-namespace": "node --experimental-strip-types scripts/check-predicate-namespace-isolation.ts",
     "check:rubric-floor": "node --experimental-strip-types scripts/check-rubric-floor.ts",
+    "check:prose-anchors": "node --experimental-strip-types scripts/check-prose-anchors.ts",
+    "codegen:prose-anchors": "node --experimental-strip-types scripts/parse-spec-headings.ts",
     "api:extract": "pnpm run build && api-extractor run --local",
     "api:check": "pnpm run build && api-extractor run",
     "api:diff": "node --experimental-strip-types scripts/api-diff.ts",
     "harness:verify": "audit-harness verify",
     "harness:init": "audit-harness init",
-    "check": "pnpm run codegen:authoring:check && pnpm run check:predicate-namespace && pnpm run check:rubric-floor && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run arch && pnpm run boundaries"
+    "check": "pnpm run codegen:authoring:check && pnpm run check:predicate-namespace && pnpm run check:rubric-floor && pnpm run check:prose-anchors && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run arch && pnpm run boundaries"
   },
   "lint-staged": {
     "*.{ts,js,cjs,mjs}": [
@@ -108,6 +110,7 @@
     "@intentsolutions/audit-harness": "^1.1.5",
     "@microsoft/api-extractor": "^7.58.7",
     "@microsoft/api-extractor-model": "^7.33.8",
+    "@types/markdown-it": "14.1.2",
     "@types/node": "^22.10.0",
     "@typescript-eslint/eslint-plugin": "^8.19.0",
     "@typescript-eslint/parser": "^8.19.0",
@@ -120,6 +123,7 @@
     "husky": "^9.1.7",
     "json-schema-to-zod": "^2.8.1",
     "lint-staged": "^17.0.5",
+    "markdown-it": "14.1.0",
     "prettier": "^3.4.2",
     "tsd": "^0.33.0",
     "typescript": "^5.7.2",
