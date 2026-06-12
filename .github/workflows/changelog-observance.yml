@@ -1,0 +1,62 @@
+name: Changelog observance
+
+# Changelog-observance gate (9k5h.12 / intent-eval-lab doc 045 § 6): the kernel
+# CHANGELOG is canonical — "a schema change without a matching changelog entry
+# + a lineage-log record fails CI."
+#
+# On every PR this gate diffs the branch against the base; if any watched
+# schema file changed (schemas/**/*.schema.json, or an authoring-layer file:
+# upstream-base/*.json, is-overlay/*.json, an authoring index.json), it
+# requires (a) a same-PR modification to the governing CHANGELOG
+# (schemas/authoring/vN/CHANGELOG.md for the authoring families; the root
+# CHANGELOG.md for the runtime schemas/v1 chamber) and (b) a machine-readable
+# lineage reference in the entry's added lines:
+#
+#   lineage: <upstream-identity>@<upstream-version>
+#
+# keyed exactly as the (beaded, 045 § 7) append-only lineage log per the
+# Kleppmann correction (045 § 4).
+#
+# Exit codes (scripts/check-changelog-observance.ts):
+#   0 — observant
+#   1 — a schema change is missing its changelog entry / lineage token
+#   2 — environment error (base ref unresolvable)
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch: # manual re-run (diffs against origin/main)
+
+permissions:
+  contents: read
+
+concurrency:
+  group: changelog-observance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: changelog observance (schemas/ vs governing CHANGELOG)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history — the gate diffs against the PR base
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Changelog-observance gate
+        run: pnpm run check:changelog-observance -- --base "origin/${{ github.base_ref || 'main' }}"
