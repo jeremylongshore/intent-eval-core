@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/index.json",
   "title": "@intentsolutions/core authoring schema index v2 (STRICT profile)",
-  "description": "Catalog of the STRICT v2 authoring-contract schemas — the strict IS-marketplace contract that closes the 4 CCP-shadow frontmatter gaps. v2 is a fresh, self-contained sibling of authoring/v1 with ZERO $ref into v1 (copy-then-tighten); v1 is BYTE-FROZEN at @intentsolutions/core@0.4.1. ONLY skill-frontmatter is forked to v2 — the other 5 contracts (plugin-manifest, agent-definition, mcp-config, hook-config, marketplace-catalog) stay at v1/SHIPPED-INTERNAL untouched and gain a v2 sibling only if/when one needs a tightening (per-contract, behind CFO sign-off; DR-049 D-SAK-1). The v2 marketplace-tier foundation carries the THREE universal folds with two security tightenings (shell-substitution-widen + reserved-name-substring-hardening) + one disclosure tightening (description cap 1024). skill-frontmatter v2 additionally narrows allowed-tools (scoped-Bash). Source of truth: DR-049 + the CCP kernel-shadow finding.",
+  "description": "Catalog of the STRICT v2 authoring-contract schemas. v2 is a fresh, self-contained sibling of authoring/v1 with ZERO $ref into v1 (copy-then-tighten / copy-then-regenerate); v1 is BYTE-FROZEN at @intentsolutions/core@0.4.1. skill-frontmatter was forked first (DR-049 — closes the 4 CCP-shadow frontmatter gaps; its v2 base is a byte-copy of the v1 base modulo $id). Per DR-062 the five remaining contracts (mcp-config, plugin-manifest, agent-definition, hook-config, marketplace-catalog) gain v2 siblings whose bases are REGENERATED from the captured projections at intent-eval-lab specs/_vendor/upstream/<contract>/projection.json (documented fields only, upstream requiredness, upstream wire forms); every IS narrowing/extension relocates to the is-overlay with a convergence trigger. The v2 marketplace-tier foundation carries the THREE universal folds with two security tightenings (shell-substitution-widen + reserved-name-substring-hardening) + one disclosure tightening (description cap 1024). skill-frontmatter v2 additionally narrows allowed-tools (scoped-Bash). Sources of truth: DR-049 + the CCP kernel-shadow finding; DR-062 (tier-3 reconciliation) for the five projection-mirrored contracts.",
   "version": "2.0.0-draft",
   "schemas": {
     "marketplace-tier": {
@@ -33,6 +33,29 @@
       },
       "baseRequired": ["name", "description"],
       "overlayRequired": ["allowed-tools", "version", "author", "license", "compatibility", "tags"]
+    },
+    "mcp-config": {
+      "path": "mcp-config.schema.json",
+      "title": "mcp-config — IS marketplace-tier v2 contract (projection-mirrored composition)",
+      "kind": "authoring-contract",
+      "contractIndex": 4,
+      "lifecycle": "SHIPPED-INTERNAL",
+      "spec": "DR-062 (mcp-config rows: C1 = 056 #2/#3/#4, C2 = 056 #1) / DR-049 structure / spec-projection/v1 spec_version 2025-11-25",
+      "supersedes": "authoring/v1 mcp-config composition (v1 frozen at 0.4.1; v1 stays the PUBLISHED contract with the flat `transport`-named base)",
+      "v2Deltas": [
+        "base: transport selector takes upstream's wire name `type` (056 #2, C1 adopt)",
+        "base: `streamable-http` alias accepted in the selector enum (056 #3, C1 adopt)",
+        "base: per-transport shapes replace the flat shape — stdio requires `command`, URL-bearing transports require `url`; enum provenance re-attributed to the Claude Code page, `ws` Claude-Code-only (056 #4, C1 adopt)",
+        "base: `type` optional with the stdio default; the flat all-required projection choice relocates to the overlay with convergence triggers (056 #1, C2 widen)",
+        "overlay: kernel-only `metadata` extension object relocated from the base (DR-062 Class-3 prose — documented fields only in the base)"
+      ],
+      "layers": {
+        "upstreamBase": "upstream-base/mcp-config.v2.json",
+        "universalFolds": "marketplace-tier.schema.json#/$defs/universalFolds",
+        "isOverlay": "is-overlay/mcp-config.v2.json"
+      },
+      "baseRequired": ["name"],
+      "overlayRequired": ["type", "command", "args", "env", "description", "version", "enabled"]
     }
   }
 }

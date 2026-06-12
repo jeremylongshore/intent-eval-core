@@ -2,11 +2,14 @@
  * Authoring-tier Zod validators v2 (STRICT profile) — barrel export.
  *
  * The STRICT v2 fork of the Spec Authority Kernel (SAK) authoring contracts
- * (DR-049 + the CCP kernel-shadow finding). ONLY `skill-frontmatter` is forked to
- * v2 — the other five contracts stay at v1/SHIPPED-INTERNAL. v2 closes the 4
- * CCP-shadow frontmatter gaps: scoped-Bash, widened shell-substitution detection,
- * description cap 1024, and reserved-name substring hardening. v1 is BYTE-FROZEN
- * at `@intentsolutions/core@0.4.1`.
+ * (DR-049 + the CCP kernel-shadow finding). `skill-frontmatter` was forked first
+ * (closes the 4 CCP-shadow frontmatter gaps: scoped-Bash, widened
+ * shell-substitution detection, description cap 1024, reserved-name substring
+ * hardening); per DR-062 the five remaining contracts gain v2 siblings whose
+ * upstream bases are REGENERATED from the captured projections (documented
+ * fields only, upstream requiredness, upstream wire forms) with every IS
+ * narrowing relocated to the overlay. v1 is BYTE-FROZEN at
+ * `@intentsolutions/core@0.4.1`.
  *
  * The v2 `marketplace-tier` foundation is a self-contained, HAND-AUTHORED copy of
  * the v1 foundation with three fold tightenings (it has zero import from the v1
@@ -51,3 +54,20 @@ export {
   SkillFrontmatterSchema as SkillFrontmatterV2Schema,
   type SkillFrontmatter as SkillFrontmatterV2,
 } from './skill-frontmatter.js';
+
+// Contract #4 — mcp-config (DR-062 projection-mirrored v2 base; contract-scoped
+// public surface). The v2 base mirrors the captured projection (selector wire
+// name `type`, `streamable-http` alias, per-transport conditional shapes, `type`
+// optional with the stdio default); the relocated IS narrowings bind via the
+// overlay + composition.
+export {
+  MCP_CONFIG_BASE_REQUIRED as MCP_CONFIG_V2_BASE_REQUIRED,
+  MCP_CONFIG_OVERLAY_REQUIRED as MCP_CONFIG_V2_OVERLAY_REQUIRED,
+  MCP_CONFIG_REQUIRED_FIELDS as MCP_CONFIG_V2_REQUIRED_FIELDS,
+  MCP_NAME_PATTERN as MCP_NAME_PATTERN_V2,
+  MCP_NAME_MAX as MCP_NAME_MAX_V2,
+  MCP_TYPE_VALUES as MCP_TYPE_VALUES_V2,
+  mcpConfigIssues as mcpConfigV2Issues,
+  McpConfigSchema as McpConfigV2Schema,
+  type McpConfig as McpConfigV2,
+} from './mcp-config.js';

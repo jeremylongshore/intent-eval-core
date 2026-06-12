@@ -95,10 +95,12 @@ function validatorsDir(version: AuthoringVersion): string {
 
 /**
  * The is-overlay filename suffix per family. v1 overlays are `<contract>.v1.json`;
- * the v2 skill-frontmatter overlay is `<contract>.v2.json` (it carries the
- * scoped-Bash narrowing — a distinct file from the frozen v1 overlay). The
- * upstream-base filename stays `<contract>.v1.json` in BOTH families (the v2 base
- * is a byte-copy of the v1 base modulo `$id` — same upstream projection).
+ * v2 overlays are `<contract>.v2.json` (distinct files from the frozen v1
+ * overlays). The upstream-base filename is per-contract (`baseFileSuffix`): the
+ * v2 skill-frontmatter base stays `<contract>.v1.json` (a byte-copy of the v1
+ * base modulo `$id` — same upstream projection), while the DR-062
+ * projection-mirrored v2 contracts read `<contract>.v2.json` (a REGENERATED
+ * base derived from the captured projection, not a copy).
  */
 function overlayFileSuffix(version: AuthoringVersion): string {
   return version === 'v1' ? 'v1' : 'v2';
@@ -171,11 +173,27 @@ interface MutualExclusion {
   readonly $comment?: string;
 }
 
+/**
+ * A layer-level `allOf` member — the ONE recognized shape is the DR-062
+ * per-transport conditional requiredness: `if(selector ∈ enum)` /
+ * `then(required)` / `else(required)`. See parseConditionalRequires.
+ */
+interface ConditionalRequireMember {
+  readonly $comment?: string;
+  readonly if?: {
+    readonly properties?: Readonly<Record<string, FieldSchema>>;
+    readonly required?: readonly string[];
+  };
+  readonly then?: { readonly required?: readonly string[] };
+  readonly else?: { readonly required?: readonly string[] };
+}
+
 interface LayerSchema {
   readonly $id: string;
   readonly title: string;
   readonly required?: readonly string[];
   readonly properties?: Readonly<Record<string, FieldSchema>>;
+  readonly allOf?: readonly ConditionalRequireMember[];
   readonly 'x-mutually-exclusive-fields'?: readonly MutualExclusion[];
 }
 
@@ -189,6 +207,13 @@ interface ContractSpec {
    * branching.
    */
   readonly version: AuthoringVersion;
+  /**
+   * Upstream-base filename suffix (defaults to `v1`). The v2 skill-frontmatter
+   * fork keeps the `v1` base file (byte-copy modulo `$id`); the DR-062
+   * projection-mirrored v2 contracts carry a `v2` base file regenerated from
+   * the captured projection.
+   */
+  readonly baseFileSuffix?: AuthoringVersion;
   /** kebab-case contract name (= file basenames). */
   readonly name: string;
   /** UpperCamel symbol prefix (e.g. `SkillFrontmatter`). */
@@ -399,6 +424,46 @@ const CONTRACTS: readonly ContractSpec[] = [
       ' * fields. License/compatibility presence is covered by the required check;\n' +
       ' * their types are covered by the base — the overlay does not re-type them.',
   },
+  {
+    // ── DR-062 projection-mirrored v2 (tier-3 reconciliation) ──
+    // mcp-config is the first of the five contracts whose v2 base is REGENERATED
+    // from the captured projection (intent-eval-lab
+    // specs/_vendor/upstream/mcp-config/projection.json) rather than byte-copied
+    // from v1: the selector takes upstream's wire name `type` (OPTIONAL, stdio
+    // default), the enum gains the `streamable-http` alias, and the
+    // per-transport if/then/else shapes replace the v1 flat shape. The relocated
+    // IS narrowings (the flat all-required projection choice + the `metadata`
+    // extension object) live in the v2 overlay with convergence triggers.
+    version: 'v2',
+    baseFileSuffix: 'v2',
+    name: 'mcp-config',
+    symbol: 'McpConfig',
+    constPrefix: 'MCP_CONFIG',
+    fieldConstPrefix: 'MCP',
+    contractIndex: 4,
+    headerSuffix: 'mcpServers entry — DR-062 projection-mirrored v2 base',
+    baseProvenance: 'code.claude.com mcp',
+    baseDoc:
+      ' * The DR-062 projection-mirrored v2 base (REGENERATED from the captured\n' +
+      ' * projection, spec_version 2025-11-25 — not a byte-copy of v1). Required\n' +
+      " * presence of upstream's flat floor ([name] only) + the per-transport\n" +
+      ' * conditional requiredness (URL-bearing transports require `url`; the stdio\n' +
+      " * shape — `type` absent per the documented default, or `type: 'stdio'` —\n" +
+      ' * requires `command`) + type/constraint on the upstream-owned fields\n' +
+      ' * (kebab-case name, selector enum {stdio,http,streamable-http,sse,ws} under\n' +
+      " * upstream's wire name `type`, non-empty command/url, array args, object\n" +
+      ' * env). Enum provenance: the Claude Code page, NOT the machine-readable MCP\n' +
+      ' * schema (056 finding 4); `ws` is Claude-Code-only; `sse` is deprecated.',
+    overlayDoc:
+      ' * The IS-only v2 delta: the RELOCATED flat all-required projection choice\n' +
+      ' * (type, command, args, env — DR-062 C2 from 056 #1, each carrying a\n' +
+      ' * convergence trigger) + the three net-new IS tracking/operational fields\n' +
+      ' * carried from the v1 overlay (description, version, enabled) + the SemVer\n' +
+      ' * narrowing on version + the RELOCATED optional `metadata` extension object\n' +
+      ' * (DR-062 C3 prose). A field whose type is already enforced by the base is\n' +
+      ' * not re-typed here — its presence is the required check — to keep messages\n' +
+      ' * single-sourced.',
+  },
 ];
 
 // ─── Schema IO ───────────────────────────────────────────────────────────────
@@ -421,11 +486,10 @@ function guardedWrite(path: string, contents: string): void {
   writeFileSync(path, contents);
 }
 
-/** The upstream-base is `<contract>.v1.json` in BOTH families (v2 base = v1 base modulo $id). */
+/** The upstream-base filename is `<contract>.<baseFileSuffix>.json` (default v1; see ContractSpec). */
 function baseSchema(spec: ContractSpec): LayerSchema {
-  return loadJson<LayerSchema>(
-    join(authoringDir(spec.version), 'upstream-base', `${spec.name}.v1.json`),
-  );
+  const file = `${spec.name}.${spec.baseFileSuffix ?? 'v1'}.json`;
+  return loadJson<LayerSchema>(join(authoringDir(spec.version), 'upstream-base', file));
 }
 /** The is-overlay filename suffix is family-specific (v1 → `.v1.json`; v2 → `.v2.json`). */
 function overlaySchema(spec: ContractSpec): LayerSchema {
@@ -1009,6 +1073,85 @@ function camel(field: string): string {
   return field.replace(/-([a-z0-9])/g, (_m, c: string) => c.toUpperCase());
 }
 
+// ─── Layer-level conditional requiredness (DR-062 per-transport shapes) ──────
+
+interface ParsedConditionalRequire {
+  readonly selector: string;
+  readonly values: readonly string[];
+  readonly thenRequired: readonly string[];
+  readonly elseRequired: readonly string[];
+}
+
+/**
+ * The feature-gate for the DR-062 per-transport conditional requiredness: a
+ * base-layer `allOf` member is recognized IFF it is exactly the
+ * if(ONE selector property constrained by a bare enum, `required: [selector]`)
+ * / then(required) / else(required) shape. The `required: [selector]` on the
+ * `if` makes an ABSENT selector fall to the else branch — mirroring upstream's
+ * documented default (e.g. mcp-config: `type` absent ⇒ stdio ⇒ `command`
+ * required). Any other layer-level allOf member THROWS rather than silently
+ * mis-generating — a silently ignored base constraint would break the
+ * ajv ↔ Zod fold agreement the D8 backstop asserts.
+ */
+function parseConditionalRequires(layer: LayerSchema): ParsedConditionalRequire[] {
+  return (layer.allOf ?? []).map((member) => {
+    const props = member.if?.properties ?? {};
+    const keys = Object.keys(props);
+    const selector = keys[0];
+    const values = selector !== undefined ? props[selector]?.enum : undefined;
+    const thenRequired = member.then?.required ?? [];
+    const elseRequired = member.else?.required ?? [];
+    const recognized =
+      keys.length === 1 &&
+      selector !== undefined &&
+      values !== undefined &&
+      values.length > 0 &&
+      member.if?.required?.length === 1 &&
+      member.if.required[0] === selector &&
+      thenRequired.length > 0 &&
+      elseRequired.length > 0;
+    if (!recognized || selector === undefined || values === undefined) {
+      throw new Error(
+        `codegen-authoring: unrecognized layer-level allOf member in ${layer.$id} — only the ` +
+          'if(selector ∈ enum)/then(required)/else(required) conditional-require shape is supported.',
+      );
+    }
+    return { selector, values, thenRequired, elseRequired };
+  });
+}
+
+/**
+ * Render the conditional-required block(s) for `upstreamBaseIssues`, mirroring
+ * ajv's if/then/else semantics exactly: the then-branch fires IFF the selector
+ * is present AND a string AND in the enum; everything else (absent selector —
+ * the documented upstream default — or any other value, whose own enum/type
+ * check reports separately) falls to the else branch.
+ */
+function conditionalRequiredBlock(conditionals: readonly ParsedConditionalRequire[]): string {
+  if (conditionals.length === 0) {
+    return '';
+  }
+  const blocks = conditionals.map((c) => {
+    const values = `[${c.values.map((v) => `'${v}'`).join(', ')}]`;
+    const thenArr = `[${c.thenRequired.map((v) => `'${v}'`).join(', ')}]`;
+    const elseArr = `[${c.elseRequired.map((v) => `'${v}'`).join(', ')}]`;
+    return [
+      `  // Conditional requiredness (the base schema's if/then/else allOf): when`,
+      `  // '${c.selector}' is one of the then-branch selector values the then-required`,
+      `  // fields apply; otherwise (selector absent — the documented upstream default —`,
+      `  // or any other value) the else-required fields apply.`,
+      `  {`,
+      `    const selector = artifact['${c.selector}'];`,
+      `    const inThen =`,
+      `      typeof selector === 'string' &&`,
+      `      (${values} as readonly string[]).includes(selector);`,
+      `    issues.push(...requiredFieldsIssues(artifact, inThen ? ${thenArr} : ${elseArr}));`,
+      `  }`,
+    ].join('\n');
+  });
+  return `\n${blocks.join('\n\n')}\n`;
+}
+
 /** Whether any overlay field constrains via SemVer (drives the SEMVER_PATTERN const). */
 function usesSemver(overlayProps: Readonly<Record<string, FieldSchema>>): string | undefined {
   for (const schema of Object.values(overlayProps)) {
@@ -1156,12 +1299,13 @@ function usesStringArray(
 /** Whether any field (base or overlay) needs the isPlainObject helper. */
 function usesPlainObject(
   baseProps: Readonly<Record<string, FieldSchema>>,
+  overlayProps: Readonly<Record<string, FieldSchema>>,
   hasEnvVars: boolean,
 ): boolean {
+  const all = [...Object.values(baseProps), ...Object.values(overlayProps)];
   return (
-    Object.values(baseProps).some(
-      (s) => s.type === 'object' || (s.type === 'array' && s.items?.type === 'object'),
-    ) || hasEnvVars
+    all.some((s) => s.type === 'object' || (s.type === 'array' && s.items?.type === 'object')) ||
+    hasEnvVars
   );
 }
 
@@ -1196,7 +1340,7 @@ function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSc
   // exclusions needs the helper even if no field type-check otherwise would.
   const needStringArray =
     usesStringArray(baseProps, overlayProps, visibilityFields, hasEnvVars) || hasExclusions;
-  const needPlainObject = usesPlainObject(baseProps, hasEnvVars);
+  const needPlainObject = usesPlainObject(baseProps, overlayProps, hasEnvVars);
 
   // Base-layer checks: every declared base property gets a check, in declaration
   // order (the JSON Schema's key order is the canonical order).
@@ -1204,13 +1348,29 @@ function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSc
     .map((f) => baseFieldCheck(f, baseProps[f] ?? {}, fieldConstPrefix).join('\n'))
     .join('\n\n');
 
+  // Layer-level conditional requiredness on the base (DR-062 per-transport
+  // shapes). Parsed feature-gated; unrecognized base allOf shapes throw.
+  const conditionalBlock = conditionalRequiredBlock(parseConditionalRequires(base));
+
   // Overlay-layer checks: the overlay-required fields in declaration order, then
-  // the visibility-array loop (if any), then required_environment_variables (if
-  // present). Non-required overlay properties (none today) are not type-checked.
+  // the OPTIONAL (non-required) overlay extension fields (e.g. the DR-062
+  // relocated `metadata` object) — the skill-only visibility arrays + env-var
+  // extension are handled by their dedicated loops below, so they are excluded
+  // here — then the visibility-array loop (if any), then
+  // required_environment_variables (if present).
   const overlayCheckBlocks = overlayReq
     .map((f) => overlayFieldCheck(f, overlayProps[f] ?? {}, baseProps).join('\n'))
     .filter((s) => s.length > 0);
-  const overlayChecks = overlayCheckBlocks.join('\n\n');
+  const optionalOverlayBlocks = Object.keys(overlayProps)
+    .filter(
+      (f) =>
+        !overlayReq.includes(f) &&
+        !VISIBILITY_FIELDS.has(f) &&
+        f !== 'required_environment_variables',
+    )
+    .map((f) => baseFieldCheck(f, overlayProps[f] ?? {}, fieldConstPrefix).join('\n'))
+    .filter((s) => s.length > 0);
+  const overlayChecks = [...overlayCheckBlocks, ...optionalOverlayBlocks].join('\n\n');
 
   // The overlay `issues` initializer: prettier collapses it to one line when it
   // fits the 100-char print width, else wraps it. Mirror that so the generated
@@ -1374,6 +1534,7 @@ function requiredEnvVarIssues(value: unknown): FoldIssue[] {
   // generated output must stay byte-identical); v2 references its own family tree
   // + the `.v2.json` overlay + the v2 test file.
   const schemaDir = `schemas/authoring/${spec.version}`;
+  const baseName = `${spec.name}.${spec.baseFileSuffix ?? 'v1'}.json`;
   const overlayName = `${spec.name}.${overlayFileSuffix(spec.version)}.json`;
   const testName =
     spec.version === 'v1'
@@ -1384,7 +1545,7 @@ function requiredEnvVarIssues(value: unknown): FoldIssue[] {
  * ${spec.name} — IS marketplace-tier authoring contract #${spec.contractIndex} (${spec.headerSuffix}).
  *
  * GENERATED by scripts/codegen-authoring.ts from the three-artifact composition:
- *   ${schemaDir}/upstream-base/${spec.name}.v1.json   (authored by THEM)
+ *   ${schemaDir}/upstream-base/${baseName}   (authored by THEM)
  *   ${schemaDir}/marketplace-tier.schema.json#/$defs/universalFolds
  *   ${schemaDir}/is-overlay/${overlayName}      (authored by US)
  *   ⇒ ${schemaDir}/${spec.name}.schema.json           (pure allOf)
@@ -1435,7 +1596,7 @@ export function upstreamBaseIssues(artifact: AuthoringArtifact): FoldIssue[] {
 ${baseInit}
 
 ${baseChecks}
-
+${conditionalBlock}
   return issues;
 }
 

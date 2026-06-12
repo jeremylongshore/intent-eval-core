@@ -1,0 +1,9 @@
+{
+  "name": "example-server",
+  "type": "stdio",
+  "command": "node",
+  "args": ["server.js"],
+  "env": {},
+  "version": "1.0.0",
+  "enabled": true
+}

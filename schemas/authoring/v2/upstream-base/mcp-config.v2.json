@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/upstream-base/mcp-config.v2.json",
+  "title": "mcp-config — UPSTREAM BASE v2 (authored by the MCP standard + Claude Code, not by IS)",
+  "description": "The v2 upstream projection of the mcp-config contract: the per-server entry shape of an `.mcp.json` / plugin.json `mcpServers` map. THIS FILE IS A REGENERATION OF THE CAPTURED PROJECTION (DR-062 § 5.1) — it encodes ONLY what the upstream documents (documented fields only, upstream requiredness, upstream wire forms), never an IS-specific rule. IS-specific required fields and constraints live in is-overlay/mcp-config.v2.json. Per DR-062 the v2 base adopts the three Class-1 findings of the mcp-config deep capture (056 #2 selector wire name `type`, 056 #3 `streamable-http` alias, 056 #4 enum provenance re-attribution + per-transport shapes) and the Class-2 widening (056 #1: `type` is OPTIONAL with the stdio default — upstream's own standardized-format example omits it; the flat all-required shape was an IS projection choice and is relocated to the overlay). A stdio server (the else-branch: `type` absent or `stdio`) requires a `command` to launch the process; a URL-bearing transport (`http` / `streamable-http` / `sse` / `ws`) requires a `url`.",
+  "$comment": "PROVENANCE (v2 — DR-062). REGENERATION SOURCE: intent-eval-lab specs/_vendor/upstream/mcp-config/projection.json (projection_version spec-projection/v1, spec_version 2025-11-25, sha256 fe9e21933fc0d2031a4a661e539f8228448dfbd5efc648383bf3e9db057f195b) — per DR-062 § 5.1 the projection is the regeneration source for this base, not a reference. Adjudication: 062-AT-DECR-tier3-reconciliation-authoring-v2-bases-2026-06-12 (acting-CTO ruling; mcp-config rows: C1 = 056 #2/#3/#4, C2 = 056 #1). ENUM PROVENANCE RE-ATTRIBUTION (056 finding 4, Class 1): the machine-readable MCP schema (schema/2025-11-25/schema.ts) defines NEITHER the transport enum NOR the server-config shape — deterministically the enum is only fully recoverable from the Claude Code `.mcp.json` page (code.claude.com/docs/en/mcp), and `ws` in particular is Claude-Code-only (`claude mcp add --transport` does not accept `ws`). VERBATIM upstream facts encoded here, projected to the FLATTENED single-server corpus shape (the doc keys a server by name in the mcpServers map — projection `name_is_map_key: true`; the contract lifts `name` to a field for a one-server-per-document shape, an AGREEMENT in the 056 cross-check, not a divergence): (1) name = string, kebab-case identifier lifted from the map key. (2) type = the transport selector under upstream's wire name (projection `transport_field: \"type\"`; 056 #2) — OPTIONAL with the stdio default (projection `transport_field_in_standardized_format: false`; 056 #1, DR-062 C2); enum = projection `transport_types` {http, sse, stdio, ws} + the accepted alias `streamable-http` → http (projection `transport_aliases`; 056 #3); `sse` is deprecated upstream (projection `transports_deprecated`). (3) command = string, the stdio launch command ('command' in the standardized format) — non-empty; conditionally required by the stdio shape (else-branch of the per-transport allOf). (4) args = array of strings ('args' in the standardized format; optional). (5) env = object ('env' in the standardized format — environment variables passed to the server; optional). (6) url = string for the URL-bearing transports (the doc: 'url - For HTTP server types'; `ws` entries accept the same `url`); conditionally required by the then-branch; NOT format:uri because upstream documents env-var expansion placeholders inside `url` values ('${API_BASE_URL:-…}/mcp'). PER-TRANSPORT SHAPES (056 finding within #4 adoption, DR-062 C1): the layer-level allOf if/then/else replaces v1's flat single shape — if `type` ∈ {http, streamable-http, sse, ws} then [url] is required, else (absent ⇒ stdio default, or `type: \"stdio\"`) [command] is. NOTE: the base intentionally does NOT cap description length — the universal disclosureMarkers fold is the operative IS cap. NOTE: the kernel-only `metadata` extension object moved to the overlay per DR-062 Class 3 prose (documented fields only in the base).",
+  "type": "object",
+  "required": ["name"],
+  "properties": {
+    "name": {
+      "$comment": "The MCP server identifier. In the `.mcp.json` standardized format the server is keyed by name in the mcpServers map (projection `name_is_map_key: true`); the one-server-per-document contract lifts it to a kebab-case `name` field — an AGREEMENT in the 056 cross-check ('name lifted from the map key as the kernel documents'). The pattern enforces the kebab-case + non-empty surface the corpus tests.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$"
+    },
+    "type": {
+      "$comment": "code.claude.com/docs/en/mcp: the transport selector under upstream's wire name `type` (projection `transport_field` — 056 #2 Class-1 adoption; v1 misnamed it `transport`). OPTIONAL with the stdio default — upstream's own standardized-format example omits it (projection `transport_field_in_standardized_format: false`; 056 #1, DR-062 Class-2 widening). Enum = projection `transport_types` {http, sse, stdio, ws} + the accepted alias `streamable-http` → http (projection `transport_aliases`; 056 #3 Class-1 adoption). `sse` is deprecated upstream (projection `transports_deprecated`); `ws` is Claude-Code-only (056 #4). Provenance: the Claude Code page, NOT the machine-readable MCP schema (056 #4 re-attribution).",
+      "type": "string",
+      "enum": ["stdio", "http", "streamable-http", "sse", "ws"]
+    },
+    "command": {
+      "$comment": "code.claude.com/docs/en/mcp ('.mcp.json' standardized format): the stdio launch command ('command': '/path/to/server'; projection `standardized_format_fields.command: string`). Non-empty. Conditionally required by the stdio shape (the else-branch of the per-transport allOf — `type` absent or 'stdio'). No pattern/length cap — a command is a free-form executable path/name.",
+      "type": "string",
+      "minLength": 1
+    },
+    "args": {
+      "$comment": "code.claude.com/docs/en/mcp ('.mcp.json' standardized format): the stdio command arguments ('args': []; projection `standardized_format_fields.args: array`). Array of strings; an empty array is valid; OPTIONAL upstream (it configures the launch, the doc never requires it — the v1 flat requiredness was the IS projection choice relocated to the overlay per DR-062 C2).",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "env": {
+      "$comment": "code.claude.com/docs/en/mcp ('.mcp.json' standardized format): environment variables passed to the server ('env': {}; projection `standardized_format_fields.env: object`). A string→string map; left as a generic object so any env namespace conforms. OPTIONAL upstream (the v1 flat requiredness was the IS projection choice relocated to the overlay per DR-062 C2).",
+      "type": "object"
+    },
+    "url": {
+      "$comment": "code.claude.com/docs/en/mcp: the server URL for the URL-bearing transports ('url - For HTTP server types'; the `type: \"ws\"` entry accepts the same `url` field). Conditionally required by the then-branch of the per-transport allOf (`type` ∈ {http, streamable-http, sse, ws}). Non-empty string, NOT format:uri — upstream documents env-var expansion placeholders inside `url` values ('${API_BASE_URL:-https://api.example.com}/mcp'), which are not parseable URIs pre-expansion.",
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "allOf": [
+    {
+      "$comment": "PER-TRANSPORT SHAPES (DR-062 C1, from 056 #4 adoption + the projection's transport surface): a URL-bearing transport requires `url`; the stdio shape (`type` absent — the documented stdio default — or `type: \"stdio\"`) requires `command`. This replaces the v1 flat single shape.",
+      "if": {
+        "properties": {
+          "type": { "enum": ["http", "streamable-http", "sse", "ws"] }
+        },
+        "required": ["type"]
+      },
+      "then": { "required": ["url"] },
+      "else": { "required": ["command"] }
+    }
+  ]
+}
