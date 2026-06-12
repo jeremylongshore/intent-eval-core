@@ -227,6 +227,30 @@ describe('schemas/v1 — negative fixtures REJECT', () => {
     expect(validateGate(fixture)).toBe(false);
   });
 
+  it('gate-result fail + empty gate_reasons → REJECT (Blueprint B § 7.4 line 829) [f-iec-validators-3]', () => {
+    const base = loadJson(join(FIXTURES_DIR, 'gate-result.valid.json'));
+    expect(validateGate({ ...base, gate_decision: 'fail' })).toBe(false);
+  });
+
+  it('gate-result error + empty gate_reasons → REJECT [f-iec-validators-3]', () => {
+    const base = loadJson(join(FIXTURES_DIR, 'gate-result.valid.json'));
+    expect(validateGate({ ...base, gate_decision: 'error' })).toBe(false);
+  });
+
+  it('gate-result advisory + advisory_severity + empty gate_reasons → REJECT [f-iec-validators-3]', () => {
+    const base = loadJson(join(FIXTURES_DIR, 'gate-result.valid.json'));
+    expect(validateGate({ ...base, gate_decision: 'advisory', advisory_severity: 'warn' })).toBe(
+      false,
+    );
+  });
+
+  it('gate-result fail + one reason → ACCEPT (rule requires non-empty, nothing more)', () => {
+    const base = loadJson(join(FIXTURES_DIR, 'gate-result.valid.json'));
+    expect(
+      validateGate({ ...base, gate_decision: 'fail', gate_reasons: ['escape.detected'] }),
+    ).toBe(true);
+  });
+
   it('eval-spec with aggregation_rule=plurality → REJECT (not in closed enum)', () => {
     const fixture = loadJson(join(FIXTURES_DIR, 'eval-spec.invalid-bad-aggregation.json'));
     expect(validateSpec(fixture)).toBe(false);

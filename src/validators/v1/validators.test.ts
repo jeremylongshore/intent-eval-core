@@ -208,6 +208,60 @@ describe('Zod validators — conditional advisory_severity rule (Blueprint B § 
   });
 });
 
+describe('Zod validators — gate_reasons non-empty for fail/advisory/error (Blueprint B § 7.4 line 829) [f-iec-validators-3]', () => {
+  const baseValid = {
+    gate_id: 'audit-harness:ci:escape-scan',
+    gate_name: 'escape-scan',
+    gate_version: '0.3.0',
+    gate_decision: 'pass',
+    gate_reasons: [] as string[],
+    coverage: { dimensions_evaluated: ['credential-leak'], dimensions_skipped: [] },
+    policy_ref: 'sha256:' + 'a'.repeat(64) + ':tests/TESTING.md',
+    policy_hash: 'sha256:' + 'a'.repeat(64),
+    input_hash: 'sha256:' + 'b'.repeat(64),
+    evaluated_at: '2026-05-17T00:00:00Z',
+    runner: 'audit-harness@0.3.0',
+    commit_sha: 'abc1234',
+  };
+
+  it('gate_decision=fail + empty gate_reasons → REJECT (path names gate_reasons)', () => {
+    const result = GateResultV1Schema.safeParse({ ...baseValid, gate_decision: 'fail' });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const errorPaths = result.error.issues.map((i) => i.path.join('.'));
+      expect(errorPaths).toContain('gate_reasons');
+    }
+  });
+
+  it('gate_decision=error + empty gate_reasons → REJECT', () => {
+    const result = GateResultV1Schema.safeParse({ ...baseValid, gate_decision: 'error' });
+    expect(result.success).toBe(false);
+  });
+
+  it('gate_decision=advisory + advisory_severity + empty gate_reasons → REJECT', () => {
+    const result = GateResultV1Schema.safeParse({
+      ...baseValid,
+      gate_decision: 'advisory',
+      advisory_severity: 'warn',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('gate_decision=fail + one reason → ACCEPT', () => {
+    const result = GateResultV1Schema.safeParse({
+      ...baseValid,
+      gate_decision: 'fail',
+      gate_reasons: ['escape.detected'],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('gate_decision=pass + empty gate_reasons → ACCEPT (empty permitted ONLY for pass)', () => {
+    const result = GateResultV1Schema.safeParse(baseValid);
+    expect(result.success).toBe(true);
+  });
+});
+
 describe('Zod validators — v0.2.0 additive: retraction/v1 (B4 binding)', () => {
   it('valid retraction parses', () => {
     expect(() => RetractionV1Schema.parse(loadJson('retraction.valid.json'))).not.toThrow();
