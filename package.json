@@ -85,6 +85,7 @@
     "check:predicate-namespace": "node --experimental-strip-types scripts/check-predicate-namespace-isolation.ts",
     "check:rubric-floor": "node --experimental-strip-types scripts/check-rubric-floor.ts",
     "check:prose-anchors": "node --experimental-strip-types scripts/check-prose-anchors.ts",
+    "check:changelog-observance": "node --experimental-strip-types scripts/check-changelog-observance.ts",
     "codegen:prose-anchors": "node --experimental-strip-types scripts/parse-spec-headings.ts",
     "api:extract": "pnpm run build && api-extractor run --local",
     "api:check": "pnpm run build && api-extractor run",
