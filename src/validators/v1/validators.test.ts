@@ -144,6 +144,30 @@ describe('Zod validators — branded primitive parsing', () => {
   });
 });
 
+describe('Zod validators — scoring is open-world per the canonical JSON Schema [f-iec-validators-1]', () => {
+  function specWithScoringExtras(): Record<string, unknown> {
+    const spec = loadJson('eval-spec.valid.json') as Record<string, unknown>;
+    const scoring = spec['scoring'] as Record<string, unknown>;
+    return { ...spec, scoring: { ...scoring, pass_threshold: 0.8 } };
+  }
+
+  it('scoring with a tool-emitted extra key (pass_threshold) → ACCEPT (JSON Schema leaves scoring open)', () => {
+    const result = EvalSpecSchema.safeParse(specWithScoringExtras());
+    expect(result.success, JSON.stringify(!result.success && result.error.issues)).toBe(true);
+  });
+
+  it('unknown scoring keys are PRESERVED through parse (passthrough, not strip)', () => {
+    const parsed = EvalSpecSchema.parse(specWithScoringExtras());
+    expect((parsed.scoring as Record<string, unknown>)['pass_threshold']).toBe(0.8);
+  });
+
+  it('scoring still REJECTS a missing aggregation_rule (required field unchanged)', () => {
+    const spec = loadJson('eval-spec.valid.json') as Record<string, unknown>;
+    const result = EvalSpecSchema.safeParse({ ...spec, scoring: { extensions: {} } });
+    expect(result.success).toBe(false);
+  });
+});
+
 describe('Zod validators — conditional advisory_severity rule (Blueprint B § 7.4)', () => {
   const baseValid = {
     gate_id: 'audit-harness:ci:bias-count',

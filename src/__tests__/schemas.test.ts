@@ -231,6 +231,13 @@ describe('schemas/v1 — negative fixtures REJECT', () => {
     const fixture = loadJson(join(FIXTURES_DIR, 'eval-spec.invalid-bad-aggregation.json'));
     expect(validateSpec(fixture)).toBe(false);
   });
+
+  it('eval-spec scoring with a tool-emitted extra key → ACCEPT (scoring is the open object; Zod parity in validators.test.ts) [f-iec-validators-1]', () => {
+    const fixture = loadJson(join(FIXTURES_DIR, 'eval-spec.valid.json'));
+    const scoring = fixture['scoring'] as Record<string, unknown>;
+    const mutated = { ...fixture, scoring: { ...scoring, pass_threshold: 0.8 } };
+    expect(validateSpec(mutated)).toBe(true);
+  });
 });
 
 describe('schemas/v1 — v0.2.0 additive predicates (retraction/v1 + dashboard-render/v1)', () => {
