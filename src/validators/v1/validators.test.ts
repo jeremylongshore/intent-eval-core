@@ -144,6 +144,30 @@ describe('Zod validators — branded primitive parsing', () => {
   });
 });
 
+describe('Zod validators — scoring is open-world per the canonical JSON Schema [f-iec-validators-1]', () => {
+  function specWithScoringExtras(): Record<string, unknown> {
+    const spec = loadJson('eval-spec.valid.json') as Record<string, unknown>;
+    const scoring = spec['scoring'] as Record<string, unknown>;
+    return { ...spec, scoring: { ...scoring, pass_threshold: 0.8 } };
+  }
+
+  it('scoring with a tool-emitted extra key (pass_threshold) → ACCEPT (JSON Schema leaves scoring open)', () => {
+    const result = EvalSpecSchema.safeParse(specWithScoringExtras());
+    expect(result.success, JSON.stringify(!result.success && result.error.issues)).toBe(true);
+  });
+
+  it('unknown scoring keys are PRESERVED through parse (passthrough, not strip)', () => {
+    const parsed = EvalSpecSchema.parse(specWithScoringExtras());
+    expect((parsed.scoring as Record<string, unknown>)['pass_threshold']).toBe(0.8);
+  });
+
+  it('scoring still REJECTS a missing aggregation_rule (required field unchanged)', () => {
+    const spec = loadJson('eval-spec.valid.json') as Record<string, unknown>;
+    const result = EvalSpecSchema.safeParse({ ...spec, scoring: { extensions: {} } });
+    expect(result.success).toBe(false);
+  });
+});
+
 describe('Zod validators — conditional advisory_severity rule (Blueprint B § 7.4)', () => {
   const baseValid = {
     gate_id: 'audit-harness:ci:bias-count',
@@ -180,6 +204,60 @@ describe('Zod validators — conditional advisory_severity rule (Blueprint B § 
       gate_decision: 'pass',
       gate_reasons: [],
     });
+    expect(result.success).toBe(true);
+  });
+});
+
+describe('Zod validators — gate_reasons non-empty for fail/advisory/error (Blueprint B § 7.4 line 829) [f-iec-validators-3]', () => {
+  const baseValid = {
+    gate_id: 'audit-harness:ci:escape-scan',
+    gate_name: 'escape-scan',
+    gate_version: '0.3.0',
+    gate_decision: 'pass',
+    gate_reasons: [] as string[],
+    coverage: { dimensions_evaluated: ['credential-leak'], dimensions_skipped: [] },
+    policy_ref: 'sha256:' + 'a'.repeat(64) + ':tests/TESTING.md',
+    policy_hash: 'sha256:' + 'a'.repeat(64),
+    input_hash: 'sha256:' + 'b'.repeat(64),
+    evaluated_at: '2026-05-17T00:00:00Z',
+    runner: 'audit-harness@0.3.0',
+    commit_sha: 'abc1234',
+  };
+
+  it('gate_decision=fail + empty gate_reasons → REJECT (path names gate_reasons)', () => {
+    const result = GateResultV1Schema.safeParse({ ...baseValid, gate_decision: 'fail' });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const errorPaths = result.error.issues.map((i) => i.path.join('.'));
+      expect(errorPaths).toContain('gate_reasons');
+    }
+  });
+
+  it('gate_decision=error + empty gate_reasons → REJECT', () => {
+    const result = GateResultV1Schema.safeParse({ ...baseValid, gate_decision: 'error' });
+    expect(result.success).toBe(false);
+  });
+
+  it('gate_decision=advisory + advisory_severity + empty gate_reasons → REJECT', () => {
+    const result = GateResultV1Schema.safeParse({
+      ...baseValid,
+      gate_decision: 'advisory',
+      advisory_severity: 'warn',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('gate_decision=fail + one reason → ACCEPT', () => {
+    const result = GateResultV1Schema.safeParse({
+      ...baseValid,
+      gate_decision: 'fail',
+      gate_reasons: ['escape.detected'],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('gate_decision=pass + empty gate_reasons → ACCEPT (empty permitted ONLY for pass)', () => {
+    const result = GateResultV1Schema.safeParse(baseValid);
     expect(result.success).toBe(true);
   });
 });

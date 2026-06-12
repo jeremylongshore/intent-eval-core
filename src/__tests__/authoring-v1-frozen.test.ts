@@ -11,6 +11,9 @@
  *   - schemas/authoring/v1/**                                  (every v1 schema)
  *   - src/validators/v1/authoring/skill-frontmatter.ts         (v1 Zod, frozen)
  *   - src/validators/v1/authoring/marketplace-tier.ts          (v1 shared Zod fold)
+ *   - src/validators/v1/authoring/{plugin-manifest,agent-definition,mcp-config,
+ *     hook-config,marketplace-catalog}.ts                      (codegen-generated
+ *     v1 Zod for contracts #2-#6 — same freeze as contract #1) [f-iec-scripts-2]
  *
  * If the `v0.4.1` tag is unavailable (e.g. a shallow clone with no tags), the
  * test SKIPS rather than failing — CI fetches tags, so the guard is live there.
@@ -18,7 +21,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -41,6 +44,11 @@ const FROZEN_PATHS: readonly string[] = [
   'schemas/authoring/v1/is-overlay/skill-frontmatter.v1.json',
   'src/validators/v1/authoring/skill-frontmatter.ts',
   'src/validators/v1/authoring/marketplace-tier.ts',
+  'src/validators/v1/authoring/plugin-manifest.ts',
+  'src/validators/v1/authoring/agent-definition.ts',
+  'src/validators/v1/authoring/mcp-config.ts',
+  'src/validators/v1/authoring/hook-config.ts',
+  'src/validators/v1/authoring/marketplace-catalog.ts',
 ];
 
 function git(args: string[]): { ok: boolean; stdout: string } {
@@ -68,5 +76,28 @@ describe('authoring/v1 is BYTE-FROZEN at v0.4.1 (DR-049 v2-fork guard)', () => {
 
   it.skipIf(haveTag)('skips when the v0.4.1 tag is unavailable (shallow clone)', () => {
     expect(haveTag).toBe(false);
+  });
+
+  // Completeness guard [f-iec-scripts-2]: every v1 authoring validator source
+  // file on disk must be in FROZEN_PATHS, so a newly added (or previously
+  // missed) contract validator cannot silently escape the byte-freeze.
+  // Excluded by design: index.ts (barrel re-export composition, not validator
+  // logic — every validator it re-exports is itself frozen), *.test.ts, and
+  // the v2/ subtree (the STRICT fork is the legitimate change path).
+  it('every v1 authoring validator source file is in the frozen set (completeness)', () => {
+    const dir = join(REPO_ROOT, 'src/validators/v1/authoring');
+    const validatorFiles = readdirSync(dir, { withFileTypes: true })
+      .filter(
+        (e) =>
+          e.isFile() &&
+          e.name.endsWith('.ts') &&
+          !e.name.endsWith('.test.ts') &&
+          e.name !== 'index.ts',
+      )
+      .map((e) => `src/validators/v1/authoring/${e.name}`);
+    expect(validatorFiles.length).toBeGreaterThanOrEqual(7);
+    for (const file of validatorFiles) {
+      expect(FROZEN_PATHS, `${file} must be byte-frozen (DR-049 v1 freeze)`).toContain(file);
+    }
   });
 });

@@ -69,6 +69,23 @@ export const GateResultV1Schema = z
         path: ['advisory_severity'],
       });
     }
+    // NORMATIVE (Blueprint B § 7.4 line 829): empty gate_reasons is permitted
+    // ONLY for unconditional pass — fail/advisory/error MUST carry at least one
+    // reason. Mirrors the allOf/if/then block in gate-result.schema.json.
+    // [f-iec-validators-3]
+    if (
+      (data.gate_decision === 'fail' ||
+        data.gate_decision === 'advisory' ||
+        data.gate_decision === 'error') &&
+      data.gate_reasons.length === 0
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        message:
+          'gate_reasons MUST be non-empty when gate_decision is "fail", "advisory", or "error" per Blueprint B § 7.4 line 829 (empty permitted ONLY for pass)',
+        path: ['gate_reasons'],
+      });
+    }
   });
 
 export type GateResultV1 = z.infer<typeof GateResultV1Schema>;

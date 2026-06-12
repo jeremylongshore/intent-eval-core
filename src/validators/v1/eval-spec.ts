@@ -14,12 +14,22 @@ import {
 
 export const ScoringAggregationRuleSchema = z.enum(['majority', 'unanimous', 'weighted']);
 
+/**
+ * Open-world per the canonical JSON Schema: schemas/v1/eval-spec.schema.json
+ * declares `scoring` WITHOUT `additionalProperties: false` (unlike the
+ * top-level EvalSpec object and the `composition` sub-objects), so
+ * tool-emitted scoring extension keys that pass JSON Schema validation MUST
+ * NOT be rejected here. `.passthrough()` mirrors that: unknown keys are
+ * accepted AND preserved. The "Additions require ISEDC review" annotation
+ * governs the spec-bound field set in the JSON Schema, not runtime rejection
+ * of extra data. [f-iec-validators-1]
+ */
 export const ScoringConfigSchema = z
   .object({
     aggregation_rule: ScoringAggregationRuleSchema,
     extensions: z.record(z.string(), z.unknown()).optional(),
   })
-  .strict();
+  .passthrough();
 
 export const RuntimeLimitsSchema = z
   .object({

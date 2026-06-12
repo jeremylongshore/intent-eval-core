@@ -60,7 +60,16 @@ export default z
       .optional(),
   })
   .strict()
-  .and(z.any().describe("When gate_decision='advisory', advisory_severity SHOULD be populated."))
+  .and(
+    z.intersection(
+      z.any().describe("When gate_decision='advisory', advisory_severity SHOULD be populated."),
+      z
+        .any()
+        .describe(
+          'Blueprint B § 7.4 line 829 (NORMATIVE): empty gate_reasons is permitted ONLY for unconditional pass — when gate_decision is fail/advisory/error at least one reason MUST appear.',
+        ),
+    ),
+  )
   .describe(
     "Predicate body of an in-toto Statement v1 whose predicateType is https://evals.intentsolutions.io/gate-result/v1. Source of truth: Blueprint B § 7.4 (lines 794-834). The ONLY predicate body fully spec-bound at v1; every other predicate URI runs in sigstore_staging until its SPEC.md normative section lands per DR-010 Q3. This schema validates ONLY the predicate body — the enclosing in-toto Statement envelope (_type, subject, predicateType) is validated separately. Each row independently verifiable; NO top-level bundle signature per § 7 line 754. Adding/loosening any field requires Class-1 ISEDC convening.\n\nMigration note: this schema SUPERSEDES the lab's v0.1.0-draft schema (which used `result`/`timestamp` and was missing gate_name/gate_version/gate_reasons/coverage/policy_ref). Blueprint B § 7.4 is the canonical source — the lab schema was authored before Blueprint B landed on main.",
   );

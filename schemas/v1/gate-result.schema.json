@@ -99,6 +99,16 @@
         "required": ["gate_decision"]
       },
       "then": { "required": ["advisory_severity"] }
+    },
+    {
+      "description": "Blueprint B § 7.4 line 829 (NORMATIVE): empty gate_reasons is permitted ONLY for unconditional pass — when gate_decision is fail/advisory/error at least one reason MUST appear.",
+      "if": {
+        "properties": { "gate_decision": { "enum": ["fail", "advisory", "error"] } },
+        "required": ["gate_decision"]
+      },
+      "then": {
+        "properties": { "gate_reasons": { "type": "array", "minItems": 1 } }
+      }
     }
   ]
 }
