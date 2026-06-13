@@ -9,7 +9,7 @@
 > 4 CCP-shadow frontmatter gaps. It is a fresh, self-contained sibling of `authoring/v1` with **zero
 > `$ref` into v1** (copy-then-tighten). `authoring/v1` is **BYTE-FROZEN at
 > `@intentsolutions/core@0.4.1`** and stays the looser PUBLISHED contract (it accepts every artifact
-> it accepted at 0.4.1, forever). Only **`skill-frontmatter`** is forked to v2; the other five
+> it accepted at 0.4.1, forever). As of 0.6.0 (DR-062, PR #39) all six contracts are forked to v2; originally only **`skill-frontmatter`** was, and the other five
 > contracts stay at v1/SHIPPED-INTERNAL untouched (per DR-049 D-SAK-1: the permanent structure
 > governs, it is not a clock to author all six).
 >
