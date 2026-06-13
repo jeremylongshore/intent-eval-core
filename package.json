@@ -52,6 +52,10 @@
     "./validators/v1/*": {
       "types": "./dist/validators/v1/*.d.ts",
       "import": "./dist/validators/v1/*.js"
+    },
+    "./otel/v1": {
+      "types": "./dist/otel/v1/index.d.ts",
+      "import": "./dist/otel/v1/index.js"
     }
   },
   "files": [
