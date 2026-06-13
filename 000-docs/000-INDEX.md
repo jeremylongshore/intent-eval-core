@@ -27,6 +27,8 @@ Naming: `NNN-CC-ABCD-description-YYYY-MM-DD.md` where:
 | 006 | [v0.2.0 additive schema evolution AAR](006-AA-AACR-v0.2.0-additive-schema-evolution-2026-06-03.md) | 2026-06-03 | AA-AACR | additive surface landed; publish held pending iec-E12 |
 | 007 | [Emit signed gate-result evidence for the dashboard](007-DR-RFC-emit-evidence-dashboard-ingest-2026-06-07.md) | 2026-06-07 | DR-RFC | accepted (nr75.4; emit engine + release.yml job) |
 | 008 | [Schema-policy eval — marketplace-tier foundation](008-AA-EVAL-schema-policy-marketplace-tier-2026-06-09.md) | 2026-06-09 | AA-EVAL | closes audit C2 (foundation sound; coverage boundary measured) |
+| 009 | [CompositionDag wire format normative spec](009-DR-RFC-compositiondag-wire-format-2026-06-10.md) | 2026-06-10 | DR-RFC | accepted (iec-deferral-F; locks CompositionDag serialization) |
+| 010 | [ID + event-ID invariants](010-AT-STND-id-and-event-id-invariants-2026-06-13.md) | 2026-06-13 | AT-STND | NORMATIVE (iec-E06 invariant register; kernel-vs-runtime generation boundary) |
 
 ## Cross-repo authority chain
 

@@ -150,6 +150,12 @@ export interface DashboardRenderV1Statement {
 export type DashboardRenderV1Uri = typeof DASHBOARD_RENDER_V1_URI;
 
 // @public
+export const DEAD_LETTER_REASONS: readonly ["credential_leak_detected", "run_timeout_elapsed", "queued_timeout_elapsed"];
+
+// @public (undocumented)
+export type DeadLetterReason = (typeof DEAD_LETTER_REASONS)[number];
+
+// @public
 export interface DsseEnvelope {
     readonly payload: string;
     // (undocumented)
@@ -377,6 +383,9 @@ export interface InTotoSubject {
 }
 
 // @public
+export function isDeadLetterReason(reason: string): reason is DeadLetterReason;
+
+// @public
 export function isEventId(value: string): value is EventId;
 
 // @public
@@ -531,6 +540,12 @@ export const PREDICATE_URIS: {
 };
 
 // @public
+export type PromotionState = 'candidate' | 'advisory' | 'approved' | 'promoted' | 'suspended_for_review';
+
+// @public
+export const promotionTransitions: TransitionMap<PromotionState>;
+
+// @public
 export function reachableStates<S extends string>(map: TransitionMap<S>, from: S): readonly S[];
 
 // @public
@@ -613,7 +628,28 @@ export interface RetractionV1Statement {
 export type RetractionV1Uri = typeof RETRACTION_V1_URI;
 
 // @public
+export const RETRY_BACKOFF_POLICY: {
+    readonly initial_delay_ms: 1000;
+    readonly backoff_factor: 2;
+    readonly max_delay_ms: 60000;
+    readonly max_retries: 5;
+    readonly max_retries_hard_cap: 20;
+};
+
+// @public
+export type RetryState = 'pending_backoff' | 'retrying' | 'succeeded' | 'exhausted' | 'dead_lettered';
+
+// @public
+export const retryTransitions: TransitionMap<RetryState>;
+
+// @public
 export type Rfc3339 = Brand<string, 'Rfc3339'>;
+
+// @public
+export type RollbackState = 'pending' | 'executing' | 'verifying' | 'completed' | 'failed';
+
+// @public
+export const rollbackTransitions: TransitionMap<RollbackState>;
 
 // @public
 export interface RolloutGate {
