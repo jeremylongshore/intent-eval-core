@@ -2,6 +2,10 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": false,
+    // allowImportingTsExtensions is incompatible with emit; the base config sets
+    // it for the scripts/ typecheck only. The build compiles src/** (no .ts-ext
+    // imports), so turn it off here to permit emission.
+    "allowImportingTsExtensions": false,
     "outDir": "./dist",
     "rootDir": "./src"
   },

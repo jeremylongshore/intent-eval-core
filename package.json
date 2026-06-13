@@ -85,6 +85,9 @@
     "check:predicate-namespace": "node --experimental-strip-types scripts/check-predicate-namespace-isolation.ts",
     "check:rubric-floor": "node --experimental-strip-types scripts/check-rubric-floor.ts",
     "check:prose-anchors": "node --experimental-strip-types scripts/check-prose-anchors.ts",
+    "check:coverage-map": "node --experimental-strip-types scripts/check-coverage-map-completeness.ts",
+    "check:coverage-map-prose-anchors": "node --experimental-strip-types scripts/check-coverage-map-prose-anchors.ts",
+    "check:is-extension-rationale": "node --experimental-strip-types scripts/check-is-extension-rationale.ts",
     "check:changelog-observance": "node --experimental-strip-types scripts/check-changelog-observance.ts",
     "codegen:prose-anchors": "node --experimental-strip-types scripts/parse-spec-headings.ts",
     "api:extract": "pnpm run build && api-extractor run --local",
@@ -92,7 +95,7 @@
     "api:diff": "node --experimental-strip-types scripts/api-diff.ts",
     "harness:verify": "audit-harness verify",
     "harness:init": "audit-harness init",
-    "check": "pnpm run codegen:authoring:check && pnpm run check:predicate-namespace && pnpm run check:rubric-floor && pnpm run check:prose-anchors && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run arch && pnpm run boundaries"
+    "check": "pnpm run codegen:authoring:check && pnpm run check:predicate-namespace && pnpm run check:rubric-floor && pnpm run check:prose-anchors && pnpm run check:coverage-map && pnpm run check:coverage-map-prose-anchors && pnpm run check:is-extension-rationale && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run arch && pnpm run boundaries"
   },
   "lint-staged": {
     "*.{ts,js,cjs,mjs}": [

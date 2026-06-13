@@ -1,0 +1,93 @@
+{
+  "$comment": "6767-h COVERAGE MAP (033-PP-PLAN-skill-refiner-sak-amendment-v7 § 14.2.1 third value / § 14.2.2 format). Bidirectional trace table: every field of a composed authoring/v1 contract cites EITHER (a) trace_kind=anthropic-spec-derived — the 6767-h section it implements plus the live anthropic_doc URL, OR (b) trace_kind=is-only-extension — the IS-only-extension category, a rationale for why it has no upstream anchor, and the upstream_convergence_trigger that would mechanically MOVE it to upstream-base. Three CI gates consume this file (§ 14.2.3): coverage-map-completeness (every composed-schema field has an entry), prose-anchor-validity (every anthropic-spec-derived 6767h_section resolves against schemas/prose-anchors/6767-h.headings.json), is-extension-rationale (every is-only-extension entry has non-empty rationale AND upstream_convergence_trigger). 6767h_section values are validated against the vendored heading inventory — only sections that actually exist there are cited (HONEST + conservative; § 14.2.2). NOTE: this file's 6767h_section citations live in the structured `6767h_section` field, NOT in any $comment — the prose-anchor gate scans $comment fields for the schema family and would otherwise double-count; the coverage-map's own anthropic-spec-derived citations are validated by check-coverage-map-prose-anchors.ts (the § 14.2.3 gate #2 extension). lineage: dr-044@d-sak-1",
+  "$schemaVersion": "1.0.0",
+  "fields": {
+    "skill-frontmatter.name": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "3.1",
+      "anthropic_doc": "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview"
+    },
+    "skill-frontmatter.description": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "3.1",
+      "anthropic_doc": "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview"
+    },
+    "skill-frontmatter.license": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "3.1",
+      "anthropic_doc": "https://agentskills.io/specification"
+    },
+    "skill-frontmatter.compatibility": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "3.1",
+      "anthropic_doc": "https://agentskills.io/specification"
+    },
+    "skill-frontmatter.metadata": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "3.1",
+      "anthropic_doc": "https://agentskills.io/specification"
+    },
+    "skill-frontmatter.allowed-tools": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "3.1",
+      "anthropic_doc": "https://agentskills.io/specification",
+      "is_delta": "Field existence + the space-separated string form are upstream (agentskills.io EXPERIMENTAL, 6767-h §3.1 frontmatter). The IS overlay delta is required-membership + an additional YAML-array form; the field itself is upstream-anchored, so it is classified anthropic-spec-derived. The promotion-to-required is tracked in the is-overlay $comment, not as a separate coverage-map row."
+    },
+    "skill-frontmatter.version": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "tracking-metadata",
+      "rationale": "Required at IS marketplace tier per SCHEMA_CHANGELOG NON-NEGOTIABLES item 1. Top-level `version` is NOT an agentskills.io field (the open standard only allows metadata.version); no upstream prose anchor by design.",
+      "upstream_convergence_trigger": "agentskills.io adds a top-level required `version` field (then move required-membership to upstream-base per the is-overlay convergence-trigger $comment)."
+    },
+    "skill-frontmatter.author": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "tracking-metadata",
+      "rationale": "Required at IS marketplace tier per SCHEMA_CHANGELOG NON-NEGOTIABLES item 1. Top-level `author` is NOT an agentskills.io field (the standard only allows metadata.author); no upstream prose anchor by design.",
+      "upstream_convergence_trigger": "agentskills.io adds a top-level required `author` field."
+    },
+    "skill-frontmatter.tags": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "tracking-metadata",
+      "rationale": "Required at IS marketplace tier per SCHEMA_CHANGELOG NON-NEGOTIABLES item 1. Pure IS invention with ZERO upstream provenance — not in agentskills.io (not even under metadata) nor any Anthropic surface; convergence is unlikely.",
+      "upstream_convergence_trigger": "the open standard introduces a top-level `tags` array."
+    },
+    "skill-frontmatter.requires_env": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "conditional-visibility",
+      "rationale": "IS-only optional extension (IS validator schema 3.5.0). Declares environment variables a skill needs; carries a per-variable mutual-exclusivity invariant with fallback_for_env. No agentskills.io or Anthropic equivalent.",
+      "upstream_convergence_trigger": "the `claude` CLI ships skill-prereq-prompting / a conditional-visibility convention."
+    },
+    "skill-frontmatter.requires_tools": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "conditional-visibility",
+      "rationale": "IS-only optional extension (IS validator schema 3.5.0). Declares tools a skill needs. No agentskills.io or Anthropic equivalent.",
+      "upstream_convergence_trigger": "the `claude` CLI ships a skill-tool-prerequisite convention."
+    },
+    "skill-frontmatter.fallback_for_env": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "conditional-visibility",
+      "rationale": "IS-only optional extension (IS validator schema 3.5.0). Declares environment variables for which this skill is a fallback. No upstream equivalent.",
+      "upstream_convergence_trigger": "the `claude` CLI ships a skill-fallback / graceful-degradation convention."
+    },
+    "skill-frontmatter.fallback_for_tools": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "conditional-visibility",
+      "rationale": "IS-only optional extension (IS validator schema 3.5.0). Declares tools for which this skill is a fallback. No upstream equivalent.",
+      "upstream_convergence_trigger": "the `claude` CLI ships a skill-fallback / graceful-degradation convention."
+    },
+    "skill-frontmatter.required_environment_variables": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "installer-prompt",
+      "rationale": "IS-only optional extension (IS validator schema 3.6.0). Each entry prompts the user on first run (UPPER_SNAKE name + prompt). No agentskills.io or Anthropic installer-prompt convention exists.",
+      "upstream_convergence_trigger": "`claude doctor` (or equivalent) ships env-var prompting / an installer-prompt convention."
+    }
+  }
+}
