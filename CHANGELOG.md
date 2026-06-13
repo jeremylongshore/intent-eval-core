@@ -7,6 +7,10 @@ versioning follows [SemVer 2.0.0](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **Cross-schema invariant catalog + kernel predicate helpers** (implements plan 033 § 14.B; `lineage: dr-044@d-sak-1`). New machine-readable normative register at `schemas/authoring/cross-schema-invariants.v1.json` cataloging the 7 dependency-edge invariants over the 6 authoring contracts (§ 14.B.1 edges, § 14.B.2 catalog, § 14.B.3 routing): each carries `{id, statement, edge, enforced_at, severity, class}`. The one kernel-checkable ADVISORY invariant `INV-ALLOWED-DISALLOWED` (allowed-tools ∩ disallowed-tools = ∅) ships as a WARNING-level cross-field helper in `src/validators/v1/authoring/cross-schema/cross-schema-invariants.ts` — deliberately NOT folded into the byte-frozen `SkillFrontmatterSchema` (advisory routing per § 14.B.3 must not block parse). The 6 STRUCTURAL invariants resolve across artifacts and are enforced in the deep validators named in `enforced_at`; the kernel exports one typed predicate-helper per invariant (DI'd child-validator descent) for a deep validator to import. The cross-artifact descent wiring into `validate-plugin` / `validate-marketplace` is the explicitly-scoped REMAINDER (not built here).
+
 ### Pending
 
 - Evidence Bundle predicate compatibility policy (forward/backward/mixing/deprecation rules) MUST land before first prod-Rekor anchor — bd `bd_000-projects-uprg` (P0)

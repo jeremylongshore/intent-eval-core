@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/cross-schema-invariants.v1.json",
+  "$comment": "Cross-schema invariant catalog — the machine-readable normative register of the 7 dependency-edge invariants the authoring family enforces ACROSS artifacts. Per intent-eval-lab plan 033 § 14.B (§ 14.B.1 edges, § 14.B.2 catalog, § 14.B.3 routing) + DR-044 (the SAK charter that makes the authoring family the SSoT). This catalog is the kernel-side declaration of WHAT each invariant is, WHERE it is enforced, and AT WHICH severity; the 6 STRUCTURAL invariants resolve across ARTIFACTS and are enforced in the deep validators named in `enforced_at` (validate-marketplace --deep / validate-plugin / validate-mcp / validate-skillmd). The one ADVISORY invariant (INV-ALLOWED-DISALLOWED) is kernel-checkable cross-field on a single skill-frontmatter and ships as a WARNING-level check in the kernel. The kernel exports one typed predicate-helper per invariant from src/validators/v1/authoring/cross-schema/cross-schema-invariants.ts for a deep validator to import; the cross-artifact descent wiring into validate-plugin/marketplace is out of kernel scope (REMAINDER).",
+  "title": "Cross-schema invariant catalog (authoring family, v1)",
+  "type": "object",
+  "required": ["catalogVersion", "lineage", "invariants"],
+  "additionalProperties": false,
+  "properties": {
+    "catalogVersion": {
+      "type": "string",
+      "const": "1.0.0-draft",
+      "description": "Semver of this catalog. A new/removed invariant or a changed severity is a catalog version event."
+    },
+    "lineage": {
+      "type": "string",
+      "const": "dr-044@d-sak-1",
+      "description": "Machine-readable lineage: the governing decision record IS the upstream for this IS-authored cross-schema register."
+    },
+    "spec": {
+      "type": "string",
+      "const": "intent-eval-lab/000-docs/033-PP-PLAN-skill-refiner-sak-amendment-v7-2026-05-28.md § 14.B",
+      "description": "The normative source section."
+    },
+    "invariants": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "description": "The 7 cross-schema invariants from § 14.B.2, in catalog order.",
+      "items": { "$ref": "#/$defs/invariant" }
+    }
+  },
+  "$defs": {
+    "edge": {
+      "type": "object",
+      "required": ["from", "to", "relation"],
+      "additionalProperties": false,
+      "description": "A dependency edge from § 14.B.1 (marketplace-catalog → plugin-manifest → {skill-frontmatter, agent-definition, mcp-config → hook-config}).",
+      "properties": {
+        "from": {
+          "type": "string",
+          "enum": [
+            "marketplace-catalog",
+            "plugin-manifest",
+            "skill-frontmatter",
+            "agent-definition",
+            "mcp-config",
+            "hook-config"
+          ]
+        },
+        "to": {
+          "type": "string",
+          "enum": [
+            "plugin-manifest",
+            "skill-frontmatter",
+            "agent-definition",
+            "mcp-config",
+            "hook-config"
+          ]
+        },
+        "relation": {
+          "type": "string",
+          "enum": ["cites", "contains", "refers-to", "self"],
+          "description": "cites/contains/refers-to per § 14.B.1; `self` for a single-artifact cross-FIELD invariant (no inter-artifact edge)."
+        }
+      }
+    },
+    "invariant": {
+      "type": "object",
+      "required": ["id", "statement", "edge", "enforced_at", "severity", "class"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "INV-CAT-PLUGIN",
+            "INV-PLUGIN-SKILL",
+            "INV-PLUGIN-AGENT",
+            "INV-PLUGIN-MCP",
+            "INV-MCP-HOOK",
+            "INV-SKILL-HOOK",
+            "INV-ALLOWED-DISALLOWED"
+          ]
+        },
+        "statement": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The formal predicate text, verbatim from § 14.B.2."
+        },
+        "edge": { "$ref": "#/$defs/edge" },
+        "enforced_at": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The validator + mode from the § 14.B.2 'Where enforced' column."
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["error", "warning"],
+          "description": "structural ⇒ error (REJECT); advisory ⇒ warning (WARN-only) per § 14.B.3."
+        },
+        "class": {
+          "type": "string",
+          "enum": ["structural", "advisory"],
+          "description": "§ 14.B.3 routing class. Only INV-ALLOWED-DISALLOWED is advisory."
+        },
+        "kernel_checkable": {
+          "type": "boolean",
+          "description": "true when the predicate is decidable from a single artifact in the kernel (no cross-artifact resolution). Only INV-ALLOWED-DISALLOWED is kernel-checkable now; the 6 structural invariants need a deep validator's cross-artifact descent (the REMAINDER)."
+        },
+        "predicate_helper": {
+          "type": "string",
+          "description": "The exported helper name in src/validators/v1/authoring/cross-schema/cross-schema-invariants.ts that a deep validator imports to evaluate this invariant per resolved pair."
+        }
+      }
+    }
+  },
+  "catalogVersion": "1.0.0-draft",
+  "lineage": "dr-044@d-sak-1",
+  "spec": "intent-eval-lab/000-docs/033-PP-PLAN-skill-refiner-sak-amendment-v7-2026-05-28.md § 14.B",
+  "invariants": [
+    {
+      "id": "INV-CAT-PLUGIN",
+      "statement": "∀ catalog entry e ∈ marketplace-catalog.plugins, plugin_manifest_resolves(e.source) ∧ valid_plugin_manifest(content_of(e.source), isMarketplace)",
+      "edge": { "from": "marketplace-catalog", "to": "plugin-manifest", "relation": "cites" },
+      "enforced_at": "validate-marketplace --deep",
+      "severity": "error",
+      "class": "structural",
+      "kernel_checkable": false,
+      "predicate_helper": "invCatPlugin"
+    },
+    {
+      "id": "INV-PLUGIN-SKILL",
+      "statement": "∀ p ∈ plugin-manifest, ∀ s ∈ p.skills, valid_skill_frontmatter(s, isMarketplace)",
+      "edge": { "from": "plugin-manifest", "to": "skill-frontmatter", "relation": "contains" },
+      "enforced_at": "validate-plugin per-skill descent",
+      "severity": "error",
+      "class": "structural",
+      "kernel_checkable": false,
+      "predicate_helper": "invPluginSkill"
+    },
+    {
+      "id": "INV-PLUGIN-AGENT",
+      "statement": "∀ p ∈ plugin-manifest, ∀ a ∈ p.agents, valid_agent_definition(a, isMarketplace)",
+      "edge": { "from": "plugin-manifest", "to": "agent-definition", "relation": "contains" },
+      "enforced_at": "validate-plugin per-agent descent",
+      "severity": "error",
+      "class": "structural",
+      "kernel_checkable": false,
+      "predicate_helper": "invPluginAgent"
+    },
+    {
+      "id": "INV-PLUGIN-MCP",
+      "statement": "∀ p ∈ plugin-manifest, p.mcpServers[*] ⊨ valid_mcp_config",
+      "edge": { "from": "plugin-manifest", "to": "mcp-config", "relation": "contains" },
+      "enforced_at": "validate-plugin mcp descent",
+      "severity": "error",
+      "class": "structural",
+      "kernel_checkable": false,
+      "predicate_helper": "invPluginMcp"
+    },
+    {
+      "id": "INV-MCP-HOOK",
+      "statement": "∀ m ∈ mcp-config with hook-bindings, valid_hook_config(m.hooks)",
+      "edge": { "from": "mcp-config", "to": "hook-config", "relation": "refers-to" },
+      "enforced_at": "validate-mcp --with-hooks",
+      "severity": "error",
+      "class": "structural",
+      "kernel_checkable": false,
+      "predicate_helper": "invMcpHook"
+    },
+    {
+      "id": "INV-SKILL-HOOK",
+      "statement": "∀ s ∈ skill-frontmatter with hooks block, valid_hook_config(s.hooks)",
+      "edge": { "from": "skill-frontmatter", "to": "hook-config", "relation": "refers-to" },
+      "enforced_at": "validate-skillmd hooks descent",
+      "severity": "error",
+      "class": "structural",
+      "kernel_checkable": false,
+      "predicate_helper": "invSkillHook"
+    },
+    {
+      "id": "INV-ALLOWED-DISALLOWED",
+      "statement": "∀ s ∈ skill-frontmatter, s.allowed-tools ∩ s.disallowed-tools = ∅",
+      "edge": { "from": "skill-frontmatter", "to": "skill-frontmatter", "relation": "self" },
+      "enforced_at": "warning, not error (cross-field consistency)",
+      "severity": "warning",
+      "class": "advisory",
+      "kernel_checkable": true,
+      "predicate_helper": "invAllowedDisallowed"
+    }
+  ]
+}
