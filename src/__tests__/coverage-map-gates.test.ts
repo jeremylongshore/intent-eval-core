@@ -25,6 +25,10 @@ import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// [2t2p] The authoring-contract registry the completeness gate enforces — drives
+// the fixture-tree layer copies so the fixture covers every registered contract.
+import { CONTRACTS } from '../../scripts/check-coverage-map-completeness.ts';
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, '../..');
 const COMPLETENESS = join(REPO_ROOT, 'scripts/check-coverage-map-completeness.ts');
@@ -33,8 +37,11 @@ const RATIONALE = join(REPO_ROOT, 'scripts/check-is-extension-rationale.ts');
 
 const MAP_REL = 'schemas/authoring/v1/6767h-coverage-map.json';
 const INVENTORY_REL = 'schemas/prose-anchors/6767-h.headings.json';
-const BASE_REL = 'schemas/authoring/v1/upstream-base/skill-frontmatter.v1.json';
-const OVERLAY_REL = 'schemas/authoring/v1/is-overlay/skill-frontmatter.v1.json';
+// [2t2p] The completeness gate's CONTRACTS registry now spans all six authoring
+// contracts; every layer file it references must exist in the fixture tree so
+// composedFieldSet() can resolve each contract. Import the registry so the
+// fixture stays in lockstep with it automatically.
+const LAYER_RELS: readonly string[] = CONTRACTS.flatMap((c) => c.layers);
 
 interface RunResult {
   status: number;
@@ -56,13 +63,15 @@ interface CoverageMap {
 }
 
 /**
- * Build a repo-shaped fixture tree carrying the real coverage map, the real two
- * skill-frontmatter layers, and the real vendored inventory. Tests then mutate
+ * Build a repo-shaped fixture tree carrying the real coverage map, the real
+ * composed-schema layers of EVERY registered authoring contract ([2t2p] — all
+ * six, not just skill-frontmatter, so the completeness gate's composedFieldSet()
+ * resolves under `--root`), and the real vendored inventory. Tests then mutate
  * the COPY to construct failures without touching the live repo.
  */
 function makeFixture(): { root: string; map: CoverageMap } {
   const root = mkdtempSync(join(tmpdir(), 'coverage-map-'));
-  for (const rel of [MAP_REL, INVENTORY_REL, BASE_REL, OVERLAY_REL]) {
+  for (const rel of [MAP_REL, INVENTORY_REL, ...LAYER_RELS]) {
     mkdirSync(join(root, dirname(rel)), { recursive: true });
     cpSync(join(REPO_ROOT, rel), join(root, rel));
   }
@@ -81,7 +90,7 @@ describe('check-coverage-map-completeness (§ 14.2.3 #1)', () => {
     const { status, stdout, stderr } = run(COMPLETENESS);
     expect(status, stderr).toBe(0);
     expect(stdout).toContain('OK');
-    expect(stdout).toContain('1 registered authoring contract'); // skill-frontmatter walking skeleton
+    expect(stdout).toContain('6 registered authoring contract'); // [2t2p] all six authoring contracts
   });
 
   it('FAILS (exit 1) when a composed field has no coverage-map entry — names it', () => {
@@ -154,7 +163,10 @@ describe('check-coverage-map-prose-anchors (§ 14.2.3 #2, extends PR #37)', () =
   });
 
   it('REUSES PR #37 machinery — imports loadInventory + resolves from check-prose-anchors', () => {
-    const src = readFileSync(join(REPO_ROOT, 'scripts/check-coverage-map-prose-anchors.ts'), 'utf-8');
+    const src = readFileSync(
+      join(REPO_ROOT, 'scripts/check-coverage-map-prose-anchors.ts'),
+      'utf-8',
+    );
     expect(src).toContain("from './check-prose-anchors.ts'");
     expect(src).toContain('loadInventory');
     expect(src).toContain('resolves');
