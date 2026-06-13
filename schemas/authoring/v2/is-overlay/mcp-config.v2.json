@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/is-overlay/mcp-config.v2.json",
+  "title": "mcp-config — IS OVERLAY v2 (authored by Intent Solutions)",
+  "description": "The Intent-Solutions-only delta on top of upstream-base/mcp-config.v2.json. THIS FILE IS THE ONLY PLACE IS POLICY LIVES for this contract. Per DR-062 the v2 base mirrors the captured projection (upstream requires only [name] flat, plus the per-transport conditional command/url), so EVERY IS narrowing relocates here with a convergence trigger: (a) the RELOCATED flat all-required projection choice (056 #1, DR-062 Class 2) — `type`, `command`, `args`, `env` are IS-required explicitly (no implicit stdio default in a published IS marketplace artifact); (b) the three net-new IS tracking/operational fields carried from the v1 overlay (`description`, `version`, `enabled`) with the strict-SemVer narrowing on `version`; (c) the RELOCATED kernel-only `metadata` extension object (DR-062 Class 3 prose — zero upstream provenance, so it cannot live in the base). By the monotonic-additive invariant (DR-044 D7 + CSO position; re-demanded by the CISO seat note in DR-062 § 4): the overlay may only ADD required fields and NARROW constraints relative to the base — never subtract a base requirement or loosen a base constraint. Each field carries its upstream-convergence trigger; convergence is a mechanical MOVE of the field to upstream-base, not a re-edit.",
+  "$comment": "OVERLAY REQUIRED DELTA (beyond the base floor [name] + the base's per-transport conditional): [type, command, args, env, description, version, enabled]. Union with the base floor = the IS 8-field mcp-config required set {name, type, command, args, env, description, version, enabled} — the v1 composed surface preserved verbatim modulo the selector's wire-name correction transport → type (DR-062 C1, 056 #2). The DR-062 relocation changes WHERE the flat requiredness lives (overlay, not base), NOT what the composed IS marketplace tier requires — per the CISO seat note, widening the base does not weaken IS enforcement because the marketplace tier binds via overlay + composition. This required set evolves under ISEDC Class-1 ratification only (the 2026-04-28-debacle guard). Citations: 062-AT-DECR-tier3-reconciliation-authoring-v2-bases-2026-06-12; specs/_vendor/upstream/mcp-config/projection.json (sha256 fe9e21933fc0d2031a4a661e539f8228448dfbd5efc648383bf3e9db057f195b); code.claude.com/docs/en/mcp; modelcontextprotocol.io/specification (2025-11-25).",
+  "type": "object",
+  "required": ["type", "command", "args", "env", "description", "version", "enabled"],
+  "properties": {
+    "type": {
+      "$comment": "IS: RELOCATED narrowing (DR-062 Class 2, 056 #1) — promoted from upstream-optional (the documented stdio default) to IS-required: a published IS marketplace artifact declares its transport explicitly rather than relying on the implicit default. The enum and wire forms are the base's; the overlay adds only the required-membership. CONVERGENCE TRIGGER: if the upstream documents `type` as required on the per-server entry (the standardized format example carries it), move the required-membership to upstream-base."
+    },
+    "command": {
+      "$comment": "IS: RELOCATED narrowing (DR-062 Class 2, 056 #1) — promoted from upstream-conditional (stdio-shape-only per the base's per-transport allOf) to IS-flat-required, preserving the v1 composed contract's stdio-centric corpus surface. The type/non-emptiness is the base's; the overlay adds only the required-membership. CONVERGENCE TRIGGER: if the upstream documents `command` as unconditionally required on the per-server entry, move the required-membership to upstream-base; if the IS corpus adopts URL-transport servers as first-class, retire this flat promotion under ISEDC Class-1 ratification instead."
+    },
+    "args": {
+      "$comment": "IS: RELOCATED narrowing (DR-062 Class 2, 056 #1) — promoted from upstream-optional to IS-required (the corpus's flat all-required projection choice: every published stdio entry declares its argument vector, [] when none). The array-of-strings type is the base's; the overlay adds only the required-membership. CONVERGENCE TRIGGER: if the upstream documents `args` as required on the per-server entry, move the required-membership to upstream-base."
+    },
+    "env": {
+      "$comment": "IS: RELOCATED narrowing (DR-062 Class 2, 056 #1) — promoted from upstream-optional to IS-required (the corpus's flat all-required projection choice: every published entry declares its environment surface, {} when none). The object type is the base's; the overlay adds only the required-membership. CONVERGENCE TRIGGER: if the upstream documents `env` as required on the per-server entry, move the required-membership to upstream-base."
+    },
+    "description": {
+      "$comment": "IS: net-new IS-required tracking field, carried from the v1 overlay (the `.mcp.json` server entry has no description key; the IS marketplace tier requires every published artifact to describe itself — the universal disclosureMarkers fold caps its length). CONVERGENCE TRIGGER: if the upstream adds a required server `description`, move the required-membership to upstream-base.",
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "$comment": "IS: net-new IS-required tracking field, carried from the v1 overlay, NARROWED to strict SemVer 2.0.0 (the `.mcp.json` entry carries no version). Mirrors the version tracking field every IS authoring contract carries. CONVERGENCE TRIGGER: if the upstream adds a required server `version`, move the required-membership (and/or pattern) to upstream-base.",
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
+    "enabled": {
+      "$comment": "IS: net-new IS-required operational field, carried from the v1 overlay (whether the server is active; must be a real boolean, not the string 'true'). CONVERGENCE TRIGGER: Claude Code's marketplace `defaultEnabled` is the nearest upstream analog; if the per-server entry gains a required boolean enablement field, move the required-membership to upstream-base.",
+      "type": "boolean"
+    },
+    "metadata": {
+      "$comment": "IS: RELOCATED kernel-only extension object (DR-062 Class 3 prose — the generic vendor-namespaced `metadata` object, e.g. metadata.intent-solutions, has ZERO upstream provenance, so under the documented-fields-only base rule it lives in the overlay). Optional; must be an object when present. CONVERGENCE TRIGGER: if the upstream documents a top-level `metadata` field for the per-server entry, move it to upstream-base.",
+      "type": "object"
+    }
+  }
+}

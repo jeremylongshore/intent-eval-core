@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/is-overlay/marketplace-catalog.v2.json",
+  "title": "marketplace-catalog — IS OVERLAY v2 (authored by Intent Solutions)",
+  "description": "The Intent-Solutions-only delta on top of upstream-base/marketplace-catalog.v2.json. THIS FILE IS THE ONLY PLACE IS POLICY LIVES for this contract. Per DR-062 the v2 base mirrors the captured projection (upstream requires [name, owner, plugins]; no minItems on plugins; name a bare string guarded only by the documented reserved-name blocklist), so EVERY IS narrowing lives here with a convergence trigger: (a) the five IS required promotions carried from the v1 overlay (version — NARROWED to strict SemVer 2.0.0 — description, license, homepage, keywords); (b) the RELOCATED plugins minItems 1 (DR-062 Class 3, 061 #1 — the corpus-rationalized minimum the doc does not state); (c) the RELOCATED structural name encoding (kebab pattern + 64-char cap; DR-062 Class 3, 061 #5 — upstream documents kebab-case in prose only). NO `metadata` entry here: unlike the sibling contracts, the upstream DOCUMENTS the metadata surface for marketplace-catalog (metadata.pluginRoot + back-compat keys), so it lives in the v2 BASE — the sibling overlays' metadata convergence condition is already satisfied for this contract. By the monotonic-additive invariant (DR-044 D7 + CSO position; re-demanded by the CISO seat note in DR-062 § 4): the overlay may only ADD required fields and NARROW constraints relative to the base — never subtract a base requirement or loosen a base constraint. Each field carries its upstream-convergence trigger; convergence is a mechanical MOVE of the field to upstream-base, not a re-edit.",
+  "$comment": "OVERLAY REQUIRED DELTA (beyond the base floor [name, owner, plugins]): [version, description, license, homepage, keywords]. Union with the base floor = the IS 8-field marketplace-catalog required set {name, owner, plugins, version, description, license, homepage, keywords} — the v1 composed surface preserved VERBATIM (the DR-062 relocation changes WHERE the narrowings live — overlay, not base — NOT what the composed IS marketplace tier requires; per the CISO seat note, widening the base does not weaken IS enforcement because the marketplace tier binds via overlay + composition). This required set evolves under ISEDC Class-1 ratification only (the 2026-04-28-debacle guard). Citations: 062-AT-DECR-tier3-reconciliation-authoring-v2-bases-2026-06-12; specs/_vendor/upstream/marketplace-catalog/projection.json (sha256 01d24b5332c29397636fe34265e82e232c5f48722706fbaadec1846dec664092); code.claude.com/docs/en/plugin-marketplaces.",
+  "type": "object",
+  "required": ["version", "description", "license", "homepage", "keywords"],
+  "properties": {
+    "version": {
+      "$comment": "IS: promoted from upstream-OPTIONAL ('Marketplace manifest version' — now a DOCUMENTED base field per 061 #2, DR-062 C1) to IS-REQUIRED, and NARROWED to strict SemVer 2.0.0 (the upstream pins no grammar). CONVERGENCE TRIGGER: if code.claude.com/docs/en/plugin-marketplaces makes version required (or pins SemVer), move the required-membership (and/or pattern) to upstream-base.",
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
+    "description": {
+      "$comment": "IS: promoted from upstream-OPTIONAL ('Brief marketplace description' — now a DOCUMENTED base field per 061 #2, DR-062 C1) to IS-REQUIRED (the universal disclosureMarkers fold caps its length; the base owns its type). CONVERGENCE TRIGGER: if the upstream makes description required, move the required-membership to upstream-base.",
+      "type": "string",
+      "minLength": 1
+    },
+    "license": {
+      "$comment": "IS: net-new IS-required field (the marketplace.json Optional fields table has no top-level license; the IS marketplace tier requires every published catalog to declare a license, mirroring the skill/plugin marketplace-tier requirement). CONVERGENCE TRIGGER: if the upstream adds a required top-level license, move the required-membership to upstream-base.",
+      "type": "string",
+      "minLength": 1
+    },
+    "homepage": {
+      "$comment": "IS: net-new IS-required field (the marketplace.json has no top-level homepage; the IS marketplace tier requires a documentation/source URL). URI format enforced. CONVERGENCE TRIGGER: if the upstream adds a required top-level homepage, move the required-membership to upstream-base.",
+      "type": "string",
+      "format": "uri"
+    },
+    "keywords": {
+      "$comment": "IS: net-new IS-required discovery field (array of strings). Mirrors the plugin-manifest keywords requirement. CONVERGENCE TRIGGER: if the upstream adds a required top-level keywords array, move the required-membership to upstream-base.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "name": {
+      "$comment": "IS: RELOCATED structural encoding (DR-062 Class 3, 061 #5) — the kebab pattern + 64-char cap moved here from the v1 base because upstream documents 'kebab-case, no spaces' in PROSE ONLY (no machine-readable pattern or length cap). The pattern also enforces non-emptiness. The documented 14-name reserved blocklist stays in the BASE (the 061 #5 carve-out — it IS documented upstream). CONVERGENCE TRIGGER: if the upstream publishes a machine-readable name pattern or length cap, move the structural encoding to upstream-base.",
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$"
+    },
+    "plugins": {
+      "$comment": "IS: RELOCATED narrowing (DR-062 Class 3, 061 #1) — minItems 1 moved here from the v1 base: the corpus-rationalized minimum ('a catalog with zero plugins is not a marketplace') that the upstream doc does NOT state. The array form + the full per-entry shape are the base's; the overlay re-states only the array type + the floor. CONVERGENCE TRIGGER: if the upstream documents a minimum entry count, move minItems to upstream-base.",
+      "type": "array",
+      "minItems": 1
+    }
+  }
+}

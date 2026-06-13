@@ -1,0 +1,33 @@
+{
+  "name": "example-plugin",
+  "version": "1.0.0",
+  "description": "A valid example plugin manifest for the v2 fixture corpus.",
+  "author": {
+    "name": "Intent Solutions",
+    "email": "dev@intentsolutions.io",
+    "url": "https://intentsolutions.io"
+  },
+  "homepage": "https://example.com/docs",
+  "license": "Apache-2.0",
+  "keywords": ["example", "testing"],
+  "commands": ["./commands/example.md"],
+  "$schema": "https://json.schemastore.org/claude-code-plugin.json",
+  "displayName": "Example Plugin",
+  "repository": "https://github.com/example/example-plugin",
+  "defaultEnabled": false,
+  "agents": "./agents/reviewer.md",
+  "skills": ["./skills/example/"],
+  "hooks": {
+    "PreToolUse": []
+  },
+  "mcpServers": "./.mcp.json",
+  "lspServers": ["./lsp/config.json"],
+  "outputStyles": "./styles/terse.md",
+  "channels": [],
+  "dependencies": [],
+  "experimental": {
+    "monitors": "./monitors/watch.md",
+    "themes": ["./themes/dark.json"]
+  },
+  "userConfig": {}
+}

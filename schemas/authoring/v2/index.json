@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/index.json",
   "title": "@intentsolutions/core authoring schema index v2 (STRICT profile)",
-  "description": "Catalog of the STRICT v2 authoring-contract schemas — the strict IS-marketplace contract that closes the 4 CCP-shadow frontmatter gaps. v2 is a fresh, self-contained sibling of authoring/v1 with ZERO $ref into v1 (copy-then-tighten); v1 is BYTE-FROZEN at @intentsolutions/core@0.4.1. ONLY skill-frontmatter is forked to v2 — the other 5 contracts (plugin-manifest, agent-definition, mcp-config, hook-config, marketplace-catalog) stay at v1/SHIPPED-INTERNAL untouched and gain a v2 sibling only if/when one needs a tightening (per-contract, behind CFO sign-off; DR-049 D-SAK-1). The v2 marketplace-tier foundation carries the THREE universal folds with two security tightenings (shell-substitution-widen + reserved-name-substring-hardening) + one disclosure tightening (description cap 1024). skill-frontmatter v2 additionally narrows allowed-tools (scoped-Bash). Source of truth: DR-049 + the CCP kernel-shadow finding.",
+  "description": "Catalog of the STRICT v2 authoring-contract schemas. v2 is a fresh, self-contained sibling of authoring/v1 with ZERO $ref into v1 (copy-then-tighten / copy-then-regenerate); v1 is BYTE-FROZEN at @intentsolutions/core@0.4.1. skill-frontmatter was forked first (DR-049 — closes the 4 CCP-shadow frontmatter gaps; its v2 base is a byte-copy of the v1 base modulo $id). Per DR-062 the five remaining contracts (mcp-config, plugin-manifest, agent-definition, hook-config, marketplace-catalog) gain v2 siblings whose bases are REGENERATED from the captured projections at intent-eval-lab specs/_vendor/upstream/<contract>/projection.json (documented fields only, upstream requiredness, upstream wire forms); every IS narrowing/extension relocates to the is-overlay with a convergence trigger. The v2 marketplace-tier foundation carries the THREE universal folds with two security tightenings (shell-substitution-widen + reserved-name-substring-hardening) + one disclosure tightening (description cap 1024). skill-frontmatter v2 additionally narrows allowed-tools (scoped-Bash). Sources of truth: DR-049 + the CCP kernel-shadow finding; DR-062 (tier-3 reconciliation) for the five projection-mirrored contracts.",
   "version": "2.0.0-draft",
   "schemas": {
     "marketplace-tier": {
@@ -33,6 +33,134 @@
       },
       "baseRequired": ["name", "description"],
       "overlayRequired": ["allowed-tools", "version", "author", "license", "compatibility", "tags"]
+    },
+    "mcp-config": {
+      "path": "mcp-config.schema.json",
+      "title": "mcp-config — IS marketplace-tier v2 contract (projection-mirrored composition)",
+      "kind": "authoring-contract",
+      "contractIndex": 4,
+      "lifecycle": "SHIPPED-INTERNAL",
+      "spec": "DR-062 (mcp-config rows: C1 = 056 #2/#3/#4, C2 = 056 #1) / DR-049 structure / spec-projection/v1 spec_version 2025-11-25",
+      "supersedes": "authoring/v1 mcp-config composition (v1 frozen at 0.4.1; v1 stays the PUBLISHED contract with the flat `transport`-named base)",
+      "v2Deltas": [
+        "base: transport selector takes upstream's wire name `type` (056 #2, C1 adopt)",
+        "base: `streamable-http` alias accepted in the selector enum (056 #3, C1 adopt)",
+        "base: per-transport shapes replace the flat shape — stdio requires `command`, URL-bearing transports require `url`; enum provenance re-attributed to the Claude Code page, `ws` Claude-Code-only (056 #4, C1 adopt)",
+        "base: `type` optional with the stdio default; the flat all-required projection choice relocates to the overlay with convergence triggers (056 #1, C2 widen)",
+        "overlay: kernel-only `metadata` extension object relocated from the base (DR-062 Class-3 prose — documented fields only in the base)"
+      ],
+      "layers": {
+        "upstreamBase": "upstream-base/mcp-config.v2.json",
+        "universalFolds": "marketplace-tier.schema.json#/$defs/universalFolds",
+        "isOverlay": "is-overlay/mcp-config.v2.json"
+      },
+      "baseRequired": ["name"],
+      "overlayRequired": ["type", "command", "args", "env", "description", "version", "enabled"]
+    },
+    "plugin-manifest": {
+      "path": "plugin-manifest.schema.json",
+      "title": "plugin-manifest — IS marketplace-tier v2 contract (projection-mirrored composition)",
+      "kind": "authoring-contract",
+      "contractIndex": 2,
+      "lifecycle": "SHIPPED-INTERNAL",
+      "spec": "DR-062 (plugin-manifest rows: C1 = 058 #1/#3, C2 = 058 #2, C3 = 058 #4/#5) / DR-049 structure / spec-projection/v1 spec_version unversioned-2026-06-12",
+      "supersedes": "authoring/v1 plugin-manifest composition (v1 frozen at 0.4.1; v1 stays the PUBLISHED contract with the narrower 10-field base)",
+      "v2Deltas": [
+        "base: the 11 unmodeled component-path fields adopted (agents, channels, dependencies, experimental.monitors, experimental.themes, hooks, lspServers, mcpServers, outputStyles, skills, userConfig) (058 #1, C1 adopt)",
+        "base: the documented metadata fields $schema, defaultEnabled, displayName adopted (058 #3, C1 adopt)",
+        "base: `commands` accepts upstream's documented string|array union; the array-only narrowing relocates to the overlay with a convergence trigger (058 #2, C2 widen)",
+        "overlay: kernel-only `metadata` extension object relocated from the base (058 #4, C3 — documented fields only in the base)",
+        "overlay: the structural kebab name pattern + 64-char cap relocated from the base (058 #5, C3 — upstream documents kebab-case in prose only)"
+      ],
+      "layers": {
+        "upstreamBase": "upstream-base/plugin-manifest.v2.json",
+        "universalFolds": "marketplace-tier.schema.json#/$defs/universalFolds",
+        "isOverlay": "is-overlay/plugin-manifest.v2.json"
+      },
+      "baseRequired": ["name"],
+      "overlayRequired": [
+        "version",
+        "description",
+        "author",
+        "homepage",
+        "license",
+        "keywords",
+        "commands"
+      ]
+    },
+    "agent-definition": {
+      "path": "agent-definition.schema.json",
+      "title": "agent-definition — IS marketplace-tier v2 contract (projection-mirrored composition)",
+      "kind": "authoring-contract",
+      "contractIndex": 3,
+      "lifecycle": "SHIPPED-INTERNAL",
+      "spec": "DR-062 (agent-definition rows: C1 = 059 #1, C2 = 059 #3/#4, C3 = 059 #2/#5, C4 = 059 #6 not adopted) / DR-049 structure / spec-projection/v1 spec_version unversioned-2026-06-12",
+      "supersedes": "authoring/v1 agent-definition composition (v1 frozen at 0.4.1; v1 stays the PUBLISHED contract with the narrower 6-field base)",
+      "v2Deltas": [
+        "base: the 11 unmodeled documented fields adopted (background, disallowedTools, effort, hooks, initialPrompt, isolation, maxTurns, mcpServers, memory, permissionMode, skills) with the projection's types, enums, and per-field requiredness (059 #1, C1 adopt)",
+        "base: `tools` accepts upstream's documented comma-separated-string|array union; the array-only narrowing relocates to the overlay with a convergence trigger (059 #3, C2 widen)",
+        "base: `model` admits the documented full-model-ID latitude alongside the alias set + `inherit`; the closed-enum narrowing relocates to the overlay with a convergence trigger (059 #4, C2 widen)",
+        "overlay: kernel-only `metadata` extension object relocated from the base (059 #2, C3 — documented fields only in the base)",
+        "overlay: the structural kebab name pattern + 64-char cap relocated from the base (059 #5, C3 — upstream documents lowercase-and-hyphens in prose only)",
+        "not adopted: the official sample's `color: magenta` outside the documented 8-value enum (059 #6, C4 — documented-vs-observed provenance rule)"
+      ],
+      "layers": {
+        "upstreamBase": "upstream-base/agent-definition.v2.json",
+        "universalFolds": "marketplace-tier.schema.json#/$defs/universalFolds",
+        "isOverlay": "is-overlay/agent-definition.v2.json"
+      },
+      "baseRequired": ["name", "description"],
+      "overlayRequired": ["tools", "model", "color", "version", "author", "tags"]
+    },
+    "hook-config": {
+      "path": "hook-config.schema.json",
+      "title": "hook-config — IS marketplace-tier v2 contract (projection-mirrored composition)",
+      "kind": "authoring-contract",
+      "contractIndex": 5,
+      "lifecycle": "SHIPPED-INTERNAL",
+      "spec": "DR-062 (hook-config rows: C1 = 060 #1/#3/#5, C2 = 060 #2, C3 = 060 #4, C4 = 060 #6 not adopted) / DR-049 structure / spec-projection/v1 spec_version unversioned-2026-06-12",
+      "supersedes": "authoring/v1 hook-config composition (v1 frozen at 0.4.1; v1 stays the PUBLISHED contract with the flattened single-handler shape)",
+      "v2Deltas": [
+        "base: the documented 3-level nesting (event → [{matcher, hooks:[handler…]}]) replaces v1's flattened single-handler shape; the document is {hooks: {<Event>: [matcherGroup…]}} with the 30-event enum enforced via propertyNames (060 #1, C1 adopt)",
+        "base: 16 of 18 documented handler fields adopted (allowedEnvVars, args, async, asyncRewake, headers, if, input, model, once, prompt, server, shell, statusMessage, timeout, tool, url) with the projection's scopes and enums (060 #3, C1 adopt)",
+        "base: per-type required fields modeled for ALL FIVE handler types — command ⇒ [command], http ⇒ [url], mcp_tool ⇒ [server, tool], prompt|agent ⇒ [prompt] — not just command (060 #5, C1 adopt)",
+        "base: `matcher` accepts the documented match-all forms (omitted / '' / '*'); the explicit-non-empty-matcher requirement relocates to the overlay with a convergence trigger (060 #2, C2 widen)",
+        "overlay: kernel-only `metadata` extension object relocated from the base (060 #4, C3 — documented fields only in the base)",
+        "overlay: the per-handler IS quartet carried from the v1 overlay (description, enabled, timeout integer ≥ 0, blocking) binds at level 3 of the nesting via deep narrowing",
+        "not adopted: `rewakeMessage`/`rewakeSummary` — used by one official plugin, documented nowhere (060 #6, C4 — documented-vs-observed provenance rule)"
+      ],
+      "layers": {
+        "upstreamBase": "upstream-base/hook-config.v2.json",
+        "universalFolds": "marketplace-tier.schema.json#/$defs/universalFolds",
+        "isOverlay": "is-overlay/hook-config.v2.json"
+      },
+      "baseRequired": ["hooks"],
+      "overlayRequired": []
+    },
+    "marketplace-catalog": {
+      "path": "marketplace-catalog.schema.json",
+      "title": "marketplace-catalog — IS marketplace-tier v2 contract (projection-mirrored composition)",
+      "kind": "authoring-contract",
+      "contractIndex": 6,
+      "lifecycle": "SHIPPED-INTERNAL",
+      "spec": "DR-062 (marketplace-catalog rows: C1 = 061 #2/#3/#4 + the #5 reserved-names carve-out, C2 = none, C3 = 061 #1/#5, C4 = 061 #6 not adopted) / DR-049 structure / spec-projection/v1 spec_version unversioned-2026-06-12",
+      "supersedes": "authoring/v1 marketplace-catalog composition (v1 frozen at 0.4.1; v1 stays the PUBLISHED contract with the narrower 4-field base and minItems 1)",
+      "v2Deltas": [
+        "base: the 4 documented top-level optionals adopted ($schema, allowCrossMarketplaceDependenciesOn, description, version) + the DOCUMENTED metadata surface (metadata.pluginRoot + the description/version back-compat keys) — unlike the sibling contracts, metadata is upstream-documented here, so it lives in the base (061 #2, C1 adopt)",
+        "base: all 18 documented plugin-entry optionals adopted with the projection's types (author object; category/description/displayName/homepage/license/repository/version strings; keywords/tags bare arrays; defaultEnabled/strict booleans; commands/agents/skills string|array; hooks/mcpServers/lspServers string|object) (061 #3, C1 adopt)",
+        "base: the 5 documented source forms adopted — ./-prefixed relative-path string + github/url/git-subdir/npm object types with per-type required/optional sets under the `source` discriminator; plugins carries NO minItems, matching the doc (061 #4, C1 adopt)",
+        "base: the doc's 14 reserved marketplace names adopted as a negated enum on `name` (the 061 #5 carve-out — documented upstream, so it belongs in the base) (C1 adopt)",
+        "overlay: the corpus-rationalized plugins minItems 1 relocated from the base with a convergence trigger (061 #1, C3 — the doc states no minimum)",
+        "overlay: the structural kebab name pattern + 64-char cap relocated from the base (061 #5, C3 — upstream documents kebab-case in prose only)",
+        "not adopted: `commit` on github sources, `path` on url sources, the non-kebab plugin name wordpress.com in the official catalog (061 #6, C4 — documented-vs-observed provenance rule)"
+      ],
+      "layers": {
+        "upstreamBase": "upstream-base/marketplace-catalog.v2.json",
+        "universalFolds": "marketplace-tier.schema.json#/$defs/universalFolds",
+        "isOverlay": "is-overlay/marketplace-catalog.v2.json"
+      },
+      "baseRequired": ["name", "owner", "plugins"],
+      "overlayRequired": ["version", "description", "license", "homepage", "keywords"]
     }
   }
 }

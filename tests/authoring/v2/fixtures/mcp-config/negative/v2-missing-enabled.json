@@ -1,0 +1,9 @@
+{
+  "name": "example-server",
+  "type": "stdio",
+  "command": "node",
+  "args": ["server.js"],
+  "env": {},
+  "description": "A valid MCP stdio server entry.",
+  "version": "1.0.0"
+}

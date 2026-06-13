@@ -1,0 +1,11 @@
+{
+  "name": "remote-server",
+  "type": "streamable-http",
+  "url": "https://mcp.example.com/mcp",
+  "command": "node",
+  "args": [],
+  "env": {},
+  "description": "A remote MCP server over the streamable-http alias.",
+  "version": "2.1.0",
+  "enabled": true
+}

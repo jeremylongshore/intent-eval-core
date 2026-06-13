@@ -1,0 +1,38 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "example-source-forms",
+  "owner": { "name": "Example Maintainers" },
+  "plugins": [
+    { "name": "alpha-tools", "source": "./plugins/alpha-tools" },
+    { "name": "beta-bridge", "source": { "source": "github", "repo": "example/beta-bridge" } },
+    {
+      "name": "gamma-cli",
+      "source": { "source": "npm", "package": "@example/gamma-cli", "version": "2.0.0" }
+    },
+    {
+      "name": "delta-skills",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/example/mono.git",
+        "path": "plugins/delta",
+        "sha": "0123456789abcdef0123456789abcdef01234567"
+      },
+      "skills": ["./skills/delta"],
+      "tags": ["ops"]
+    },
+    {
+      "name": "epsilon-hooks",
+      "source": { "source": "url", "url": "https://git.example.com/epsilon.git", "ref": "v2" },
+      "hooks": "./hooks/hooks.json",
+      "mcpServers": { "epsilon": { "command": "epsilon-server" } },
+      "defaultEnabled": true,
+      "strict": true
+    }
+  ],
+  "version": "2.1.0",
+  "description": "A valid v2 marketplace catalog exercising all five documented source forms.",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/example/source-forms",
+  "keywords": ["sources"],
+  "allowCrossMarketplaceDependenciesOn": ["partner-marketplace"]
+}

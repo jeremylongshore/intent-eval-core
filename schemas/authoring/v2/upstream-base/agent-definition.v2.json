@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/upstream-base/agent-definition.v2.json",
+  "title": "agent-definition — UPSTREAM BASE v2 (authored by Anthropic/Claude Code, not by IS)",
+  "description": "The v2 upstream projection of the agent-definition contract: the YAML frontmatter shape of a subagent file (agents/*.md) owned by Claude Code. THIS FILE IS A REGENERATION OF THE CAPTURED PROJECTION (DR-062 § 5.1) — it encodes ONLY what the upstream documents (documented fields only, upstream requiredness, upstream wire forms), never an IS-specific rule. IS-specific required fields and constraints live in is-overlay/agent-definition.v2.json. Per DR-062 the v2 base adopts the Class-1 finding of the agent-definition deep capture (059 #1: the 11 unmodeled documented fields — background, disallowedTools, effort, hooks, initialPrompt, isolation, maxTurns, mcpServers, memory, permissionMode, skills — with the projection's types, enums, and per-field requiredness) and the two Class-2 widenings (059 #3: `tools` accepts the documented comma-separated string AND the array form — the array-only narrowing was an IS projection choice and is relocated to the overlay; 059 #4: `model` admits the documented full-model-ID latitude alongside the alias enum + `inherit` — the closed-enum narrowing relocates to the overlay). The Class-3 relocations REMOVE two v1-base encodings with no documented machine-readable provenance: the structural kebab pattern + 64-char cap on `name` (upstream documents 'lowercase letters and hyphens' in PROSE only — 059 #5) and the kernel-only `metadata` extension object (059 #2) — both now live in the overlay. The Class-4 sample-only tolerance is NOT adopted (059 #6: the official sample's `color: magenta` is outside the documented 8-value enum — documented-vs-observed provenance rule). Upstream requiredness: 'Only `name` and `description` are required.' ⇒ required:[name, description].",
+  "$comment": "PROVENANCE (v2 — DR-062). REGENERATION SOURCE: intent-eval-lab specs/_vendor/upstream/agent-definition/projection.json (projection_version spec-projection/v1, spec_version unversioned-2026-06-12, sha256 7ff25f146d3462ee1d99ec6c0c482df899fad1d617552cb09e3594034e852a56) — per DR-062 § 5.1 the projection is the regeneration source for this base, not a reference. Adjudication: 062-AT-DECR-tier3-reconciliation-authoring-v2-bases-2026-06-12 (acting-CTO ruling; agent-definition rows: C1 = 059 #1, C2 = 059 #3/#4, C3 = 059 #2/#5, C4 = 059 #6 NOT adopted). Authority: code.claude.com/docs/en/sub-agents § 'Supported frontmatter fields' (the field table); platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices. VERBATIM upstream facts encoded here, per the projection's fields table: (1) 'Only name and description are required' (projection name_description_only_required: true) ⇒ required:[name, description]. (2) name = string, 'Unique identifier using lowercase letters and hyphens' — kebab-case is PROSE ONLY (projection name_lowercase_hyphens_prose: true), so the v2 base types name as a bare string; the structural pattern + cap are the OVERLAY's (DR-062 C3, 059 #5). (3) description = string, 'When Claude should delegate to this subagent'. (4) tools = the documented comma-separated string (projection tools_wire_form_in_example: comma-separated-string) OR the array form the samples exercise (projection samples.tools_wire_forms_observed: [comma-separated-string, flow-array]; DR-062 C2 row 059 #3 adjudicates the base accepts BOTH); 'Inherits all tools if omitted' (projection tools_inherit_all_if_omitted: true). (5) disallowedTools = string — 'Tools to deny, removed from inherited or specified list'; the doc example wire form is the comma-separated string ('disallowedTools: Write, Edit'); no array latitude is documented or adjudicated for this field. (6) model = bare string — documented aliases {sonnet, opus, haiku, fable} (projection model_aliases_documented) + 'a full model ID (for example, claude-opus-4-8)' (projection model_full_id_latitude: true) + 'inherit' (projection model_inherit_documented: true; defaults to inherit) ⇒ the base CANNOT enumerate a closed set (DR-062 C2, 059 #4); the IS alias-enum narrowing is the overlay's. (7) permissionMode = enum {default, acceptEdits, auto, dontAsk, bypassPermissions, plan} (projection enum). (8) maxTurns = 'Maximum number of agentic turns before the subagent stops' — an integer turn count; the non-negative floor encodes the count's natural domain (the same encoding hook-config's timeout carries), no documented ceiling. (9) skills = the documented YAML array of skill names ('Skills to preload into the subagent's context at startup'; the doc example is a block sequence of strings). (10) mcpServers = array — 'Each entry is either a server name referencing an already-configured server (e.g., \"slack\") or an inline definition with the server name as key and a full MCP server config as value' ⇒ entries are string|object, so the base mirrors the projection's bare array (no single documented item schema; inventing one would exceed the documented surface). (11) hooks = object — 'Lifecycle hooks scoped to this subagent', the inline hooks mapping (event → matchers/handlers). (12) memory = enum {user, project, local} (projection enum). (13) background = boolean — 'Set to true to always run this subagent as a background task. Default: false' (projection set_to_value: true). (14) effort = enum {low, medium, high, xhigh, max} (projection enum). (15) isolation = enum [worktree] — 'Set to worktree to run the subagent in a temporary git worktree'; worktree is the ONLY documented value (projection set_to_value: worktree). (16) color = enum {red, blue, green, yellow, purple, orange, pink, cyan} — exactly the documented 8 values; the official sample's `color: magenta` is OBSERVED-ONLY and NOT adopted (DR-062 C4, 059 #6). (17) initialPrompt = string — 'Auto-submitted as the first user turn when this agent runs as the main session agent'. NOTE: the base intentionally does NOT cap description length — the universal disclosureMarkers fold (v2: 1024) is the operative IS cap. NOTE: the kernel-only `metadata` extension object moved to the overlay per DR-062 Class 3 (059 #2 — documented fields only in the base).",
+  "type": "object",
+  "required": ["name", "description"],
+  "properties": {
+    "name": {
+      "$comment": "code.claude.com/docs/en/sub-agents (frontmatter table): string, 'Unique identifier using lowercase letters and hyphens. Hooks receive this value as agent_type.' The ONLY identity field. kebab-case is documented in PROSE only (projection name_lowercase_hyphens_prose: true) — per DR-062 C3 (059 #5) the structural kebab pattern + 64-char cap are NOT encoded here; they live in is-overlay/agent-definition.v2.json with a convergence trigger.",
+      "type": "string"
+    },
+    "description": {
+      "$comment": "code.claude.com/docs/en/sub-agents (frontmatter table): string, 'When Claude should delegate to this subagent'. Length cap deliberately NOT encoded here — the universal disclosureMarkers fold (v2: 1024) is the operative IS cap.",
+      "type": "string",
+      "minLength": 1
+    },
+    "tools": {
+      "$comment": "code.claude.com/docs/en/sub-agents (frontmatter table): OPTIONAL, '[Tools] the subagent can use. Inherits all tools if omitted.' DR-062 C2 WIDENING (059 #3): the v2 base accepts the DOCUMENTED comma-separated string wire form (projection tools_wire_form_in_example: comma-separated-string) AND the array form the official samples exercise (projection samples.tools_wire_forms_observed includes flow-array) — the v1 base's array-only narrowing was an IS projection choice now relocated to the overlay with a convergence trigger.",
+      "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+    },
+    "disallowedTools": {
+      "$comment": "code.claude.com/docs/en/sub-agents (frontmatter table): OPTIONAL string — 'Tools to deny, removed from inherited or specified list'. The documented wire form is the comma-separated string (the doc example: 'disallowedTools: Write, Edit'); no array latitude is documented for this field and DR-062 adjudicates none (the 059 #3 C2 widening covers `tools` only). DR-062 C1 adoption (059 #1): documented upstream, unmodeled in v1.",
+      "type": "string"
+    },
+    "model": {
+      "$comment": "code.claude.com/docs/en/sub-agents (frontmatter table + 'Choose a model'): OPTIONAL string — documented aliases sonnet/opus/haiku/fable (projection model_aliases_documented), 'a full model ID (for example, claude-opus-4-8)' (projection model_full_id_latitude: true), or 'inherit' (projection model_inherit_documented: true; the default). DR-062 C2 WIDENING (059 #4): the documented full-model-ID latitude means the base CANNOT enumerate a closed set — the v1 base's alias-enum narrowing was an IS projection choice now relocated to the overlay with a convergence trigger.",
+      "type": "string"
+    },
+    "permissionMode": {
+      "$comment": "code.claude.com/docs/en/sub-agents (frontmatter table + 'Permission modes'): OPTIONAL enum — 'default, acceptEdits, auto, dontAsk, bypassPermissions, or plan. Ignored for plugin subagents.' Exactly the projection's 6-value enum. DR-062 C1 adoption (059 #1).",
+      "type": "string",
+      "enum": ["default", "acceptEdits", "auto", "dontAsk", "bypassPermissions", "plan"]
+    },
+    "maxTurns": {
+      "$comment": "code.claude.com/docs/en/sub-agents (frontmatter table): OPTIONAL — 'Maximum number of agentic turns before the subagent stops'. An integer turn count; the non-negative floor encodes the count's natural domain (the same encoding hook-config's timeout carries — the doc documents no explicit bound). DR-062 C1 adoption (059 #1).",
+      "type": "integer",
+      "minimum": 0
+    },
+    "skills": {
+      "$comment": "code.claude.com/docs/en/sub-agents (frontmatter table + 'Preload skills into subagents'): OPTIONAL array of skill names — 'Skills to preload into the subagent's context at startup. The full skill content is injected, not just the description.' The doc example wire form is a YAML block sequence of strings. DR-062 C1 adoption (059 #1).",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "mcpServers": {
+      "$comment": "code.claude.com/docs/en/sub-agents (frontmatter table + 'Give subagents MCP access'): OPTIONAL array — 'Each entry is either a server name referencing an already-configured server (e.g., \"slack\") or an inline definition with the server name as key and a full MCP server config as value. Ignored for plugin subagents.' Entries are string|object, so the base mirrors the projection's bare array — no single documented item schema (the plugin-manifest channels/dependencies precedent: inventing an item type would exceed the documented surface). DR-062 C1 adoption (059 #1).",
+      "type": "array"
+    },
+    "hooks": {
+      "$comment": "code.claude.com/docs/en/sub-agents (frontmatter table + 'Define hooks for subagents'): OPTIONAL object — '[Lifecycle hooks] scoped to this subagent. Ignored for plugin subagents.' The inline hooks mapping (event → matchers/handlers); left as a generic object — the hook-config contract owns the per-handler shape. DR-062 C1 adoption (059 #1).",
+      "type": "object"
+    },
+    "memory": {
+      "$comment": "code.claude.com/docs/en/sub-agents (frontmatter table + 'Enable persistent memory'): OPTIONAL enum — '[Persistent memory scope]: user, project, or local. Enables cross-session learning.' Exactly the projection's 3-value enum. DR-062 C1 adoption (059 #1).",
+      "type": "string",
+      "enum": ["user", "project", "local"]
+    },
+    "background": {
+      "$comment": "code.claude.com/docs/en/sub-agents (frontmatter table): OPTIONAL boolean — 'Set to true to always run this subagent as a background task. Default: false.' (projection set_to_value: true — the documented toggle value; the boolean type covers the documented default false). DR-062 C1 adoption (059 #1).",
+      "type": "boolean"
+    },
+    "effort": {
+      "$comment": "code.claude.com/docs/en/sub-agents (frontmatter table): OPTIONAL enum — 'Effort level when this subagent is active. Overrides the session effort level. Default: inherits from session. Options: low, medium, high, xhigh, max.' Exactly the projection's 5-value enum. DR-062 C1 adoption (059 #1).",
+      "type": "string",
+      "enum": ["low", "medium", "high", "xhigh", "max"]
+    },
+    "isolation": {
+      "$comment": "code.claude.com/docs/en/sub-agents (frontmatter table): OPTIONAL — 'Set to worktree to run the subagent in a temporary git worktree, giving it an isolated copy of the repository.' worktree is the ONLY documented value (projection set_to_value: worktree), so the enum carries exactly that one member. DR-062 C1 adoption (059 #1).",
+      "type": "string",
+      "enum": ["worktree"]
+    },
+    "color": {
+      "$comment": "code.claude.com/docs/en/sub-agents (frontmatter table): OPTIONAL enum — 'Display color for the subagent in the task list and transcript. Accepts red, blue, green, yellow, purple, orange, pink, or cyan.' Exactly the documented 8 values. The official sample's `color: magenta` is OBSERVED-ONLY (projection samples.color_values_outside_documented_enum: [magenta]) and per DR-062 Class 4 (059 #6) is NOT adopted — never promote observed to documented.",
+      "type": "string",
+      "enum": ["red", "blue", "green", "yellow", "purple", "orange", "pink", "cyan"]
+    },
+    "initialPrompt": {
+      "$comment": "code.claude.com/docs/en/sub-agents (frontmatter table): OPTIONAL string — 'Auto-submitted as the first user turn when this agent runs as the main session agent (via --agent or the agent setting). Commands and skills are processed. Prepended to any user-provided prompt.' DR-062 C1 adoption (059 #1).",
+      "type": "string"
+    }
+  }
+}

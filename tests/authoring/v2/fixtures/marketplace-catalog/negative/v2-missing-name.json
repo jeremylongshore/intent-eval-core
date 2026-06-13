@@ -1,0 +1,16 @@
+{
+  "owner": {
+    "name": "Example Maintainers"
+  },
+  "plugins": [
+    {
+      "name": "alpha-tools",
+      "source": "./plugins/alpha-tools"
+    }
+  ],
+  "version": "1.0.0",
+  "description": "A negative v2 marketplace catalog fixture.",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/example/marketplace",
+  "keywords": ["plugins"]
+}

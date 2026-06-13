@@ -1,0 +1,9 @@
+{
+  "name": "code-reviewer",
+  "tools": ["Read", "Grep", "Glob"],
+  "model": "sonnet",
+  "color": "green",
+  "version": "1.0.0",
+  "author": "Intent Solutions",
+  "tags": ["code-review", "quality"]
+}

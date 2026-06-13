@@ -1,0 +1,9 @@
+{
+  "name": "example-plugin",
+  "version": "1.0.0",
+  "description": "A valid example plugin manifest for the v2 fixture corpus.",
+  "homepage": "https://example.com/docs",
+  "license": "Apache-2.0",
+  "keywords": ["example", "testing"],
+  "commands": ["./commands/example.md"]
+}

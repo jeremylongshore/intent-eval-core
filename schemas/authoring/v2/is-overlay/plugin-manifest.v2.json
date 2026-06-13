@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/is-overlay/plugin-manifest.v2.json",
+  "title": "plugin-manifest — IS OVERLAY v2 (authored by Intent Solutions)",
+  "description": "The Intent-Solutions-only delta on top of upstream-base/plugin-manifest.v2.json. THIS FILE IS THE ONLY PLACE IS POLICY LIVES for this contract. Per DR-062 the v2 base mirrors the captured projection (upstream requires only [name]; commands is the documented string|array union; name is a bare string — kebab-case is prose-only upstream), so EVERY IS narrowing relocates here with a convergence trigger: (a) the seven upstream-optional metadata fields promoted to IS-required, carried from the v1 overlay (version strict-SemVer, description, author, homepage, license, keywords, commands); (b) the RELOCATED commands array-only narrowing (058 #2, DR-062 Class 2 — the wire-form fix the v1 base hard-coded); (c) the RELOCATED structural name encoding (058 #5, DR-062 Class 3 — kebab pattern + 64-char cap, prose-only upstream); (d) the RELOCATED kernel-only `metadata` extension object (058 #4, DR-062 Class 3 — zero upstream provenance, so it cannot live in the base). By the monotonic-additive invariant (DR-044 D7 + CSO position; re-demanded by the CISO seat note in DR-062 § 4): the overlay may only ADD required fields and NARROW constraints relative to the base — never subtract a base requirement or loosen a base constraint. Each field carries its upstream-convergence trigger; convergence is a mechanical MOVE of the field to upstream-base, not a re-edit.",
+  "$comment": "OVERLAY REQUIRED DELTA (beyond the base floor [name]): [version, description, author, homepage, license, keywords, commands]. Union with the base floor = the IS 8-field plugin-manifest required set {name, version, description, author, homepage, license, keywords, commands} — the v1 composed surface preserved VERBATIM (the DR-062 relocation changes WHERE the narrowings live, NOT what the composed IS marketplace tier requires — per the CISO seat note, widening the base does not weaken IS enforcement because the marketplace tier binds via overlay + composition). This required set evolves under ISEDC Class-1 ratification only (the 2026-04-28-debacle guard). Citations: 062-AT-DECR-tier3-reconciliation-authoring-v2-bases-2026-06-12 (plugin-manifest rows: C1 = 058 #1/#3, C2 = 058 #2, C3 = 058 #4/#5); specs/_vendor/upstream/plugin-manifest/projection.json (sha256 a6a67a15e5ddc67c9797e1264481124f42dcf0187e4b85ffea5e27bfad56d632); code.claude.com/docs/en/plugins-reference.",
+  "type": "object",
+  "required": ["version", "description", "author", "homepage", "license", "keywords", "commands"],
+  "properties": {
+    "version": {
+      "$comment": "IS: promoted from upstream-OPTIONAL to IS-REQUIRED, and NARROWED to strict SemVer 2.0.0 (the base only types it as a string; the upstream prose says 'Semantic version' but does not pin a grammar). CONVERGENCE TRIGGER: if code.claude.com/docs/en/plugins-reference makes version required (or pins a SemVer grammar), move the required-membership (and/or the pattern) to upstream-base.",
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
+    "description": {
+      "$comment": "IS: promoted from upstream-OPTIONAL to IS-REQUIRED (type unchanged from base — the universal disclosureMarkers fold caps its length at 1024 in v2). CONVERGENCE TRIGGER: if the upstream makes description required, move the required-membership to upstream-base.",
+      "type": "string",
+      "minLength": 1
+    },
+    "author": {
+      "$comment": "IS: promoted from upstream-OPTIONAL to IS-REQUIRED. The object shape ({name} required, email/url optional) is the base's — the overlay does not re-type it, to keep the wire form single-sourced. CONVERGENCE TRIGGER: if the upstream makes author required, move the required-membership to upstream-base.",
+      "type": "object"
+    },
+    "homepage": {
+      "$comment": "IS: promoted from upstream-OPTIONAL to IS-REQUIRED (URI format is the base's). CONVERGENCE TRIGGER: if the upstream makes homepage required, move the required-membership to upstream-base.",
+      "type": "string"
+    },
+    "license": {
+      "$comment": "IS: promoted from upstream-OPTIONAL to IS-REQUIRED (type unchanged from base). Mirrors the marketplace-tier requirement that every published artifact declare a license. CONVERGENCE TRIGGER: if the upstream makes license required, move the required-membership to upstream-base.",
+      "type": "string",
+      "minLength": 1
+    },
+    "keywords": {
+      "$comment": "IS: promoted from upstream-OPTIONAL to IS-REQUIRED (array-of-strings type is the base's). CONVERGENCE TRIGGER: if the upstream makes keywords required, move the required-membership to upstream-base.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "commands": {
+      "$comment": "IS: RELOCATED narrowing (DR-062 Class 2, 058 #2) — promoted from upstream-OPTIONAL to IS-REQUIRED, and NARROWED to the array-of-strings wire form. The v2 base now carries upstream's DOCUMENTED string|array union (the v1 base hard-coded the array form — an IS projection choice this relocation makes honest); the IS contract still fixes the published wire form to an array (a plugin with zero commands declares an empty array). CONVERGENCE TRIGGER: if the upstream makes commands required (or fixes its documented type to an array), move the required-membership (and/or the array narrowing) to upstream-base.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "name": {
+      "$comment": "IS: RELOCATED structural encoding (DR-062 Class 3, 058 #5) — NOT an added requirement (name is already base-required); the overlay NARROWS the base's bare string to the kebab-case pattern + 64-char cap. Upstream documents 'kebab-case, no spaces' in PROSE only and publishes no machine-readable length cap, so under the documented-fields-only base rule the structural encoding cannot live in the base. CONVERGENCE TRIGGER: if the upstream publishes a machine-readable name length cap or pattern, move the structural encoding to upstream-base.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$"
+    },
+    "metadata": {
+      "$comment": "IS: RELOCATED kernel-only extension object (DR-062 Class 3, 058 #4 — the generic vendor-namespaced `metadata` object, e.g. metadata.intent-solutions, has ZERO upstream provenance, so under the documented-fields-only base rule it lives in the overlay). Optional; must be an object when present. CONVERGENCE TRIGGER: if the upstream documents a top-level `metadata` field for the plugin manifest, move it to upstream-base.",
+      "type": "object"
+    }
+  }
+}

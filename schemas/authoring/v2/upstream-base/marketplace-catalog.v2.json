@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/upstream-base/marketplace-catalog.v2.json",
+  "title": "marketplace-catalog — UPSTREAM BASE v2 (authored by Anthropic/Claude Code, not by IS)",
+  "description": "The v2 upstream projection of the marketplace-catalog contract: the `.claude-plugin/marketplace.json` catalog shape owned by Claude Code. THIS FILE IS A REGENERATION OF THE CAPTURED PROJECTION (DR-062 § 5.1) — it encodes ONLY what the upstream documents (documented fields only, upstream requiredness, upstream wire forms), never an IS-specific rule. IS-specific required fields and constraints live in is-overlay/marketplace-catalog.v2.json. Per DR-062 the v2 base adopts the three Class-1 findings of the marketplace-catalog deep capture (061 #2 the documented top-level optionals; 061 #3 all 18 documented plugin-entry optionals; 061 #4 the 5 documented source forms with their per-type required/optional sets under the `source` discriminator — and `plugins` carries NO minItems, matching the doc) plus the 061 #5 CARVE-OUT (the doc's 14 reserved marketplace names are documented upstream, so the blocklist adopts HERE as a negated enum), while the two Class-3 relocations (061 #1 plugins minItems 1; 061 #5 the structural kebab pattern + 64-char cap on `name` — prose-only upstream) move to the overlay with convergence triggers. The sample-only tolerances (061 #6: `commit` on github sources, `path` on url sources, the non-kebab plugin name wordpress.com) are NOT adopted (Class 4 — documented-vs-observed provenance rule); they pass structurally only because the base never closes additionalProperties, never because they are modeled.",
+  "$comment": "PROVENANCE (v2 — DR-062). REGENERATION SOURCE: intent-eval-lab specs/_vendor/upstream/marketplace-catalog/projection.json (projection_version spec-projection/v1, spec_version unversioned-2026-06-12, sha256 01d24b5332c29397636fe34265e82e232c5f48722706fbaadec1846dec664092) — per DR-062 § 5.1 the projection is the regeneration source for this base, not a reference. Adjudication: 062-AT-DECR-tier3-reconciliation-authoring-v2-bases-2026-06-12 (acting-CTO ruling; marketplace-catalog rows: C1 = 061 #2/#3/#4 + the #5 reserved-names carve-out, C2 = none, C3 = 061 #1/#5, C4 = 061 #6 not adopted). VERBATIM upstream facts encoded here: (1) Required fields table: name (string), owner (object), plugins (array) ⇒ required:[name, owner, plugins]. (2) name = string, 'Marketplace identifier (kebab-case, no spaces)' — kebab-case is PROSE-ONLY, so the structural pattern + cap live in the overlay (DR-062 C3, 061 #5); the doc's 14 RESERVED NAMES are documented upstream and therefore encoded HERE as `not.enum` (the 061 #5 carve-out, C1). (3) owner = object; Owner fields table: name (string, Required Yes), email (string, Required No) — an exact-match AGREEMENT in the 061 cross-check, carried verbatim from v1. (4) plugins = array of entry objects, each 'needs at minimum a name and source' ⇒ items.required:[name, source]; NO minItems — the doc states no minimum (061 #1: the v1 corpus-rationalized minItems 1 relocates to the overlay). (5) The 18 documented entry optionals (061 #3) with the projection's types: author object; category/description/displayName/homepage/license/repository/version strings; keywords/tags bare arrays; defaultEnabled/strict booleans (strict defaults true upstream); commands/agents/skills string|array; hooks/mcpServers/lspServers string|object. (6) The 5 documented source forms (061 #4): the relative-path string (must start './' — projection relative_path.must_start_with) + the github/url/git-subdir/npm object types under the `source` discriminator key, per-type requireds github⇒[repo], url⇒[url], git-subdir⇒[path, url], npm⇒[package], per-type optionals ref/sha (sha wins over ref upstream) and registry/version for npm. (7) Documented top-level optionals (061 #2): $schema, description, version, allowCrossMarketplaceDependenciesOn (array — no documented item shape). (8) The DOCUMENTED metadata surface: metadata.pluginRoot (string) + the description/version-under-metadata back-compat keys (projection metadata_backcompat_fields) — unlike the sibling contracts the upstream DOCUMENTS a top-level `metadata` field here, so it lives in the BASE (the sibling contracts' C3 convergence condition is already satisfied for this contract); vendor namespaces pass only via base openness, they are not modeled. NOTE: the base intentionally does NOT cap description length — the universal disclosureMarkers fold is the operative IS cap. C4 NOT ADOPTED (061 #6): `commit` on github sources, `path` on url sources, and the non-kebab plugin name wordpress.com are observed in the official catalog but documented nowhere — they enter neither base nor overlay.",
+  "type": "object",
+  "required": ["name", "owner", "plugins"],
+  "properties": {
+    "$schema": {
+      "$comment": "code.claude.com/docs/en/plugin-marketplaces (Optional fields): the JSON-Schema reference string observed on the official catalog ('$schema': 'https://anthropic.com/claude-code/marketplace.schema.json'). Documented optional (061 #2, DR-062 C1 adoption).",
+      "type": "string"
+    },
+    "name": {
+      "$comment": "code.claude.com/docs/en/plugin-marketplaces (Required fields table): string, 'Marketplace identifier (kebab-case, no spaces)'. Kebab-case is documented in PROSE ONLY, so the v2 base leaves name a bare string — the structural kebab pattern + 64-char cap are the IS encoding, relocated to the overlay (DR-062 C3, 061 #5). The doc's 14 RESERVED marketplace names ARE documented upstream, so the blocklist adopts HERE as a negated enum (the 061 #5 carve-out, DR-062 C1): a catalog must not claim a reserved identifier.",
+      "type": "string",
+      "not": {
+        "enum": [
+          "claude-code-marketplace",
+          "claude-code-plugins",
+          "claude-plugins-official",
+          "claude-plugins-community",
+          "claude-community",
+          "anthropic-marketplace",
+          "anthropic-plugins",
+          "agent-skills",
+          "anthropic-agent-skills",
+          "knowledge-work-plugins",
+          "life-sciences",
+          "claude-for-legal",
+          "claude-for-financial-services",
+          "financial-services-plugins"
+        ]
+      }
+    },
+    "owner": {
+      "$comment": "code.claude.com/docs/en/plugin-marketplaces (Required fields + Owner fields tables): object, 'Marketplace maintainer information'. The Owner fields table marks `name` Required:Yes and `email` Required:No — an exact-match AGREEMENT in the 061 cross-check ('the owner shape (inner name required, email optional) matches'), carried verbatim from the v1 base.",
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "email": { "type": "string" }
+      }
+    },
+    "plugins": {
+      "$comment": "code.claude.com/docs/en/plugin-marketplaces (Required fields + Plugin entries tables): array, 'List of available plugins'. Each entry 'needs at minimum a name and source' ⇒ items.required:[name, source]. NO minItems — the doc states no minimum entry count (DR-062 C1 within 061 #4; the v1 corpus-rationalized minItems 1 relocates to the overlay per 061 #1, C3). The 18 documented entry optionals (061 #3) and the 5 documented source forms (061 #4) are modeled on the item shape below; the per-entry depth is ajv-enforced (the generated Zod layer checks the entry floor only — depth boundary).",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "source"],
+        "properties": {
+          "name": {
+            "$comment": "Plugin identifier — 'needs at minimum a name'. Non-empty string (the documented minimum). The official catalog's non-kebab plugin name wordpress.com is a sample-only tolerance, NOT adopted (061 #6, C4).",
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "$comment": "The 5 documented source forms (061 #4, DR-062 C1): a './'-prefixed relative-path string OR an object under the `source` discriminator — github ⇒ required [repo], url ⇒ required [url], git-subdir ⇒ required [path, url], npm ⇒ required [package]; ref/sha optional on the git-backed types (sha wins over ref upstream), registry/version optional on npm. The observed-only `commit` (github) and `path` (url) tolerances are NOT modeled (061 #6, C4) — they pass only via object openness.",
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\./"
+              },
+              {
+                "type": "object",
+                "required": ["source"],
+                "properties": {
+                  "source": { "enum": ["github", "url", "git-subdir", "npm"] },
+                  "repo": { "type": "string" },
+                  "url": { "type": "string" },
+                  "path": { "type": "string" },
+                  "package": { "type": "string" },
+                  "ref": { "type": "string" },
+                  "sha": { "type": "string" },
+                  "registry": { "type": "string" },
+                  "version": { "type": "string" }
+                },
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": { "source": { "const": "github" } },
+                      "required": ["source"]
+                    },
+                    "then": { "required": ["repo"] }
+                  },
+                  {
+                    "if": {
+                      "properties": { "source": { "const": "url" } },
+                      "required": ["source"]
+                    },
+                    "then": { "required": ["url"] }
+                  },
+                  {
+                    "if": {
+                      "properties": { "source": { "const": "git-subdir" } },
+                      "required": ["source"]
+                    },
+                    "then": { "required": ["path", "url"] }
+                  },
+                  {
+                    "if": {
+                      "properties": { "source": { "const": "npm" } },
+                      "required": ["source"]
+                    },
+                    "then": { "required": ["package"] }
+                  }
+                ]
+              }
+            ]
+          },
+          "author": { "type": "object" },
+          "category": { "type": "string" },
+          "description": { "type": "string" },
+          "displayName": { "type": "string" },
+          "homepage": { "type": "string" },
+          "license": { "type": "string" },
+          "repository": { "type": "string" },
+          "version": { "type": "string" },
+          "keywords": { "type": "array" },
+          "tags": { "type": "array" },
+          "defaultEnabled": { "type": "boolean" },
+          "strict": {
+            "$comment": "Documented boolean, defaults to true upstream (projection strict_default).",
+            "type": "boolean"
+          },
+          "commands": { "anyOf": [{ "type": "string" }, { "type": "array" }] },
+          "agents": { "anyOf": [{ "type": "string" }, { "type": "array" }] },
+          "skills": { "anyOf": [{ "type": "string" }, { "type": "array" }] },
+          "hooks": { "anyOf": [{ "type": "string" }, { "type": "object" }] },
+          "mcpServers": { "anyOf": [{ "type": "string" }, { "type": "object" }] },
+          "lspServers": { "anyOf": [{ "type": "string" }, { "type": "object" }] }
+        }
+      }
+    },
+    "description": {
+      "$comment": "code.claude.com/docs/en/plugin-marketplaces (Optional fields): 'Brief marketplace description'. Documented optional (061 #2, DR-062 C1 adoption). No length cap here — the universal disclosureMarkers fold is the operative IS cap.",
+      "type": "string"
+    },
+    "version": {
+      "$comment": "code.claude.com/docs/en/plugin-marketplaces (Optional fields): 'Marketplace manifest version'. Documented optional (061 #2, DR-062 C1 adoption); upstream pins NO grammar — the strict-SemVer narrowing is IS policy in the overlay.",
+      "type": "string"
+    },
+    "allowCrossMarketplaceDependenciesOn": {
+      "$comment": "code.claude.com/docs/en/plugin-marketplaces (Optional fields): the cross-marketplace dependency trust list. Documented optional array (061 #2, DR-062 C1 adoption); no documented item shape — inventing one would exceed the documented surface.",
+      "type": "array"
+    },
+    "metadata": {
+      "$comment": "code.claude.com/docs/en/plugin-marketplaces: the DOCUMENTED metadata surface — metadata.pluginRoot (string) plus the description/version back-compat keys (projection metadata_backcompat_fields: the doc states description/version may live under metadata for backwards compatibility). Unlike the sibling contracts (whose kernel-only generic `metadata` relocated to their overlays per DR-062 C3), the upstream DOCUMENTS a top-level `metadata` field for THIS contract — the C3 convergence condition is already satisfied, so it lives in the base. Vendor namespaces pass only via object openness; they are not modeled.",
+      "type": "object",
+      "properties": {
+        "pluginRoot": { "type": "string" },
+        "description": { "type": "string" },
+        "version": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./scripts/escape-scan.sh --staged",
+            "description": "Run the escape-scan gate before any Bash tool call.",
+            "enabled": true,
+            "timeout": 30,
+            "blocking": true
+          }
+        ]
+      }
+    ]
+  }
+}
