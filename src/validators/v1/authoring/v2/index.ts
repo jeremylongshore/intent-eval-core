@@ -90,3 +90,29 @@ export {
   PluginManifestSchema as PluginManifestV2Schema,
   type PluginManifest as PluginManifestV2,
 } from './plugin-manifest.js';
+
+// Contract #3 — agent-definition (DR-062 projection-mirrored v2 base;
+// contract-scoped public surface). The v2 base mirrors the captured projection
+// (the full documented 16-field surface incl. the 11 fields v1 never modeled;
+// `tools` carries upstream's comma-separated-string|array union; `model`
+// carries the documented full-model-ID latitude; `name` is a bare string —
+// kebab-case is prose-only upstream); the relocated IS narrowings (tools array
+// form, model closed alias enum, kebab name pattern + 64-char cap, the
+// `metadata` extension) bind via the overlay + composition. The sample-only
+// `color: magenta` tolerance is NOT adopted (DR-062 C4, 059 #6).
+export {
+  AGENT_DEFINITION_BASE_REQUIRED as AGENT_DEFINITION_V2_BASE_REQUIRED,
+  AGENT_DEFINITION_OVERLAY_REQUIRED as AGENT_DEFINITION_V2_OVERLAY_REQUIRED,
+  AGENT_DEFINITION_REQUIRED_FIELDS as AGENT_DEFINITION_V2_REQUIRED_FIELDS,
+  AGENT_NAME_PATTERN as AGENT_NAME_PATTERN_V2,
+  AGENT_NAME_MAX as AGENT_NAME_MAX_V2,
+  AGENT_MODEL_VALUES as AGENT_MODEL_VALUES_V2,
+  AGENT_COLOR_VALUES as AGENT_COLOR_VALUES_V2,
+  AGENT_PERMISSIONMODE_VALUES as AGENT_PERMISSIONMODE_VALUES_V2,
+  AGENT_MEMORY_VALUES as AGENT_MEMORY_VALUES_V2,
+  AGENT_EFFORT_VALUES as AGENT_EFFORT_VALUES_V2,
+  AGENT_ISOLATION_VALUES as AGENT_ISOLATION_VALUES_V2,
+  agentDefinitionIssues as agentDefinitionV2Issues,
+  AgentDefinitionSchema as AgentDefinitionV2Schema,
+  type AgentDefinition as AgentDefinitionV2,
+} from './agent-definition.js';

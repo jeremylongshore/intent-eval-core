@@ -511,6 +511,61 @@ const CONTRACTS: readonly ContractSpec[] = [
       ' * field whose type is already enforced by the base is not re-typed here —\n' +
       ' * its presence is the required check — to keep messages single-sourced.',
   },
+  {
+    // ── DR-062 projection-mirrored v2 (tier-3 reconciliation) ──
+    // agent-definition is the third of the five contracts whose v2 base is
+    // REGENERATED from the captured projection (intent-eval-lab
+    // specs/_vendor/upstream/agent-definition/projection.json) rather than
+    // byte-copied from v1: the 11 unmodeled documented fields land in the base
+    // (background, disallowedTools, effort, hooks, initialPrompt, isolation,
+    // maxTurns, mcpServers, memory, permissionMode, skills — 059 #1 C1),
+    // `tools` widens to the documented comma-separated-string|array union
+    // (059 #3 C2), `model` widens to the documented full-model-ID latitude
+    // (059 #4 C2), and the IS-only encodings relocate to the v2 overlay with
+    // convergence triggers (the `metadata` extension object, 059 #2 C3; the
+    // kebab name pattern + 64-char cap, 059 #5 C3). The sample-only
+    // `color: magenta` tolerance is NOT adopted (059 #6 C4 — the
+    // documented-vs-observed provenance rule).
+    version: 'v2',
+    baseFileSuffix: 'v2',
+    name: 'agent-definition',
+    symbol: 'AgentDefinition',
+    constPrefix: 'AGENT_DEFINITION',
+    fieldConstPrefix: 'AGENT',
+    contractIndex: 3,
+    headerSuffix: 'subagent frontmatter — DR-062 projection-mirrored v2 base',
+    baseProvenance: 'code.claude.com sub-agents',
+    baseDoc:
+      ' * The DR-062 projection-mirrored v2 base (REGENERATED from the captured\n' +
+      ' * projection, spec_version unversioned-2026-06-12 — not a byte-copy of the\n' +
+      " * frozen v1 base). Required presence of upstream's standardFloor\n" +
+      " * ([name, description] — 'Only name and description are required') +\n" +
+      ' * type/constraint on the FULL documented surface: name as a bare string\n' +
+      ' * (kebab-case is prose-only upstream — the structural encoding lives in\n' +
+      ' * the overlay per DR-062 C3, 059 #5); tools as the documented\n' +
+      ' * comma-separated-string|array union (059 #3 C2); model as a bare string\n' +
+      ' * (the documented full-model-ID latitude — 059 #4 C2); the documented\n' +
+      ' * enums permissionMode/memory/effort/isolation/color (magenta NOT\n' +
+      ' * adopted — 059 #6 C4); maxTurns as a non-negative integer; skills as an\n' +
+      ' * array of strings; mcpServers as a bare array (string|object entries —\n' +
+      ' * no single documented item shape); hooks as a generic object;\n' +
+      ' * disallowedTools/initialPrompt as strings. Length of `description` is\n' +
+      ' * intentionally NOT capped here — the universal disclosureMarkers fold\n' +
+      ' * (v2: 1024) is the operative cap.',
+    overlayDoc:
+      ' * The IS-only v2 delta: three upstream-optional fields promoted to\n' +
+      ' * IS-required (tools, model, color) + three net-new IS-required tracking\n' +
+      ' * fields (version, author, tags — the same trio skill-frontmatter\n' +
+      ' * carries) + the SemVer narrowing on version + the RELOCATED tools\n' +
+      " * array-only narrowing (DR-062 C2, 059 #3 — the v2 base carries upstream's\n" +
+      ' * string|array union) + the RELOCATED model closed-enum narrowing\n' +
+      ' * (DR-062 C2, 059 #4 — the v2 base carries the documented full-model-ID\n' +
+      ' * latitude) + the RELOCATED structural name encoding (kebab pattern +\n' +
+      ' * 64-char cap; DR-062 C3, 059 #5 — prose-only upstream) + the RELOCATED\n' +
+      ' * optional `metadata` extension object (DR-062 C3, 059 #2). A field whose\n' +
+      ' * type is already enforced by the base is not re-typed here — its\n' +
+      ' * presence is the required check — to keep messages single-sourced.',
+  },
 ];
 
 // ─── Schema IO ───────────────────────────────────────────────────────────────
@@ -1023,6 +1078,7 @@ function overlayFieldCheck(
   field: string,
   schema: FieldSchema,
   baseProps: Readonly<Record<string, FieldSchema>>,
+  fieldConstPrefix: string,
 ): string[] {
   const lines: string[] = [];
   const access = `artifact['${field}']`;
@@ -1104,6 +1160,32 @@ function overlayFieldCheck(
       );
       return lines;
     }
+    return lines;
+  }
+
+  // String NARROWED to a closed enum by the overlay while the base carries the
+  // documented wider latitude (DR-062 projection-mirrored v2: agent-definition
+  // `model` — the v2 base admits the documented full-model-ID latitude; the IS
+  // closed alias-enum narrowing relocates here per DR-062 C2, 059 #4). Emits the
+  // same type + membership check as the base enum branch, against the
+  // overlay-emitted VALUES const, so ajv and the generated Zod agree on the
+  // narrowing. Feature-gated: no v1 overlay declares an enum, so the v1 output
+  // is byte-identical.
+  if (schema.type === 'string' && schema.enum !== undefined) {
+    const enumConst = constName(fieldConstPrefix, field, 'VALUES');
+    lines.push(
+      `  if ('${field}' in artifact) {`,
+      `    const ${field} = artifact['${field}'];`,
+      `    if (typeof ${field} !== 'string') {`,
+      `      issues.push({ message: '${field} must be a string', path: ['${field}'] });`,
+      `    } else if (!(${enumConst} as readonly string[]).includes(${field})) {`,
+      `      issues.push({`,
+      `        message: \`${field} must be one of: \${${enumConst}.join(', ')}\`,`,
+      `        path: ['${field}'],`,
+      `      });`,
+      `    }`,
+      `  }`,
+    );
     return lines;
   }
 
@@ -1572,7 +1654,7 @@ function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSc
   // here — then the visibility-array loop (if any), then
   // required_environment_variables (if present).
   const overlayCheckBlocks = overlayReq
-    .map((f) => overlayFieldCheck(f, overlayProps[f] ?? {}, baseProps).join('\n'))
+    .map((f) => overlayFieldCheck(f, overlayProps[f] ?? {}, baseProps, fieldConstPrefix).join('\n'))
     .filter((s) => s.length > 0);
   const optionalOverlayBlocks = Object.keys(overlayProps)
     .filter(
@@ -1671,6 +1753,25 @@ function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSc
         `/** IS ${field} length ceiling (is-overlay — DR-062 relocated structural encoding). */`,
         `export const ${constName(fieldConstPrefix, field, 'MAX')} = ${schema.maxLength};`,
       );
+    } else if (schema.type === 'string' && schema.enum !== undefined) {
+      // DR-062-relocated closed-enum narrowing on the OVERLAY (e.g.
+      // agent-definition v2 `model`: the alias set lives in the overlay because
+      // the documented surface carries the full-model-ID latitude — DR-062 C2).
+      // Same prettier-aware emission shape as the base enum const.
+      const name = constName(fieldConstPrefix, field, 'VALUES');
+      const single = `export const ${name} = [${schema.enum.map((v) => `'${v}'`).join(', ')}] as const;`;
+      constLines.push(
+        `/** IS ${field} allowed values (is-overlay — DR-062 relocated closed-enum narrowing). */`,
+      );
+      if (single.length <= 100) {
+        constLines.push(single);
+      } else {
+        constLines.push(
+          `export const ${name} = [`,
+          ...schema.enum.map((v) => `  '${v}',`),
+          `] as const;`,
+        );
+      }
     }
   }
   if (semverPattern !== undefined) {

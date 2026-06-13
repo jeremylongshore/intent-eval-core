@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/is-overlay/agent-definition.v2.json",
+  "title": "agent-definition — IS OVERLAY v2 (authored by Intent Solutions)",
+  "description": "The Intent-Solutions-only delta on top of upstream-base/agent-definition.v2.json. THIS FILE IS THE ONLY PLACE IS POLICY LIVES for this contract. Per DR-062 the v2 base mirrors the captured projection (upstream requires only [name, description]; tools is the documented string|array union; model carries the documented full-model-ID latitude; name is a bare string — kebab-case is prose-only upstream), so EVERY IS narrowing relocates here with a convergence trigger: (a) the three upstream-optional fields promoted to IS-required, carried from the v1 overlay (tools, model, color) + the three net-new IS-required tracking fields (version strict-SemVer, author, tags — the same trio skill-frontmatter carries); (b) the RELOCATED tools array-only narrowing (059 #3, DR-062 Class 2 — the wire-form fix the v1 base hard-coded); (c) the RELOCATED model closed-enum narrowing (059 #4, DR-062 Class 2 — the alias set {sonnet, opus, haiku, fable, inherit} the v1 base hard-coded against the documented full-model-ID latitude); (d) the RELOCATED structural name encoding (059 #5, DR-062 Class 3 — kebab pattern + 64-char cap, prose-only upstream); (e) the RELOCATED kernel-only `metadata` extension object (059 #2, DR-062 Class 3 — zero upstream provenance, so it cannot live in the base). By the monotonic-additive invariant (DR-044 D7 + CSO position; re-demanded by the CISO seat note in DR-062 § 4): the overlay may only ADD required fields and NARROW constraints relative to the base — never subtract a base requirement or loosen a base constraint. Each field carries its upstream-convergence trigger; convergence is a mechanical MOVE of the field to upstream-base, not a re-edit.",
+  "$comment": "OVERLAY REQUIRED DELTA (beyond the base floor [name, description]): [tools, model, color, version, author, tags]. Union with the base floor = the IS 8-field agent-definition required set {name, description, tools, model, color, version, author, tags} — the v1 composed surface preserved VERBATIM (the DR-062 relocation changes WHERE the narrowings live, NOT what the composed IS marketplace tier requires — per the CISO seat note, widening the base does not weaken IS enforcement because the marketplace tier binds via overlay + composition). This required set evolves under ISEDC Class-1 ratification only (the 2026-04-28-debacle guard). Citations: 062-AT-DECR-tier3-reconciliation-authoring-v2-bases-2026-06-12 (agent-definition rows: C1 = 059 #1, C2 = 059 #3/#4, C3 = 059 #2/#5, C4 = 059 #6 NOT adopted); specs/_vendor/upstream/agent-definition/projection.json (sha256 7ff25f146d3462ee1d99ec6c0c482df899fad1d617552cb09e3594034e852a56); code.claude.com/docs/en/sub-agents.",
+  "type": "object",
+  "required": ["tools", "model", "color", "version", "author", "tags"],
+  "properties": {
+    "tools": {
+      "$comment": "IS: RELOCATED narrowing (DR-062 Class 2, 059 #3) — promoted from upstream-OPTIONAL to IS-REQUIRED, and NARROWED to the array-of-strings wire form. The v2 base now carries upstream's DOCUMENTED comma-separated-string|array union (the v1 base hard-coded the array form — an IS projection choice this relocation makes honest); the IS contract still fixes the published wire form to an array of tool identifiers (an agent that pre-approves zero tools declares an empty array — the corpus ambiguity-01 latitude). CONVERGENCE TRIGGER: if code.claude.com/docs/en/sub-agents makes tools required (or fixes its documented type to an array), move the required-membership (and/or the array narrowing) to upstream-base.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "model": {
+      "$comment": "IS: RELOCATED narrowing (DR-062 Class 2, 059 #4) — promoted from upstream-OPTIONAL to IS-REQUIRED, and NARROWED to the closed alias set {sonnet, opus, haiku, fable, inherit}. The v2 base now carries upstream's DOCUMENTED full-model-ID latitude (the v1 base hard-coded this closed enum — an IS projection choice this relocation makes honest); the IS marketplace tier still pins a published agent to a portable alias rather than a dated full model ID. CONVERGENCE TRIGGER: if the upstream makes model required, move the required-membership to upstream-base; if the upstream retires the full-model-ID latitude and documents a closed enum, move the enum to upstream-base.",
+      "type": "string",
+      "enum": ["sonnet", "opus", "haiku", "fable", "inherit"]
+    },
+    "color": {
+      "$comment": "IS: promoted from upstream-OPTIONAL to IS-REQUIRED (the documented 8-value color enum is the base's — the overlay does not re-type it, to keep the wire form single-sourced). The IS marketplace tier requires a display color for transcript legibility. The sample-only `magenta` tolerance stays NOT adopted per DR-062 Class 4 (059 #6). CONVERGENCE TRIGGER: if the upstream makes color required, move the required-membership to upstream-base.",
+      "type": "string"
+    },
+    "version": {
+      "$comment": "IS: net-new IS-required tracking field, carried from the v1 overlay (NOT a sub-agents frontmatter field), NARROWED to strict SemVer 2.0.0. Mirrors the skill-frontmatter / plugin-manifest version tracking field. CONVERGENCE TRIGGER: if code.claude.com/docs/en/sub-agents adds a top-level required `version`, move the required-membership (and/or pattern) to upstream-base.",
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
+    "author": {
+      "$comment": "IS: net-new IS-required tracking field, carried from the v1 overlay (the sub-agents frontmatter has no author field). Mirrors the skill-frontmatter author tracking field. CONVERGENCE TRIGGER: if the upstream adds a top-level required `author`, move it to upstream-base.",
+      "type": "string",
+      "minLength": 1
+    },
+    "tags": {
+      "$comment": "IS: net-new IS-required tracking field, carried from the v1 overlay, with ZERO upstream provenance — not in the sub-agents frontmatter nor any Anthropic surface. Pure IS invention; convergence is unlikely. CONVERGENCE TRIGGER: only if the upstream introduces a top-level `tags` array, move it to upstream-base.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "name": {
+      "$comment": "IS: RELOCATED structural encoding (DR-062 Class 3, 059 #5) — NOT an added requirement (name is already base-required); the overlay NARROWS the base's bare string to the kebab-case pattern + 64-char cap. Upstream documents 'lowercase letters and hyphens' in PROSE only and publishes no machine-readable length cap, so under the documented-fields-only base rule the structural encoding cannot live in the base. CONVERGENCE TRIGGER: if the upstream publishes a machine-readable name length cap or pattern, move the structural encoding to upstream-base.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$"
+    },
+    "metadata": {
+      "$comment": "IS: RELOCATED kernel-only extension object (DR-062 Class 3, 059 #2 — the generic vendor-namespaced `metadata` object, e.g. metadata.intent-solutions, has ZERO upstream provenance, so under the documented-fields-only base rule it lives in the overlay). Optional; must be an object when present. CONVERGENCE TRIGGER: if the upstream documents a top-level `metadata` field for the subagent frontmatter, move it to upstream-base.",
+      "type": "object"
+    }
+  }
+}

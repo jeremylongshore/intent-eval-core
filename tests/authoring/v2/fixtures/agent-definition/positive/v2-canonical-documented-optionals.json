@@ -1,0 +1,21 @@
+{
+  "name": "db-reader",
+  "description": "Runs read-only database queries in an isolated worktree and summarizes results.",
+  "tools": ["Read", "Bash"],
+  "disallowedTools": "Write, Edit",
+  "model": "inherit",
+  "permissionMode": "plan",
+  "maxTurns": 12,
+  "skills": ["api-conventions"],
+  "mcpServers": ["slack", { "playwright": { "type": "stdio", "command": "npx" } }],
+  "hooks": { "PreToolUse": [] },
+  "memory": "project",
+  "background": true,
+  "effort": "high",
+  "isolation": "worktree",
+  "color": "cyan",
+  "initialPrompt": "Review the latest commit before answering.",
+  "version": "2.1.0",
+  "author": "Intent Solutions",
+  "tags": ["database"]
+}

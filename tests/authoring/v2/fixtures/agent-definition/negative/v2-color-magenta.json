@@ -1,0 +1,10 @@
+{
+  "name": "code-reviewer",
+  "description": "Reviews staged diffs for correctness and security regressions, then reports findings.",
+  "tools": ["Read", "Grep", "Glob"],
+  "model": "sonnet",
+  "color": "magenta",
+  "version": "1.0.0",
+  "author": "Intent Solutions",
+  "tags": ["code-review", "quality"]
+}

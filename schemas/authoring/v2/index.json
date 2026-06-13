@@ -87,6 +87,30 @@
         "keywords",
         "commands"
       ]
+    },
+    "agent-definition": {
+      "path": "agent-definition.schema.json",
+      "title": "agent-definition — IS marketplace-tier v2 contract (projection-mirrored composition)",
+      "kind": "authoring-contract",
+      "contractIndex": 3,
+      "lifecycle": "SHIPPED-INTERNAL",
+      "spec": "DR-062 (agent-definition rows: C1 = 059 #1, C2 = 059 #3/#4, C3 = 059 #2/#5, C4 = 059 #6 not adopted) / DR-049 structure / spec-projection/v1 spec_version unversioned-2026-06-12",
+      "supersedes": "authoring/v1 agent-definition composition (v1 frozen at 0.4.1; v1 stays the PUBLISHED contract with the narrower 6-field base)",
+      "v2Deltas": [
+        "base: the 11 unmodeled documented fields adopted (background, disallowedTools, effort, hooks, initialPrompt, isolation, maxTurns, mcpServers, memory, permissionMode, skills) with the projection's types, enums, and per-field requiredness (059 #1, C1 adopt)",
+        "base: `tools` accepts upstream's documented comma-separated-string|array union; the array-only narrowing relocates to the overlay with a convergence trigger (059 #3, C2 widen)",
+        "base: `model` admits the documented full-model-ID latitude alongside the alias set + `inherit`; the closed-enum narrowing relocates to the overlay with a convergence trigger (059 #4, C2 widen)",
+        "overlay: kernel-only `metadata` extension object relocated from the base (059 #2, C3 — documented fields only in the base)",
+        "overlay: the structural kebab name pattern + 64-char cap relocated from the base (059 #5, C3 — upstream documents lowercase-and-hyphens in prose only)",
+        "not adopted: the official sample's `color: magenta` outside the documented 8-value enum (059 #6, C4 — documented-vs-observed provenance rule)"
+      ],
+      "layers": {
+        "upstreamBase": "upstream-base/agent-definition.v2.json",
+        "universalFolds": "marketplace-tier.schema.json#/$defs/universalFolds",
+        "isOverlay": "is-overlay/agent-definition.v2.json"
+      },
+      "baseRequired": ["name", "description"],
+      "overlayRequired": ["tools", "model", "color", "version", "author", "tags"]
     }
   }
 }
