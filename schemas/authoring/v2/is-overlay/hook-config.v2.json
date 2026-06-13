@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/is-overlay/hook-config.v2.json",
+  "title": "hook-config — IS OVERLAY v2 (authored by Intent Solutions)",
+  "description": "The Intent-Solutions-only delta on top of upstream-base/hook-config.v2.json. THIS FILE IS THE ONLY PLACE IS POLICY LIVES for this contract. Per DR-062 the v2 base mirrors the captured projection (the documented 3-level nesting with upstream's floor — required [hooks], matcher match-all forms accepted, per-handler upstream requiredness only), so EVERY IS narrowing relocates here with a convergence trigger: (a) the RELOCATED explicit-non-empty-matcher requirement (060 #2, DR-062 Class 2) — every matcher group in a published IS marketplace artifact declares its scope explicitly ('*' for match-all), never by omission; (b) the four per-handler IS tracking/operational fields carried from the v1 overlay (description, enabled, timeout, blocking) with the integer ≥ 0 narrowing on timeout — applied at level 3 of the nesting, preserving the v1 composed per-handler surface verbatim under the adopted nesting; (c) the RELOCATED kernel-only `metadata` extension object (DR-062 Class 3, 060 #4 — zero upstream provenance, so it cannot live in the base). By the monotonic-additive invariant (DR-044 D7 + CSO position; re-demanded by the CISO seat note in DR-062 § 4): the overlay may only ADD required fields and NARROW constraints relative to the base — never subtract a base requirement or loosen a base constraint. Each narrowing carries its upstream-convergence trigger; convergence is a mechanical MOVE of the field to upstream-base, not a re-edit.",
+  "$comment": "OVERLAY REQUIRED DELTA (top level): NONE — the IS narrowings on this contract bind INSIDE the nesting the v2 base adopted (DR-062 C1, 060 #1), not at the document's top level. Per-group delta: [matcher] (RELOCATED, 060 #2 C2). Per-handler delta: [description, enabled, timeout, blocking] (carried from the v1 overlay). Union with the base's per-handler floor ([type] + the per-type conditional) reproduces the v1 composed 8-field per-handler surface {event, matcher, type, command, description, enabled, timeout, blocking} under the adopted nesting — event is now the level-1 map key and matcher the level-2 group field, so the requiredness lives where the documented shape puts the field. The DR-062 relocation changes WHERE the narrowings live (overlay, not base), NOT what the composed IS marketplace tier requires — per the CISO seat note, widening the base does not weaken IS enforcement because the marketplace tier binds via overlay + composition. This required surface evolves under ISEDC Class-1 ratification only (the 2026-04-28-debacle guard). DEPTH BOUNDARY (generated Zod layer): the deep narrowings in `hooks` are enforced by the published JSON Schema (ajv) via composition; the keyword-driven codegen emits no deep-nesting checks (the `hooks` field's type is the base's), same posture as agent-definition's generic `hooks` object. Citations: 062-AT-DECR-tier3-reconciliation-authoring-v2-bases-2026-06-12; specs/_vendor/upstream/hook-config/projection.json (sha256 58b4c144f08aaaf524050f804d7e6d71939d7c7d8128ab1a307b4e6094cfde09); code.claude.com/docs/en/hooks; code.claude.com/docs/en/settings.",
+  "type": "object",
+  "required": [],
+  "properties": {
+    "hooks": {
+      "$comment": "IS: the deep narrowings on the base's 3-level nesting. The base owns the type/shape; this overlay member only ADDS required-membership and NARROWS constraints inside it (monotonic-additive). Level 2 — matcher: RELOCATED narrowing (DR-062 Class 2, 060 #2): promoted from upstream-optional-match-all (omitted / '' / '*') to IS-required + non-empty — a published IS marketplace artifact declares every group's scope explicitly ('*' for match-all), never by omission. CONVERGENCE TRIGGER: if the upstream documents `matcher` as a required group field, move the required-membership to upstream-base; if the IS corpus adopts the no-matcher-support events as first-class match-all groups, retire this promotion under ISEDC Class-1 ratification instead. Level 3 — the per-handler IS quartet carried from the v1 overlay: description (net-new IS-required tracking field — a handler has no upstream description key; the universal disclosureMarkers fold caps its length. CONVERGENCE TRIGGER: if the upstream adds a required handler description, move the required-membership to upstream-base); enabled (net-new IS-required operational boolean — whether the handler is active. CONVERGENCE TRIGGER: if the upstream adds a required handler enablement boolean, move the required-membership to upstream-base); timeout (promoted from upstream-optional to IS-REQUIRED and NARROWED number → integer ≥ 0 — the IS marketplace tier requires an explicit, non-negative integer timeout, no silent per-type default. CONVERGENCE TRIGGER: if the upstream makes timeout required and/or documents the integer floor, move the required-membership/constraint to upstream-base); blocking (net-new IS-required tracking boolean — whether the handler is intended to BLOCK on failure, exit-code-2 semantics; declaring blocking-intent explicitly makes the policy posture auditable. CONVERGENCE TRIGGER: if the upstream adds a required blocking-intent boolean to the handler shape, move the required-membership to upstream-base).",
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["matcher"],
+          "properties": {
+            "matcher": { "type": "string", "minLength": 1 },
+            "hooks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["description", "enabled", "timeout", "blocking"],
+                "properties": {
+                  "description": { "type": "string", "minLength": 1 },
+                  "enabled": { "type": "boolean" },
+                  "timeout": { "type": "integer", "minimum": 0 },
+                  "blocking": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "metadata": {
+      "$comment": "IS: RELOCATED kernel-only extension object (DR-062 Class 3, 060 #4 — the generic vendor-namespaced `metadata` object, e.g. metadata.intent-solutions, has ZERO upstream provenance, so under the documented-fields-only base rule it lives in the overlay). Optional; must be an object when present. CONVERGENCE TRIGGER: if the upstream documents a top-level `metadata` field for the hooks document, move it to upstream-base.",
+      "type": "object"
+    }
+  }
+}

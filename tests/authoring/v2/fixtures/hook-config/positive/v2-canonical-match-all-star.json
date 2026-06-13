@@ -1,0 +1,24 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./scripts/session-flush.sh",
+            "async": true,
+            "asyncRewake": false,
+            "once": true,
+            "if": "git_dirty",
+            "statusMessage": "Flushing session state",
+            "description": "Flush the session state exporter at stop.",
+            "enabled": true,
+            "timeout": 0,
+            "blocking": false
+          }
+        ]
+      }
+    ]
+  }
+}

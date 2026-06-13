@@ -116,3 +116,24 @@ export {
   AgentDefinitionSchema as AgentDefinitionV2Schema,
   type AgentDefinition as AgentDefinitionV2,
 } from './agent-definition.js';
+
+// Contract #5 — hook-config (DR-062 projection-mirrored v2 base;
+// contract-scoped public surface). The v2 base mirrors the captured projection
+// (the documented 3-level nesting — event → [{matcher, hooks:[handler…]}] —
+// replaces v1's flattened single-handler shape; the 18 documented handler
+// fields with per-type conditional requiredness for all five handler types;
+// `matcher` accepts the documented match-all forms). The relocated IS
+// narrowings (explicit non-empty matcher, the per-handler IS quartet, the
+// `metadata` extension) bind via the overlay + composition — the deep nested
+// constraints are enforced by the published JSON Schema (ajv); the generated
+// Zod layer checks the top-level surface (depth boundary documented in the
+// generated module). The sample-only rewakeMessage/rewakeSummary fields are
+// NOT adopted (DR-062 C4, 060 #6).
+export {
+  HOOK_CONFIG_BASE_REQUIRED as HOOK_CONFIG_V2_BASE_REQUIRED,
+  HOOK_CONFIG_OVERLAY_REQUIRED as HOOK_CONFIG_V2_OVERLAY_REQUIRED,
+  HOOK_CONFIG_REQUIRED_FIELDS as HOOK_CONFIG_V2_REQUIRED_FIELDS,
+  hookConfigIssues as hookConfigV2Issues,
+  HookConfigSchema as HookConfigV2Schema,
+  type HookConfig as HookConfigV2,
+} from './hook-config.js';

@@ -111,6 +111,31 @@
       },
       "baseRequired": ["name", "description"],
       "overlayRequired": ["tools", "model", "color", "version", "author", "tags"]
+    },
+    "hook-config": {
+      "path": "hook-config.schema.json",
+      "title": "hook-config — IS marketplace-tier v2 contract (projection-mirrored composition)",
+      "kind": "authoring-contract",
+      "contractIndex": 5,
+      "lifecycle": "SHIPPED-INTERNAL",
+      "spec": "DR-062 (hook-config rows: C1 = 060 #1/#3/#5, C2 = 060 #2, C3 = 060 #4, C4 = 060 #6 not adopted) / DR-049 structure / spec-projection/v1 spec_version unversioned-2026-06-12",
+      "supersedes": "authoring/v1 hook-config composition (v1 frozen at 0.4.1; v1 stays the PUBLISHED contract with the flattened single-handler shape)",
+      "v2Deltas": [
+        "base: the documented 3-level nesting (event → [{matcher, hooks:[handler…]}]) replaces v1's flattened single-handler shape; the document is {hooks: {<Event>: [matcherGroup…]}} with the 30-event enum enforced via propertyNames (060 #1, C1 adopt)",
+        "base: 16 of 18 documented handler fields adopted (allowedEnvVars, args, async, asyncRewake, headers, if, input, model, once, prompt, server, shell, statusMessage, timeout, tool, url) with the projection's scopes and enums (060 #3, C1 adopt)",
+        "base: per-type required fields modeled for ALL FIVE handler types — command ⇒ [command], http ⇒ [url], mcp_tool ⇒ [server, tool], prompt|agent ⇒ [prompt] — not just command (060 #5, C1 adopt)",
+        "base: `matcher` accepts the documented match-all forms (omitted / '' / '*'); the explicit-non-empty-matcher requirement relocates to the overlay with a convergence trigger (060 #2, C2 widen)",
+        "overlay: kernel-only `metadata` extension object relocated from the base (060 #4, C3 — documented fields only in the base)",
+        "overlay: the per-handler IS quartet carried from the v1 overlay (description, enabled, timeout integer ≥ 0, blocking) binds at level 3 of the nesting via deep narrowing",
+        "not adopted: `rewakeMessage`/`rewakeSummary` — used by one official plugin, documented nowhere (060 #6, C4 — documented-vs-observed provenance rule)"
+      ],
+      "layers": {
+        "upstreamBase": "upstream-base/hook-config.v2.json",
+        "universalFolds": "marketplace-tier.schema.json#/$defs/universalFolds",
+        "isOverlay": "is-overlay/hook-config.v2.json"
+      },
+      "baseRequired": ["hooks"],
+      "overlayRequired": []
     }
   }
 }

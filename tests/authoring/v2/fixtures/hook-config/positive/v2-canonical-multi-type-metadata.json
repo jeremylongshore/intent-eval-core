@@ -1,0 +1,67 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./scripts/file-guard.sh",
+            "args": ["--strict"],
+            "shell": "bash",
+            "description": "Guard file edits with the repo policy script.",
+            "enabled": true,
+            "timeout": 10,
+            "blocking": true
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Summarize the repo state for the operator.",
+            "model": "haiku",
+            "description": "Operator briefing at session start.",
+            "enabled": true,
+            "timeout": 30,
+            "blocking": false
+          },
+          {
+            "type": "mcp_tool",
+            "server": "plane",
+            "tool": "list_states",
+            "input": {},
+            "description": "Warm the tracker cache at session start.",
+            "enabled": false,
+            "timeout": 60,
+            "blocking": false
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "http",
+            "url": "https://hooks.example.com/audit",
+            "headers": { "x-source": "intent-eval-core" },
+            "allowedEnvVars": ["CI"],
+            "description": "Mirror tool telemetry to the audit endpoint.",
+            "enabled": true,
+            "timeout": 120,
+            "blocking": false
+          }
+        ]
+      }
+    ]
+  },
+  "metadata": {
+    "intent-solutions": { "corpus": "authoring-v2" }
+  }
+}

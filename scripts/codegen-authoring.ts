@@ -566,6 +566,63 @@ const CONTRACTS: readonly ContractSpec[] = [
       ' * type is already enforced by the base is not re-typed here — its\n' +
       ' * presence is the required check — to keep messages single-sourced.',
   },
+  {
+    // ── DR-062 projection-mirrored v2 (tier-3 reconciliation) ──
+    // hook-config is the fourth of the five contracts whose v2 base is
+    // REGENERATED from the captured projection (intent-eval-lab
+    // specs/_vendor/upstream/hook-config/projection.json) rather than
+    // byte-copied from v1: the documented 3-LEVEL NESTING (event →
+    // [{matcher, hooks:[handler…]}]) replaces v1's flattened single-handler
+    // shape (060 #1 C1), the 18 documented handler fields land in the base
+    // with per-type conditional requiredness for all five handler types
+    // (060 #3/#5 C1), `matcher` widens to the documented match-all forms —
+    // omitted / empty / star (060 #2 C2), and the IS-only encodings relocate
+    // to the v2 overlay with convergence triggers (the explicit-non-empty-
+    // matcher requirement, 060 #2 C2; the `metadata` extension object,
+    // 060 #4 C3). The sample-only rewakeMessage/rewakeSummary fields are NOT
+    // adopted (060 #6 C4 — the documented-vs-observed provenance rule).
+    // DEPTH BOUNDARY: the nested matcher-group/handler shapes are enforced by
+    // the published JSON Schema (ajv); this keyword-driven codegen emits the
+    // generic-object check for `hooks` (same posture as agent-definition's
+    // `hooks` field), so the deep narrowings are ajv-side — documented in the
+    // baseDoc/overlayDoc below.
+    version: 'v2',
+    baseFileSuffix: 'v2',
+    name: 'hook-config',
+    symbol: 'HookConfig',
+    constPrefix: 'HOOK_CONFIG',
+    fieldConstPrefix: 'HOOK',
+    contractIndex: 5,
+    headerSuffix: 'hooks-block document — DR-062 projection-mirrored v2 base',
+    baseProvenance: 'code.claude.com hooks',
+    baseDoc:
+      ' * The DR-062 projection-mirrored v2 base (REGENERATED from the captured\n' +
+      ' * projection, spec_version unversioned-2026-06-12 — not a byte-copy of the\n' +
+      " * frozen v1 base). The documented 3-LEVEL NESTING replaces v1's flattened\n" +
+      ' * single-handler shape (060 #1 C1): the document is {hooks: {<Event>:\n' +
+      " * [{matcher?, hooks: [handler…]}]}}. Required presence of upstream's floor\n" +
+      ' * ([hooks]) + the object type check. DEPTH BOUNDARY: the nested 30-event\n' +
+      ' * propertyNames enum, the matcher match-all forms (omitted / empty / star\n' +
+      ' * — 060 #2 C2), the 18 documented handler fields (060 #3 C1), and the\n' +
+      ' * per-type conditional requireds for all five handler types (060 #5 C1)\n' +
+      ' * are enforced by the published JSON Schema (ajv); this generated layer\n' +
+      ' * checks the top-level surface only (keyword-driven codegen, no\n' +
+      " * deep-nesting emit — same posture as agent-definition's generic `hooks`\n" +
+      ' * object). This contract carries no `name` — a hooks document has no\n' +
+      ' * public identifier, so the universal securityChecks name fold simply\n' +
+      ' * does not fire.',
+    overlayDoc:
+      ' * The IS-only v2 delta: the RELOCATED optional `metadata` extension object\n' +
+      ' * (DR-062 C3, 060 #4) at the top level — the only codegen-visible overlay\n' +
+      ' * field. The RELOCATED explicit-non-empty-matcher requirement (DR-062 C2,\n' +
+      ' * 060 #2) and the per-handler IS quartet carried from the v1 overlay\n' +
+      ' * (description, enabled, timeout integer >= 0, blocking) bind as DEEP\n' +
+      " * narrowings inside the overlay's `hooks` member — enforced by the\n" +
+      ' * published JSON Schema (ajv) via composition; this generated layer emits\n' +
+      " * no deep checks (the `hooks` field's type is the base's). The overlay\n" +
+      ' * adds NO top-level required fields — the IS requiredness on this contract\n' +
+      ' * lives inside the nesting the v2 base adopted.',
+  },
 ];
 
 // ─── Schema IO ───────────────────────────────────────────────────────────────
@@ -1862,6 +1919,16 @@ function requiredEnvVarIssues(value: unknown): FoldIssue[] {
   }
   const helperBlock = helperFns.length > 0 ? `\n${helperFns.join('\n\n')}\n` : '';
 
+  // The constraint-constants section. A contract whose base+overlay declare no
+  // pattern/enum/length constants (hook-config v2 — its constraint surface is
+  // the deep ajv-side nesting) omits the section header entirely rather than
+  // emitting an empty block prettier would collapse; contracts WITH constants
+  // produce byte-identical output to the pre-gate template.
+  const constSection =
+    constLines.length > 0
+      ? `// ─── Constraint constants (mirror the JSON Schemas exactly) ──────────────────\n\n${constLines.join('\n')}\n${visibilityConst}${helperBlock}`
+      : `${visibilityConst}${helperBlock}`.replace(/^\n/, '');
+
   // Family-aware header paths. v1 keeps its EXACT historical strings (the v1
   // generated output must stay byte-identical); v2 references its own family tree
   // + the `.v2.json` overlay + the v2 test file.
@@ -1915,10 +1982,7 @@ export const ${constPrefix}_REQUIRED_FIELDS = [
   ...${constPrefix}_OVERLAY_REQUIRED,
 ] as const;
 
-// ─── Constraint constants (mirror the JSON Schemas exactly) ──────────────────
-
-${constLines.join('\n')}
-${visibilityConst}${helperBlock}
+${constSection}
 // ─── Layer 1: upstream base (authored by THEM) ───────────────────────────────
 
 /**

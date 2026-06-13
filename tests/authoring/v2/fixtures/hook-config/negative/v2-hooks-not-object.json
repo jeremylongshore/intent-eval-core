@@ -1,0 +1,12 @@
+{
+  "hooks": [
+    {
+      "type": "command",
+      "command": "./scripts/escape-scan.sh",
+      "description": "An array where the event-keyed object belongs.",
+      "enabled": true,
+      "timeout": 30,
+      "blocking": true
+    }
+  ]
+}

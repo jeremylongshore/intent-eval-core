@@ -1,0 +1,193 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/upstream-base/hook-config.v2.json",
+  "title": "hook-config — UPSTREAM BASE v2 (authored by Anthropic/Claude Code, not by IS)",
+  "description": "The v2 upstream projection of the hook-config contract: a hooks configuration document (a hooks.json / settings.json hooks block) owned by Claude Code. THIS FILE IS A REGENERATION OF THE CAPTURED PROJECTION (DR-062 § 5.1) — it encodes ONLY what the upstream documents (documented fields only, upstream requiredness, upstream wire forms), never an IS-specific rule. IS-specific required fields and constraints live in is-overlay/hook-config.v2.json. Per DR-062 the v2 base adopts the three Class-1 findings of the hook-config deep capture (060 #1: the documented 3-LEVEL NESTING — event → [{matcher, hooks:[handler…]}] — replaces v1's flattened single-handler shape; 060 #3: 16 of 18 documented handler fields the v1 base never modeled — allowedEnvVars, args, async, asyncRewake, headers, if, input, model, once, prompt, server, shell, statusMessage, timeout, tool, url; 060 #5: per-type required fields modeled for ALL FIVE handler types, not just command) and the Class-2 widening (060 #2: `matcher` accepts the documented match-all forms — omitted / '' / '*'; the explicit-non-empty-matcher requirement was an IS projection choice and is relocated to the overlay). The Class-3 relocation REMOVES the kernel-only `metadata` extension object from the base (060 #4 — zero upstream provenance; it now lives in the overlay). The Class-4 sample-only tolerance is NOT adopted (060 #6: `rewakeMessage`/`rewakeSummary` are used by one official plugin but documented nowhere — documented-vs-observed provenance rule).",
+  "$comment": "PROVENANCE (v2 — DR-062). REGENERATION SOURCE: intent-eval-lab specs/_vendor/upstream/hook-config/projection.json (projection_version spec-projection/v1, spec_version unversioned-2026-06-12, sha256 58b4c144f08aaaf524050f804d7e6d71939d7c7d8128ab1a307b4e6094cfde09) — per DR-062 § 5.1 the projection is the regeneration source for this base, not a reference. Adjudication: 062-AT-DECR-tier3-reconciliation-authoring-v2-bases-2026-06-12 (acting-CTO ruling; hook-config rows: C1 = 060 #1/#3/#5, C2 = 060 #2, C3 = 060 #4, C4 = 060 #6 NOT adopted). Authorities: code.claude.com/docs/en/hooks (the reference doc the projection captured as claude-code-hooks.md — lifecycle event table, per-handler field tables, timeout defaults); code.claude.com/docs/en/settings (hooks block placement — projection config.locations). VERBATIM upstream facts encoded here: (1) the 3-level nesting (projection config.three_level_nesting: true; 060 #1 C1): the document carries a required `hooks` object keyed by lifecycle EVENT (level 1), each event holding an ARRAY OF MATCHER GROUPS (level 2: {matcher?, hooks}), each group holding an ARRAY OF HANDLERS (level 3). (2) event keys = the documented 30-event enum (projection events.enum, count 30), enforced via propertyNames. (3) matcher = string scoping the group; the documented match-all forms are omitted / '' / '*' (projection matcher.match_all_forms — all three true; 060 #2, DR-062 C2 widening: the v1 base's required + non-empty matcher was the IS projection choice, now relocated to the overlay). The projection also documents 10 no-matcher-support events (matcher.no_matcher_support_events) and the regex fallback (matcher.regex_fallback_documented) — recorded here as prose, NOT structurally encoded (the DR-062 disposition rows adjudicate no structural encoding for them). (4) handler.type = the documented 5-type enum {command, http, mcp_tool, prompt, agent} (projection handler_types; the only upstream-required common field — projection handler_fields.type.required: true). (5) the 18 documented handler fields with the projection's scopes and requiredness (projection handler_fields; 060 #3 C1): common = if/once/statusMessage/timeout(+type); command scope = command(required)/args/async/asyncRewake/shell(enum {bash, powershell}); http scope = url(required)/allowedEnvVars/headers; mcp_tool scope = server(required)/tool(required)/input; prompt-agent scope = prompt(required)/model. (6) per-type conditional requiredness (060 #5 C1): the handler-level allOf if/then members encode command ⇒ [command], http ⇒ [url], mcp_tool ⇒ [server, tool], prompt|agent ⇒ [prompt] — replacing v1's command-only modeling. (7) timeout = number of seconds before canceling (per-type defaults documented — projection timeout_defaults {command 600, http 600, mcp_tool 600, prompt 30, agent 60}); upstream documents no integer/floor constraint, so the base types it as a bare number (the IS integer ≥ 0 narrowing is the overlay's). NOTE: this contract carries no `name` — a hooks document has no public identifier, so the universal securityChecks name fold simply does not fire. NOTE: the kernel-only `metadata` extension object moved to the overlay per DR-062 Class 3 (060 #4 — documented fields only in the base). NOTE: `rewakeMessage`/`rewakeSummary` (observed in one official plugin sample — projection samples.fields_observed_not_documented) are NOT adopted (060 #6, DR-062 C4).",
+  "type": "object",
+  "required": ["hooks"],
+  "properties": {
+    "hooks": {
+      "$comment": "code.claude.com/docs/en/hooks: the documented 3-level nesting (projection config.three_level_nesting: true; DR-062 C1, 060 #1). Level 1: keys are the documented 30 lifecycle events (projection events.enum) — propertyNames enforces the enum. Level 2: each event maps to an array of matcher groups ({matcher?, hooks}). Level 3: each group carries the handler array.",
+      "type": "object",
+      "propertyNames": {
+        "enum": [
+          "SessionStart",
+          "Setup",
+          "UserPromptSubmit",
+          "UserPromptExpansion",
+          "PreToolUse",
+          "PermissionRequest",
+          "PermissionDenied",
+          "PostToolUse",
+          "PostToolUseFailure",
+          "PostToolBatch",
+          "Notification",
+          "MessageDisplay",
+          "SubagentStart",
+          "SubagentStop",
+          "TaskCreated",
+          "TaskCompleted",
+          "Stop",
+          "StopFailure",
+          "TeammateIdle",
+          "InstructionsLoaded",
+          "ConfigChange",
+          "CwdChanged",
+          "FileChanged",
+          "WorktreeCreate",
+          "WorktreeRemove",
+          "PreCompact",
+          "PostCompact",
+          "Elicitation",
+          "ElicitationResult",
+          "SessionEnd"
+        ]
+      },
+      "additionalProperties": {
+        "type": "array",
+        "items": { "$ref": "#/$defs/matcherGroup" }
+      }
+    }
+  },
+  "$defs": {
+    "matcherGroup": {
+      "$comment": "Level 2 of the documented nesting: one matcher group — {matcher?, hooks:[handler…]}. `hooks` is the group's handler array (the only structurally required key at this level — a group without handlers configures nothing).",
+      "type": "object",
+      "required": ["hooks"],
+      "properties": {
+        "matcher": {
+          "$comment": "code.claude.com/docs/en/hooks: scopes when the group fires (matches tool_name for tool events, the start reason for SessionStart, etc.; letters/digits/_/| = exact-or-list, otherwise a JS regex — projection matcher.regex_fallback_documented). The documented MATCH-ALL forms are omitted / '' / '*' (projection matcher.match_all_forms; DR-062 C2 widening, 060 #2) — so the base types matcher as a bare string with NO minLength and NO required-membership; the explicit-non-empty-matcher requirement is the overlay's. 10 events do not support matchers at all (projection matcher.no_matcher_support_events) — documented, not structurally encoded (no DR-062 row adjudicates a structural encoding).",
+          "type": "string"
+        },
+        "hooks": {
+          "$comment": "Level 3 of the documented nesting: the group's handler array.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/handler" }
+        }
+      }
+    },
+    "handler": {
+      "$comment": "One hook handler. `type` is the only upstream-required common field (projection handler_fields.type.required: true); the per-type required fields bind via the allOf if/then members below (DR-062 C1, 060 #5). The 18 documented handler fields (060 #3) carry the projection's scopes: common (if, once, statusMessage, timeout), command (command, args, async, asyncRewake, shell), http (url, allowedEnvVars, headers), mcp_tool (server, tool, input), prompt-agent (prompt, model).",
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "$comment": "code.claude.com/docs/en/hooks: the handler kind — verbatim enum {command, http, mcp_tool, prompt, agent} (projection handler_types + handler_fields.type.enum).",
+          "type": "string",
+          "enum": ["command", "http", "mcp_tool", "prompt", "agent"]
+        },
+        "command": {
+          "$comment": "code.claude.com/docs/en/hooks: the shell command to run — the type-specific REQUIRED field for a command handler (projection handler_fields.command: scope command, required true). Non-empty; no length cap (a command is a free-form shell string).",
+          "type": "string",
+          "minLength": 1
+        },
+        "args": {
+          "$comment": "code.claude.com/docs/en/hooks: arguments passed to the command (projection handler_fields.args: scope command, optional). Array of strings; an empty array is valid.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "async": {
+          "$comment": "code.claude.com/docs/en/hooks: run the command handler asynchronously without blocking the session (projection handler_fields.async: scope command, optional). Boolean.",
+          "type": "boolean"
+        },
+        "asyncRewake": {
+          "$comment": "code.claude.com/docs/en/hooks: rewake the session when the async command completes (projection handler_fields.asyncRewake: scope command, optional; observed in the official samples). Boolean. The companion `rewakeMessage`/`rewakeSummary` fields seen in one official plugin are documented NOWHERE and are NOT adopted (DR-062 C4, 060 #6).",
+          "type": "boolean"
+        },
+        "shell": {
+          "$comment": "code.claude.com/docs/en/hooks: the shell used to run a command handler — verbatim enum {bash, powershell} (projection handler_fields.shell.enum; scope command, optional).",
+          "type": "string",
+          "enum": ["bash", "powershell"]
+        },
+        "url": {
+          "$comment": "code.claude.com/docs/en/hooks: the endpoint an http handler posts to — the type-specific REQUIRED field for an http handler (projection handler_fields.url: scope http, required true). Non-empty string, NOT format:uri (env-var expansion placeholders are documented inside hook config values).",
+          "type": "string",
+          "minLength": 1
+        },
+        "allowedEnvVars": {
+          "$comment": "code.claude.com/docs/en/hooks: the environment variable names an http handler is allowed to forward (projection handler_fields.allowedEnvVars: scope http, optional). Array of strings.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "headers": {
+          "$comment": "code.claude.com/docs/en/hooks: HTTP headers sent by an http handler (projection handler_fields.headers: scope http, optional). A string→string map; left as a generic object so any header namespace conforms.",
+          "type": "object"
+        },
+        "server": {
+          "$comment": "code.claude.com/docs/en/hooks: the MCP server name an mcp_tool handler calls — type-specific REQUIRED (projection handler_fields.server: scope mcp_tool, required true). Non-empty.",
+          "type": "string",
+          "minLength": 1
+        },
+        "tool": {
+          "$comment": "code.claude.com/docs/en/hooks: the tool name an mcp_tool handler invokes on the server — type-specific REQUIRED (projection handler_fields.tool: scope mcp_tool, required true). Non-empty.",
+          "type": "string",
+          "minLength": 1
+        },
+        "input": {
+          "$comment": "code.claude.com/docs/en/hooks: the input payload passed to the MCP tool (projection handler_fields.input: scope mcp_tool, optional). Left as a generic object — the tool's own input schema governs its shape.",
+          "type": "object"
+        },
+        "prompt": {
+          "$comment": "code.claude.com/docs/en/hooks: the prompt text — the type-specific REQUIRED field for prompt AND agent handlers (projection handler_fields.prompt: scope prompt-agent, required true). Non-empty.",
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "$comment": "code.claude.com/docs/en/hooks: the model a prompt/agent handler runs on (projection handler_fields.model: scope prompt-agent, optional). Bare string — upstream documents no closed model set for hook handlers.",
+          "type": "string"
+        },
+        "if": {
+          "$comment": "code.claude.com/docs/en/hooks: a condition expression gating whether the handler fires (projection handler_fields.if: scope common, optional; observed in the official samples). String.",
+          "type": "string"
+        },
+        "once": {
+          "$comment": "code.claude.com/docs/en/hooks: fire the handler at most once per session (projection handler_fields.once: scope common, optional). Boolean.",
+          "type": "boolean"
+        },
+        "statusMessage": {
+          "$comment": "code.claude.com/docs/en/hooks: the spinner/status text shown while the handler runs (projection handler_fields.statusMessage: scope common, optional). String.",
+          "type": "string"
+        },
+        "timeout": {
+          "$comment": "code.claude.com/docs/en/hooks: seconds before canceling the handler (projection handler_fields.timeout: scope common, optional; per-type defaults documented — projection timeout_defaults {command 600, http 600, mcp_tool 600, prompt 30, agent 60}). Bare number — upstream documents no integer/floor constraint; the IS integer ≥ 0 narrowing is the overlay's.",
+          "type": "number"
+        }
+      },
+      "allOf": [
+        {
+          "$comment": "PER-TYPE REQUIRED — command (DR-062 C1, 060 #5; projection handler_fields.command.required within scope command).",
+          "if": {
+            "properties": { "type": { "const": "command" } },
+            "required": ["type"]
+          },
+          "then": { "required": ["command"] }
+        },
+        {
+          "$comment": "PER-TYPE REQUIRED — http (projection handler_fields.url.required within scope http).",
+          "if": {
+            "properties": { "type": { "const": "http" } },
+            "required": ["type"]
+          },
+          "then": { "required": ["url"] }
+        },
+        {
+          "$comment": "PER-TYPE REQUIRED — mcp_tool (projection handler_fields.server.required + handler_fields.tool.required within scope mcp_tool).",
+          "if": {
+            "properties": { "type": { "const": "mcp_tool" } },
+            "required": ["type"]
+          },
+          "then": { "required": ["server", "tool"] }
+        },
+        {
+          "$comment": "PER-TYPE REQUIRED — prompt and agent share the prompt-agent scope (projection handler_fields.prompt.required within scope prompt-agent).",
+          "if": {
+            "properties": { "type": { "enum": ["prompt", "agent"] } },
+            "required": ["type"]
+          },
+          "then": { "required": ["prompt"] }
+        }
+      ]
+    }
+  }
+}
