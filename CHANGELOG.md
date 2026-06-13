@@ -12,6 +12,19 @@ versioning follows [SemVer 2.0.0](https://semver.org/).
 - Evidence Bundle predicate compatibility policy (forward/backward/mixing/deprecation rules) MUST land before first prod-Rekor anchor — bd `bd_000-projects-uprg` (P0)
 - OTel semantic conventions pinned in `schemas/v1/otel-attributes.yaml` to prevent attribute drift across consumer emitters — bd `bd_000-projects-9pi3` (P0)
 
+## [0.6.0] - 2026-06-12
+
+### Added
+
+- **`authoring/v2` five-contract family** (PR #39, implements DR-062): `mcp-config`, `plugin-manifest`, `agent-definition`, `hook-config`, `marketplace-catalog` — v2 upstream-bases regenerated from the lab's captured projections (documented fields only, upstream requiredness, upstream wire forms); every IS narrowing/extension relocated to the v2 is-overlays with convergence triggers; pure-`allOf` compositions; codegen validators + fixture corpora. `authoring/v1` remains byte-frozen. Per-contract detail is canonical in `schemas/authoring/v2/CHANGELOG.md`.
+- **Prose-anchor validity gate** (PR #37): vendored 6767-h heading inventory + `check-prose-anchors` CI workflow failing the build on dangling `$comment` citations.
+- **Changelog-observance gate** (PR #38): any `schemas/` change without a same-PR governing-CHANGELOG entry (with lineage reference) fails CI.
+
+### Fixed
+
+- `ScoringConfigSchema` mirrors the open-world JSON Schema (`.strict()` → `.passthrough()`); NORMATIVE `gate_reasons` non-empty rule for `{fail, advisory, error}` now enforced in both the JSON Schema and the Zod validator (PR #36).
+- Predicate-namespace gate scans the whole `schemas/authoring` family; byte-freeze test covers all seven v1 authoring validator sources (PR #36).
+
 ## [0.5.0] - 2026-06-11
 
 The **STRICT v2 authoring fork**. Lands `schemas/authoring/v2/skill-frontmatter` — the strict IS-marketplace contract that closes the 4 CCP-shadow frontmatter gaps — as a fresh, self-contained, **immutable fork** of v1 (copy-then-tighten, zero `$ref` into v1). Purely **additive**: a new export subpath `./schemas/authoring/v2/*` + `./validators/v1/authoring/v2`; no v1 import-meaning changes. SemVer MINOR. DR-049 + the CCP kernel-shadow finding. Lifecycle **SHIPPED-INTERNAL** (not canonical yet — canonical-promotion is gated on the DR-049 recall eval + corpus migration).
