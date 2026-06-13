@@ -1,5 +1,5 @@
 {
-  "$comment": "6767-h COVERAGE MAP (033-PP-PLAN-skill-refiner-sak-amendment-v7 § 14.2.1 third value / § 14.2.2 format). Bidirectional trace table: every field of a composed authoring/v1 contract cites EITHER (a) trace_kind=anthropic-spec-derived — the 6767-h section it implements plus the live anthropic_doc URL, OR (b) trace_kind=is-only-extension — the IS-only-extension category, a rationale for why it has no upstream anchor, and the upstream_convergence_trigger that would mechanically MOVE it to upstream-base. Three CI gates consume this file (§ 14.2.3): coverage-map-completeness (every composed-schema field has an entry), prose-anchor-validity (every anthropic-spec-derived 6767h_section resolves against schemas/prose-anchors/6767-h.headings.json), is-extension-rationale (every is-only-extension entry has non-empty rationale AND upstream_convergence_trigger). 6767h_section values are validated against the vendored heading inventory — only sections that actually exist there are cited (HONEST + conservative; § 14.2.2). NOTE: this file's 6767h_section citations live in the structured `6767h_section` field, NOT in any $comment — the prose-anchor gate scans $comment fields for the schema family and would otherwise double-count; the coverage-map's own anthropic-spec-derived citations are validated by check-coverage-map-prose-anchors.ts (the § 14.2.3 gate #2 extension). lineage: dr-044@d-sak-1",
+  "$comment": "6767-h COVERAGE MAP (033-PP-PLAN-skill-refiner-sak-amendment-v7 § 14.2.1 third value / § 14.2.2 format). Bidirectional trace table: every field of a composed authoring/v1 contract cites EITHER (a) trace_kind=anthropic-spec-derived — the 6767-h section it implements plus the live anthropic_doc URL, OR (b) trace_kind=is-only-extension — the IS-only-extension category, a rationale for why it has no upstream anchor, and the upstream_convergence_trigger that would mechanically MOVE it to upstream-base. Three CI gates consume this file (§ 14.2.3): coverage-map-completeness (every composed-schema field has an entry), prose-anchor-validity (every anthropic-spec-derived 6767h_section resolves against schemas/prose-anchors/6767-h.headings.json), is-extension-rationale (every is-only-extension entry has non-empty rationale AND upstream_convergence_trigger). 6767h_section values are validated against the vendored heading inventory — only sections that actually exist there are cited (HONEST + conservative; § 14.2.2). NOTE: this file's 6767h_section citations live in the structured `6767h_section` field, NOT in any $comment — the prose-anchor gate scans $comment fields for the schema family and would otherwise double-count; the coverage-map's own anthropic-spec-derived citations are validated by check-coverage-map-prose-anchors.ts (the § 14.2.3 gate #2 extension). [2t2p] EXTENDED to ALL SIX authoring contracts. Field set per contract = the union of the v2 composed-schema top-level `properties` keys (upstream-base + is-overlay); trace_kind is determined from base/overlay membership, which mirrors the captured projection (specs/_vendor/upstream/<contract>/projection.json) per DR-062 (the v2 base encodes documented-upstream fields only): a field present in the upstream-base layer is documented-upstream; an overlay-only field is IS-only/kernel-only. DISPOSITION: (a) plugin-manifest documented-upstream fields cite 6767-h §2 (Plugin Manifest), the required `name` cites §2.1 (Required Fields); marketplace-catalog documented-upstream fields cite 6767-h §4 (Marketplace & Website Safety Contract), the required name/owner/plugins cite §4.1 (Source of Truth) — both contracts HAVE a 6767-h section, so their documented fields are anthropic-spec-derived. (b) agent-definition / mcp-config / hook-config have NO 6767-h section (the 6767-h master spec scopes ONLY plugin-manifest + skill + marketplace), so EVERY field of those three contracts is classified is-only-extension with a null 6767h_section — matching the skill-frontmatter convention exactly (no resolving 6767-h section ⇒ is-only-extension, never anthropic-spec-derived-with-null, which the prose-anchor gate forbids). For their DOCUMENTED-UPSTREAM fields the upstream provenance is NOT dropped — it is recorded in the rationale (the Anthropic sub-agents/mcp/hooks doc surface that documents the field) under category documented-upstream-no-6767h-section, with an upstream_convergence_trigger that re-classes the field to anthropic-spec-derived once 6767-h adds a covering section. Genuinely IS-only/kernel-only fields (metadata, the IS tracking trio version/author/tags, mcp enabled, etc.) carry their own IS-extension category. lineage: dr-044@d-sak-1",
   "$schemaVersion": "1.0.0",
   "fields": {
     "skill-frontmatter.name": {
@@ -88,6 +88,408 @@
       "category": "installer-prompt",
       "rationale": "IS-only optional extension (IS validator schema 3.6.0). Each entry prompts the user on first run (UPPER_SNAKE name + prompt). No agentskills.io or Anthropic installer-prompt convention exists.",
       "upstream_convergence_trigger": "`claude doctor` (or equivalent) ships env-var prompting / an installer-prompt convention."
+    },
+    "plugin-manifest.$schema": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.agents": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.author": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.channels": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.commands": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.defaultEnabled": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.dependencies": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.description": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.displayName": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.experimental": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.homepage": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.hooks": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.keywords": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.license": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.lspServers": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.mcpServers": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.metadata": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "kernel-extension",
+      "rationale": "IS-only kernel extension object (DR-062 Class 3 relocation, 058 #4): the generic vendor-namespaced `metadata` object has ZERO upstream provenance, so under the documented-fields-only base rule it lives in the is-overlay, not the documented base. No 6767-h anchor by design.",
+      "upstream_convergence_trigger": "code.claude.com/docs/en/plugins-reference documents a top-level `metadata` field for the plugin manifest (then move it to upstream-base per the overlay convergence trigger)."
+    },
+    "plugin-manifest.name": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2.1",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.outputStyles": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.repository": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.skills": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.userConfig": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "plugin-manifest.version": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "2",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "marketplace-catalog.$schema": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "4",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugin-marketplaces"
+    },
+    "marketplace-catalog.allowCrossMarketplaceDependenciesOn": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "4",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugin-marketplaces"
+    },
+    "marketplace-catalog.description": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "4",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugin-marketplaces"
+    },
+    "marketplace-catalog.homepage": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "tracking-metadata",
+      "rationale": "IS-only required field (marketplace-catalog v2 is-overlay): the marketplace.json has no top-level `homepage`. The IS marketplace tier requires a documentation/source URL (URI-format). No 6767-h anchor.",
+      "upstream_convergence_trigger": "code.claude.com/docs/en/plugin-marketplaces adds a required top-level `homepage` (then move the required-membership to upstream-base)."
+    },
+    "marketplace-catalog.keywords": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "discovery",
+      "rationale": "IS-only required discovery field (marketplace-catalog v2 is-overlay): an array of discovery tags. The marketplace.json has no top-level `keywords`; mirrors the plugin-manifest keywords requirement. No 6767-h anchor.",
+      "upstream_convergence_trigger": "code.claude.com/docs/en/plugin-marketplaces adds a required top-level `keywords` array (then move the required-membership to upstream-base)."
+    },
+    "marketplace-catalog.license": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "tracking-metadata",
+      "rationale": "IS-only required field (marketplace-catalog v2 is-overlay): the marketplace.json Optional fields table has no top-level `license`. The IS marketplace tier requires every published catalog to declare a license, mirroring the skill/plugin marketplace-tier requirement. No 6767-h anchor.",
+      "upstream_convergence_trigger": "code.claude.com/docs/en/plugin-marketplaces adds a required top-level `license` (then move the required-membership to upstream-base)."
+    },
+    "marketplace-catalog.metadata": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "4",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugin-marketplaces"
+    },
+    "marketplace-catalog.name": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "4.1",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugin-marketplaces"
+    },
+    "marketplace-catalog.owner": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "4.1",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugin-marketplaces"
+    },
+    "marketplace-catalog.plugins": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "4.1",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugin-marketplaces"
+    },
+    "marketplace-catalog.version": {
+      "trace_kind": "anthropic-spec-derived",
+      "6767h_section": "4",
+      "anthropic_doc": "https://code.claude.com/docs/en/plugin-marketplaces"
+    },
+    "agent-definition.author": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "tracking-metadata",
+      "rationale": "IS-only required tracking field (agent-definition v2 is-overlay): the sub-agents frontmatter has no `author` field. Mirrors the skill-frontmatter author tracking field. No 6767-h anchor.",
+      "upstream_convergence_trigger": "code.claude.com/docs/en/sub-agents adds a top-level required `author` (then move it to upstream-base)."
+    },
+    "agent-definition.background": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic agent-definition surface (https://code.claude.com/docs/en/sub-agents); the sub-agents frontmatter field table documents `background`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the agent-definition contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a agent-definition section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/sub-agents is mirrored into a 6767-h §-anchored surface."
+    },
+    "agent-definition.color": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic agent-definition surface (https://code.claude.com/docs/en/sub-agents); the sub-agents frontmatter field table documents `color`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the agent-definition contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a agent-definition section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/sub-agents is mirrored into a 6767-h §-anchored surface."
+    },
+    "agent-definition.description": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic agent-definition surface (https://code.claude.com/docs/en/sub-agents); the sub-agents frontmatter field table documents `description`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the agent-definition contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a agent-definition section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/sub-agents is mirrored into a 6767-h §-anchored surface."
+    },
+    "agent-definition.disallowedTools": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic agent-definition surface (https://code.claude.com/docs/en/sub-agents); the sub-agents frontmatter field table documents `disallowedTools`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the agent-definition contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a agent-definition section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/sub-agents is mirrored into a 6767-h §-anchored surface."
+    },
+    "agent-definition.effort": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic agent-definition surface (https://code.claude.com/docs/en/sub-agents); the sub-agents frontmatter field table documents `effort`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the agent-definition contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a agent-definition section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/sub-agents is mirrored into a 6767-h §-anchored surface."
+    },
+    "agent-definition.hooks": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic agent-definition surface (https://code.claude.com/docs/en/sub-agents); the sub-agents frontmatter field table documents `hooks`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the agent-definition contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a agent-definition section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/sub-agents is mirrored into a 6767-h §-anchored surface."
+    },
+    "agent-definition.initialPrompt": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic agent-definition surface (https://code.claude.com/docs/en/sub-agents); the sub-agents frontmatter field table documents `initialPrompt`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the agent-definition contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a agent-definition section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/sub-agents is mirrored into a 6767-h §-anchored surface."
+    },
+    "agent-definition.isolation": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic agent-definition surface (https://code.claude.com/docs/en/sub-agents); the sub-agents frontmatter field table documents `isolation`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the agent-definition contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a agent-definition section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/sub-agents is mirrored into a 6767-h §-anchored surface."
+    },
+    "agent-definition.maxTurns": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic agent-definition surface (https://code.claude.com/docs/en/sub-agents); the sub-agents frontmatter field table documents `maxTurns`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the agent-definition contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a agent-definition section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/sub-agents is mirrored into a 6767-h §-anchored surface."
+    },
+    "agent-definition.mcpServers": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic agent-definition surface (https://code.claude.com/docs/en/sub-agents); the sub-agents frontmatter field table documents `mcpServers`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the agent-definition contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a agent-definition section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/sub-agents is mirrored into a 6767-h §-anchored surface."
+    },
+    "agent-definition.memory": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic agent-definition surface (https://code.claude.com/docs/en/sub-agents); the sub-agents frontmatter field table documents `memory`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the agent-definition contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a agent-definition section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/sub-agents is mirrored into a 6767-h §-anchored surface."
+    },
+    "agent-definition.metadata": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "kernel-extension",
+      "rationale": "IS-only kernel extension object (DR-062 Class 3 relocation, 059 #2): generic vendor-namespaced `metadata`, ZERO upstream provenance. No 6767-h anchor by design.",
+      "upstream_convergence_trigger": "code.claude.com/docs/en/sub-agents documents a top-level `metadata` field for the subagent frontmatter, OR the 6767-h master spec adds an agent-definition section (then re-class accordingly)."
+    },
+    "agent-definition.model": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic agent-definition surface (https://code.claude.com/docs/en/sub-agents); the sub-agents frontmatter field table documents `model`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the agent-definition contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a agent-definition section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/sub-agents is mirrored into a 6767-h §-anchored surface."
+    },
+    "agent-definition.name": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic agent-definition surface (https://code.claude.com/docs/en/sub-agents); the sub-agents frontmatter field table documents `name`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the agent-definition contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a agent-definition section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/sub-agents is mirrored into a 6767-h §-anchored surface."
+    },
+    "agent-definition.permissionMode": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic agent-definition surface (https://code.claude.com/docs/en/sub-agents); the sub-agents frontmatter field table documents `permissionMode`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the agent-definition contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a agent-definition section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/sub-agents is mirrored into a 6767-h §-anchored surface."
+    },
+    "agent-definition.skills": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic agent-definition surface (https://code.claude.com/docs/en/sub-agents); the sub-agents frontmatter field table documents `skills`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the agent-definition contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a agent-definition section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/sub-agents is mirrored into a 6767-h §-anchored surface."
+    },
+    "agent-definition.tags": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "tracking-metadata",
+      "rationale": "IS-only required tracking field (agent-definition v2 is-overlay) with ZERO upstream provenance — not in the sub-agents frontmatter nor any Anthropic surface. Pure IS invention; convergence unlikely. No 6767-h anchor.",
+      "upstream_convergence_trigger": "code.claude.com/docs/en/sub-agents introduces a top-level `tags` array (then move it to upstream-base)."
+    },
+    "agent-definition.tools": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic agent-definition surface (https://code.claude.com/docs/en/sub-agents); the sub-agents frontmatter field table documents `tools`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the agent-definition contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a agent-definition section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/sub-agents is mirrored into a 6767-h §-anchored surface."
+    },
+    "agent-definition.version": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "tracking-metadata",
+      "rationale": "IS-only required tracking field (agent-definition v2 is-overlay), NARROWED to strict SemVer 2.0.0. NOT a sub-agents frontmatter field; mirrors the version tracking field every IS authoring contract carries. No 6767-h anchor.",
+      "upstream_convergence_trigger": "code.claude.com/docs/en/sub-agents adds a top-level required `version` (then move the required-membership and/or pattern to upstream-base)."
+    },
+    "mcp-config.args": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic mcp-config surface (https://code.claude.com/docs/en/mcp); the `.mcp.json` standardized format / transport surface documents `args`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the mcp-config contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a mcp-config section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/mcp is mirrored into a 6767-h §-anchored surface."
+    },
+    "mcp-config.command": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic mcp-config surface (https://code.claude.com/docs/en/mcp); the `.mcp.json` standardized format / transport surface documents `command`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the mcp-config contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a mcp-config section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/mcp is mirrored into a 6767-h §-anchored surface."
+    },
+    "mcp-config.description": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "tracking-metadata",
+      "rationale": "IS-only required tracking field (mcp-config v2 is-overlay): the `.mcp.json` server entry has no `description` key. The IS marketplace tier requires every published artifact to describe itself (capped by the universal disclosureMarkers fold). No 6767-h anchor.",
+      "upstream_convergence_trigger": "code.claude.com/docs/en/mcp adds a required server `description` (then move the required-membership to upstream-base)."
+    },
+    "mcp-config.enabled": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "operational",
+      "rationale": "IS-only required operational boolean (mcp-config v2 is-overlay): whether the server is active (a real boolean, not the string \"true\"). The nearest upstream analog is Claude Code marketplace `defaultEnabled`. No 6767-h anchor.",
+      "upstream_convergence_trigger": "the per-server entry gains a required boolean enablement field upstream (then move the required-membership to upstream-base)."
+    },
+    "mcp-config.env": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic mcp-config surface (https://code.claude.com/docs/en/mcp); the `.mcp.json` standardized format / transport surface documents `env`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the mcp-config contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a mcp-config section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/mcp is mirrored into a 6767-h §-anchored surface."
+    },
+    "mcp-config.metadata": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "kernel-extension",
+      "rationale": "IS-only kernel extension object (DR-062 Class 3 prose relocation): generic vendor-namespaced `metadata`, ZERO upstream provenance. No 6767-h anchor by design.",
+      "upstream_convergence_trigger": "code.claude.com/docs/en/mcp documents a top-level `metadata` field for the per-server entry, OR the 6767-h master spec adds an mcp-config section."
+    },
+    "mcp-config.name": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic mcp-config surface (https://code.claude.com/docs/en/mcp); the `.mcp.json` standardized format keys the server by name in the mcpServers map (the contract lifts it to a `name` field). The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the mcp-config contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a mcp-config section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/mcp is mirrored into a 6767-h §-anchored surface."
+    },
+    "mcp-config.type": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic mcp-config surface (https://code.claude.com/docs/en/mcp); the `.mcp.json` standardized format / transport surface documents `type`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the mcp-config contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a mcp-config section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/mcp is mirrored into a 6767-h §-anchored surface."
+    },
+    "mcp-config.url": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic mcp-config surface (https://code.claude.com/docs/en/mcp); the `.mcp.json` standardized format / transport surface documents `url`. The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the mcp-config contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a mcp-config section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/mcp is mirrored into a 6767-h §-anchored surface."
+    },
+    "mcp-config.version": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "tracking-metadata",
+      "rationale": "IS-only required tracking field (mcp-config v2 is-overlay), NARROWED to strict SemVer 2.0.0: the `.mcp.json` entry carries no version. Mirrors the version tracking field every IS authoring contract carries. No 6767-h anchor.",
+      "upstream_convergence_trigger": "code.claude.com/docs/en/mcp adds a required server `version` (then move the required-membership and/or pattern to upstream-base)."
+    },
+    "hook-config.hooks": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "documented-upstream-no-6767h-section",
+      "rationale": "Documented upstream at the Anthropic hook-config surface (https://code.claude.com/docs/en/hooks); the hooks reference documents the top-level `hooks` object (the 3-level event -> matcher-group -> handler nesting). The 6767-h master spec scopes only plugin-manifest, skill, and marketplace contracts, so it carries NO 6767-h prose anchor for the hook-config contract. Classified is-only-extension to satisfy the prose-anchor gate (anthropic-spec-derived requires a resolving 6767-h section); the upstream provenance is recorded here in the rationale rather than dropped.",
+      "upstream_convergence_trigger": "the 6767-h master spec adds a hook-config section covering this field (then re-class as anthropic-spec-derived and cite that section), OR https://code.claude.com/docs/en/hooks is mirrored into a 6767-h §-anchored surface."
+    },
+    "hook-config.metadata": {
+      "trace_kind": "is-only-extension",
+      "6767h_section": null,
+      "category": "kernel-extension",
+      "rationale": "IS-only kernel extension object (DR-062 Class 3 relocation, 060 #4): generic vendor-namespaced `metadata`, ZERO upstream provenance. No 6767-h anchor by design.",
+      "upstream_convergence_trigger": "code.claude.com/docs/en/hooks documents a top-level `metadata` field for the hooks document, OR the 6767-h master spec adds a hook-config section."
     }
   }
 }

@@ -17,11 +17,13 @@
  *      map carries an entry for a field the composed schema does not declare
  *      (a stale row — bidirectional completeness).
  *
- * The CONTRACTS registry is the extension seam: skill-frontmatter is the walking
- * skeleton (populated here); adding plugin-manifest / agent-definition /
- * mcp-config / hook-config / marketplace-catalog later is MECHANICAL — append a
- * registry row (the layer files already exist) and populate its coverage-map
- * rows. The completeness check is identical per contract.
+ * The CONTRACTS registry is the extension seam: skill-frontmatter was the walking
+ * skeleton; [2t2p] extended the registry to ALL SIX authoring contracts
+ * (plugin-manifest / agent-definition / mcp-config / hook-config /
+ * marketplace-catalog) — each row names the v2 composed-schema layers whose
+ * top-level `properties` union is the contract's field set, and each contract's
+ * `<contract>.<field>` rows are populated in the coverage map. The completeness
+ * check is identical per contract.
  *
  * Deterministic, offline, no LLM. Scripts do not cross-import (mirrors
  * check-prose-anchors.ts).
@@ -50,9 +52,8 @@ export const COVERAGE_MAP_PATH = 'schemas/authoring/v1/6767h-coverage-map.json';
 /**
  * The authoring-contract registry. Each entry names the contract and the
  * composed-schema LAYER files whose `properties` keys form the field set.
- * skill-frontmatter is the only POPULATED contract (the walking skeleton); the
- * other five are the explicitly-scoped remainder. To add one: append a row here
- * AND populate its `<contract>.<field>` rows in the coverage map.
+ * [2t2p] All six authoring contracts are registered + populated. To add another:
+ * append a row here AND populate its `<contract>.<field>` rows in the coverage map.
  */
 export interface ContractDef {
   readonly contract: string;
@@ -66,6 +67,44 @@ export const CONTRACTS: readonly ContractDef[] = [
     layers: [
       'schemas/authoring/v1/upstream-base/skill-frontmatter.v1.json',
       'schemas/authoring/v1/is-overlay/skill-frontmatter.v1.json',
+    ],
+  },
+  // [2t2p] The remaining five authoring contracts. Their composed field set is
+  // the v2 layers' top-level `properties` union (the v2 bases are the captured
+  // upstream projections per DR-062; the v1 authoring family is byte-frozen).
+  {
+    contract: 'plugin-manifest',
+    layers: [
+      'schemas/authoring/v2/upstream-base/plugin-manifest.v2.json',
+      'schemas/authoring/v2/is-overlay/plugin-manifest.v2.json',
+    ],
+  },
+  {
+    contract: 'agent-definition',
+    layers: [
+      'schemas/authoring/v2/upstream-base/agent-definition.v2.json',
+      'schemas/authoring/v2/is-overlay/agent-definition.v2.json',
+    ],
+  },
+  {
+    contract: 'mcp-config',
+    layers: [
+      'schemas/authoring/v2/upstream-base/mcp-config.v2.json',
+      'schemas/authoring/v2/is-overlay/mcp-config.v2.json',
+    ],
+  },
+  {
+    contract: 'hook-config',
+    layers: [
+      'schemas/authoring/v2/upstream-base/hook-config.v2.json',
+      'schemas/authoring/v2/is-overlay/hook-config.v2.json',
+    ],
+  },
+  {
+    contract: 'marketplace-catalog',
+    layers: [
+      'schemas/authoring/v2/upstream-base/marketplace-catalog.v2.json',
+      'schemas/authoring/v2/is-overlay/marketplace-catalog.v2.json',
     ],
   },
 ];
