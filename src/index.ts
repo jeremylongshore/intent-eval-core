@@ -19,5 +19,6 @@
 
 export * from './primitives.js';
 export * from './state-machines/types.js';
+export * from './state-machines/semantics.js';
 export * from './entities/index.js';
 export * from './predicates/index.js';

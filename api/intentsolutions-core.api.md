@@ -25,7 +25,25 @@ export interface ActualResourceUsage {
 export type AdvisorySeverity = 'info' | 'warn' | 'error';
 
 // @public
+export function ancestorChain(edges: readonly LineageEdge[], id: Uuidv7): readonly Uuidv7[] | null;
+
+// @public
+export function asEventId(value: string): EventId | null;
+
+// @public
 export type AssertionExpression = unknown;
+
+// @public
+export function assertTransition<S extends string>(map: TransitionMap<S>, from: S, to: S): void;
+
+// @public
+export function asSha256(value: string): Sha256 | null;
+
+// @public
+export function asSha256Prefixed(value: string): Sha256Prefixed | null;
+
+// @public
+export function asUuidv7(value: string): Uuidv7 | null;
 
 // @public
 export function canTransition<S extends string>(map: TransitionMap<S>, from: S, to: S): boolean;
@@ -217,6 +235,16 @@ export type EvalSpecState = 'draft' | 'published' | 'deprecated';
 export const evalSpecTransitions: TransitionMap<EvalSpecState>;
 
 // @public
+export const EVENT_ID_CONTRACT: {
+    readonly prefix: "evt-";
+    readonly algorithm: "sha256";
+    readonly pattern: RegExp;
+};
+
+// @public
+export type EventId = Brand<string, 'EventId'>;
+
+// @public
 export interface EvidenceBundle {
     readonly created_at: Rfc3339;
     readonly eval_run_id: Uuidv7;
@@ -328,6 +356,17 @@ export interface GateResultV1Statement {
 export type GateResultV1Uri = typeof GATE_RESULT_V1_URI;
 
 // @public
+export class IllegalTransitionError<S extends string> extends Error {
+    constructor(from: S, to: S, allowed: readonly S[]);
+    // (undocumented)
+    readonly allowed: readonly S[];
+    // (undocumented)
+    readonly from: S;
+    // (undocumented)
+    readonly to: S;
+}
+
+// @public
 export interface InTotoSubject {
     // (undocumented)
     readonly digest: {
@@ -336,6 +375,21 @@ export interface InTotoSubject {
     // (undocumented)
     readonly name: string;
 }
+
+// @public
+export function isEventId(value: string): value is EventId;
+
+// @public
+export function isSha256(value: string): value is Sha256;
+
+// @public
+export function isSha256Prefixed(value: string): value is Sha256Prefixed;
+
+// @public
+export function isTerminal<S extends string>(map: TransitionMap<S>, state: S): boolean;
+
+// @public
+export function isUuidv7(value: string): value is Uuidv7;
 
 // @public
 export function isValidSubjectName(name: string): boolean;
@@ -376,6 +430,18 @@ export type KebabSlug = Brand<string, 'KebabSlug'>;
 
 // @public (undocumented)
 export type KnownPredicateUri = (typeof PREDICATE_URIS)[keyof typeof PREDICATE_URIS];
+
+// @public
+export interface LineageDefect {
+    readonly id: Uuidv7;
+    readonly kind: 'missing-parent' | 'self-parent' | 'cycle';
+}
+
+// @public
+export interface LineageEdge {
+    readonly id: Uuidv7;
+    readonly parentId: Uuidv7 | null;
+}
 
 // @public
 export type MatcherExpectedBehavior = {
@@ -435,6 +501,13 @@ export interface MatcherOutcomeRow {
 }
 
 // @public
+export interface MermaidOptions {
+    readonly initial?: string;
+    readonly markTerminal?: boolean;
+    readonly title?: string;
+}
+
+// @public
 export type MicroUsd = Brand<number, 'MicroUsd'>;
 
 // @public
@@ -456,6 +529,9 @@ export const PREDICATE_URIS: {
     readonly COST_ATTRIBUTION_V1: "https://evals.intentsolutions.io/cost-attribution/v1";
     readonly RUNTIME_RECEIPT_V1: "https://evals.intentsolutions.io/runtime-receipt/v1";
 };
+
+// @public
+export function reachableStates<S extends string>(map: TransitionMap<S>, from: S): readonly S[];
 
 // @public
 export type RegressionOutcomeSummary = Readonly<Partial<Record<MmClass, MatcherOutcomeRow>>>;
@@ -639,6 +715,12 @@ export const sessionTraceTransitions: TransitionMap<SessionTraceState>;
 export type Sha256 = Brand<string, 'Sha256'>;
 
 // @public
+export const SHA256_PATTERN: RegExp;
+
+// @public
+export const SHA256_PREFIXED_PATTERN: RegExp;
+
+// @public
 export type Sha256Prefixed = Brand<string, 'Sha256Prefixed'>;
 
 // @public
@@ -674,6 +756,12 @@ export const SUBJECT_NAME_REGEX: RegExp;
 
 // @public
 export type SubjectSide = 'client' | 'server' | 'ci' | 'sandbox' | 'local';
+
+// @public
+export function terminalStates<S extends string>(map: TransitionMap<S>): readonly S[];
+
+// @public
+export function toMermaid<S extends string>(map: TransitionMap<S>, opts?: MermaidOptions): string;
 
 // @public
 export interface ToolInvocation {
@@ -719,7 +807,26 @@ export const toolInvocationTransitions: TransitionMap<ToolInvocationState>;
 export type TransitionMap<S extends string> = Readonly<Record<S, readonly S[]>>;
 
 // @public
+export interface TransitionMapDefect<S extends string> {
+    readonly kind: 'unknown-target' | 'self-loop' | 'duplicate-target';
+    readonly state: S;
+    readonly target: S;
+}
+
+// @public
+export function unreachableStates<S extends string>(map: TransitionMap<S>, from: S): readonly S[];
+
+// @public
 export type Uuidv7 = Brand<string, 'Uuidv7'>;
+
+// @public
+export const UUIDV7_PATTERN: RegExp;
+
+// @public
+export function validateLineage(edges: readonly LineageEdge[]): readonly LineageDefect[];
+
+// @public
+export function validateTransitionMap<S extends string>(map: TransitionMap<S>): readonly TransitionMapDefect<S>[];
 
 // @public
 export type VerdictSource = 'deterministic' | 'llm_with_seed' | 'llm_no_seed' | 'hybrid';
