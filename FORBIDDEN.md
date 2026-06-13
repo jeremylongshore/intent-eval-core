@@ -237,6 +237,9 @@ src/validators/
 src/validators/v1/
 src/validators/v1/_generated/
 src/state-machines/
+src/otel/
+src/otel/v1/
+src/otel/v1/__tests__/
 src/__tests__/
 ```
 
@@ -248,6 +251,7 @@ Annotations:
 - `src/validators/v1/` — Zod runtime parsers (opt-in subpath)
 - `src/validators/v1/_generated/` — codegen reference output (not exported)
 - `src/state-machines/` — transition-map type + canTransition helper
+- `src/otel/v1/` — OTel semantic-convention attribute-name constants (opt-in subpath `@intentsolutions/core/otel/v1`); pins Blueprint B § 4.3 runtime-event attribute names (Gregg finding #2). Pure literals — no npm imports, no other-`src/` imports.
 - `src/__tests__/` — test-only
 
 Any path outside the allowed list triggers a BLOCK. Adding a new allowed-path requires PR review + update to this file + matching update to `.dependency-cruiser.cjs`.

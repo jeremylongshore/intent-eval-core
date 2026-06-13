@@ -1,0 +1,181 @@
+# OpenTelemetry semantic conventions — Intent Eval Platform runtime events.
+#
+# $comment: |
+#   Canonical naming authority for the OTel attribute names carried by the
+#   runtime events enumerated in Blueprint B (intent-eval-lab
+#   000-docs/012-AT-ARCH-platform-runtime-blueprint.md) § 4.3 "Observability".
+#   Blueprint B § 4.3 locks the event CATEGORIES (runtime.*, replay.*, bundle.*,
+#   gate.*, judge.*, agent.*, cost.*, sandbox.*, taxonomy.*) and names the
+#   discrete emitting events (runtime.dedup, replay.verdict, replay.input.drift,
+#   bundle.emission.refused) but DEFERS the per-attribute names. Until the lab's
+#   020-AT-ARCH-runtime-event-taxonomy doc (iel-E12, forward-ref from § 4.3)
+#   lands, the attribute names were UNPINNED — and per Gregg finding #2 (the
+#   most-costly-to-recover-from divergence in the cross-emitter audit) the five
+#   emitters (j-rig, audit-harness, intent-rollout-gate, lab tests, the kernel)
+#   WILL drift on key spelling (eval_run_id vs evalRunId vs run.id) the moment
+#   two of them emit the same event independently. This file is the kernel's
+#   pin: ONE canonical form per attribute, chosen as OTel-idiomatic dotted
+#   lowercase (eval.run_id, bundle.predicate_uri, gate.decision). The named
+#   TypeScript constants exported at @intentsolutions/core/otel/v1 derive from
+#   THIS file (drift-guarded by src/otel/v1/__tests__). Blueprint B § 7.2 binds
+#   the PAIRED 'must emit' normative list on the lab side; that list cites THIS
+#   yaml as the source of attribute spelling. § 7.2 also forbids hosting an OTel
+#   attribute namespace under labs.intentsolutions.io — these keys are bare
+#   dotted-lowercase, carry no domain, and are namespace-clean by construction.
+#
+# Format follows the OpenTelemetry semantic-conventions model (groups of typed
+# attributes with a requirement level), expressed as flat YAML so it is both
+# human-diffable and machine-checkable without a semconv toolchain dependency.
+
+schema_version: 1
+title: Intent Eval Platform — runtime OTel semantic conventions (v1)
+spec_source: intent-eval-lab/000-docs/012-AT-ARCH-platform-runtime-blueprint.md#4.3
+gregg_finding: |
+  Finding #2 (most-costly-to-recover-from): Blueprint B § 4.3 specifies OTel
+  events but leaves their attribute names unpinned; five independent emitters
+  will diverge on key spelling. Pin them in the kernel before v0.2.0 ships.
+
+# Shared attributes carried across multiple runtime events. Pinned ONCE here so
+# every event that references them spells the key identically. OTel convention:
+# dotted lowercase, snake_case leaf segments.
+shared_attributes:
+  - id: eval.run_id
+    type: string
+    requirement_level: required
+    brief: >-
+      UUIDv7 (RFC 9562) of the EvalRun the event belongs to; the idempotency
+      key (§ 3.1). Spelled eval.run_id — NOT eval_run_id / evalRunId / run.id.
+  - id: eval.session_trace_id
+    type: string
+    requirement_level: recommended
+    brief: UUIDv7 of the SessionTrace span this event hangs under (§ 4.3 lineage capture).
+  - id: trace.id
+    type: string
+    requirement_level: recommended
+    brief: >-
+      W3C Trace Context trace-id propagated from API ingress (§ 4.3). Distinct
+      from eval.run_id — one EvalRun maps to exactly one root trace.
+
+# The discrete OTel events Blueprint B § 4.3 + § 3.x enumerate by name. Each
+# event pins its full attribute set: stable snake_case-leaf dotted keys, types,
+# brief, and requirement level (required | recommended | opt_in).
+events:
+  runtime.dedup:
+    brief: >-
+      Emitted when a worker skips a duplicate EvalRun whose idempotency key is
+      already in a terminal-or-later state (Blueprint B § 3.1, line 83). The
+      idempotency key is the EvalRun UUIDv7; dedup state lives in the Redis
+      dedup cache with a PostgreSQL cold-path fallback.
+    category: runtime
+    attributes:
+      - id: eval.run_id
+        ref: shared
+        requirement_level: required
+      - id: runtime.dedup.cache_hit
+        type: boolean
+        requirement_level: required
+        brief: >-
+          true if the duplicate was caught in the Redis dedup cache (hot path);
+          false if caught only by the PostgreSQL cold-path fallback.
+      - id: runtime.dedup.terminal_state
+        type: string
+        requirement_level: required
+        brief: >-
+          The already-reached state that triggered the skip (e.g. "judged",
+          "archived_success"). Lets a dashboard distinguish a benign re-queue
+          from a state-machine anomaly.
+
+  replay.verdict:
+    brief: >-
+      Emitted by replay verification (Blueprint B § 3.2, line 367) after
+      re-executing an EvalRun against frozen inputs and diffing outputs at the
+      JudgeDecision + EvidenceBundle level. The verdict enum is closed.
+    category: replay
+    attributes:
+      - id: eval.run_id
+        ref: shared
+        requirement_level: required
+      - id: replay.verdict
+        type: string
+        requirement_level: required
+        brief: 'Replay outcome. Closed enum: match | semantic_match | drift | failed.'
+        enum: [match, semantic_match, drift, failed]
+      - id: replay.is_replay
+        type: boolean
+        requirement_level: required
+        brief: >-
+          Always true on a replay span (§ 4.3 replay visualization marks the
+          re-execution trace with replay.is_replay=true).
+      - id: replay.original_trace_id
+        type: string
+        requirement_level: required
+        brief: >-
+          trace.id of the ORIGINAL execution, so dashboards can render the
+          side-by-side diff (§ 4.3 replay visualization).
+      - id: replay.fidelity_level
+        type: string
+        requirement_level: recommended
+        brief: >-
+          The RF level the predicate declared for this row (RF-0..RF-4, iel-E11).
+          A gate-result/v1 row is RF-strict; an LLM-judge row is RF-best-effort.
+        enum: [RF-0, RF-1, RF-2, RF-3, RF-4]
+
+  replay.input.drift:
+    brief: >-
+      Emitted when a replay's frozen inputs (SkillSnapshot SHA, EvalSpec
+      content_hash, tokenized inputs, tool versions, environment block) no
+      longer match the original (Blueprint B § 3.2, line 365). Drift is a
+      first-class signal, NOT a silent re-interpretation.
+    category: replay
+    attributes:
+      - id: eval.run_id
+        ref: shared
+        requirement_level: required
+      - id: replay.original_trace_id
+        type: string
+        requirement_level: required
+        brief: trace.id of the original execution whose inputs were expected.
+      - id: replay.input.drifted_field
+        type: string
+        requirement_level: required
+        brief: >-
+          Which frozen input drifted. Closed enum over the five frozen-input
+          dimensions § 3.2 line 365 enumerates.
+        enum:
+          - skill_snapshot_sha
+          - eval_spec_content_hash
+          - tokenized_inputs
+          - tool_versions
+          - environment_block
+
+  bundle.emission.refused:
+    brief: >-
+      Emitted at the runtime's emission boundary when a tool tries to emit an
+      Evidence Bundle row that fails any of the four evidence contracts —
+      subject, predicate-type URI, predicate body, signature (Blueprint B § 3.3,
+      line 392). The parent EvalRun then transitions to archived_failed with
+      reason=evidence_contract_violation.
+    category: bundle
+    attributes:
+      - id: eval.run_id
+        ref: shared
+        requirement_level: required
+      - id: bundle.predicate_uri
+        type: string
+        requirement_level: required
+        brief: >-
+          The predicate-type URI the refused row carried (e.g.
+          https://evals.intentsolutions.io/gate-result/v1). Spelled
+          bundle.predicate_uri — the single pinned form for "which predicate".
+      - id: bundle.emission.refused_contract
+        type: string
+        requirement_level: required
+        brief: >-
+          Which of the four § 3.3 evidence contracts was violated. Closed enum.
+        enum: [subject, predicate_type, predicate_body, signature]
+      - id: bundle.emission.refused_reason
+        type: string
+        requirement_level: recommended
+        brief: >-
+          Human-readable reason string. The state-machine reason code is fixed
+          (evidence_contract_violation); this is the diagnostic detail.
