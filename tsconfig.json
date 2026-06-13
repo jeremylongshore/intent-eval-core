@@ -32,6 +32,14 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
 
+    // Node's `--experimental-strip-types` runtime (how every scripts/*.ts CLI is
+    // invoked) requires explicit `.ts` import extensions. check-coverage-map-prose-
+    // anchors.ts REUSES the PR #37 resolution machinery by importing it from
+    // check-prose-anchors.ts — allow the `.ts` extension so tsc accepts what the
+    // runtime mandates. Safe under noEmit; the emitting build config
+    // (tsconfig.build.json) compiles only src/** and overrides this off.
+    "allowImportingTsExtensions": true,
+
     "noEmit": true,
     "declaration": true,
     "declarationMap": true,

@@ -1,0 +1,68 @@
+name: 6767-h coverage-map gates
+
+# The three coverage-map CI gates (033-PP-PLAN-skill-refiner-sak-amendment-v7
+# § 14.2.3) over the 6767-h COVERAGE MAP
+# (schemas/authoring/v1/6767h-coverage-map.json — § 14.2.1 third value):
+#
+#   1. coverage-map-completeness — every field of every registered composed
+#      authoring schema (skill-frontmatter walking skeleton today; the other 5
+#      contracts are the scoped remainder) has a coverage-map entry; no stale
+#      entries. Missing = red.
+#   2. coverage-map prose-anchor validity — EXTENDS PR #37's prose-anchor gate:
+#      every `trace_kind: anthropic-spec-derived` entry's `6767h_section` resolves
+#      against the SAME vendored heading inventory
+#      (schemas/prose-anchors/6767-h.headings.json) #37 uses. (#37 checks $comment
+#      citations; this checks the coverage map's structured citations.)
+#   3. is-extension-rationale — every `trace_kind: is-only-extension` entry carries
+#      a non-empty `rationale` AND `upstream_convergence_trigger`, so an IS-only
+#      extension and its justification land in the same PR.
+#
+# Deterministic, offline, no LLM in the loop (mirrors § 14.16.1 stability
+# discipline). Each gate is its own npm script and is also part of `pnpm run
+# check`; this workflow runs them on PRs + pushes to main, matching the existing
+# prose-anchor-validity.yml wiring.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: # manual re-run
+
+permissions:
+  contents: read
+
+concurrency:
+  group: coverage-map-gates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: coverage-map completeness + prose-anchors + is-extension-rationale
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Coverage-map completeness gate (§ 14.2.3 #1)
+        run: pnpm run check:coverage-map
+
+      - name: Coverage-map prose-anchor validity gate (§ 14.2.3 #2, extends PR #37)
+        run: pnpm run check:coverage-map-prose-anchors
+
+      - name: IS-extension rationale gate (§ 14.2.3 #3)
+        run: pnpm run check:is-extension-rationale
