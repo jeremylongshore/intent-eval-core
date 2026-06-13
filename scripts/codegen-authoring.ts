@@ -623,6 +623,70 @@ const CONTRACTS: readonly ContractSpec[] = [
       ' * adds NO top-level required fields — the IS requiredness on this contract\n' +
       ' * lives inside the nesting the v2 base adopted.',
   },
+  {
+    // ── DR-062 projection-mirrored v2 (tier-3 reconciliation) ──
+    // marketplace-catalog is the fifth and last of the five contracts whose v2
+    // base is REGENERATED from the captured projection (intent-eval-lab
+    // specs/_vendor/upstream/marketplace-catalog/projection.json) rather than
+    // byte-copied from v1: the 4 documented top-level optionals + the
+    // documented `metadata` surface (pluginRoot + the description/version
+    // back-compat keys), all 18 documented plugin-entry optionals, and the 5
+    // documented source forms join the base (061 #2/#3/#4 C1); `plugins`
+    // carries NO minItems (the doc states no minimum — the corpus-rationalized
+    // minItems 1 relocates to the overlay, 061 #1 C3); the structural kebab
+    // name pattern + 64-char cap relocate to the overlay (prose-only upstream,
+    // 061 #5 C3) while the doc's 14 RESERVED NAMES — documented upstream —
+    // adopt into the base as a negated enum (the 061 #5 carve-out, C1). The
+    // sample-only tolerances (`commit` on github sources, `path` on url
+    // sources, the non-kebab plugin name wordpress.com) are NOT adopted
+    // (061 #6 C4 — the documented-vs-observed provenance rule). DEPTH
+    // BOUNDARY: the per-entry field shapes and the 5 source forms are enforced
+    // by the published JSON Schema (ajv); this keyword-driven codegen emits
+    // the array-of-objects nested-required check for `plugins` (entry floor
+    // [name, source]) and the top-level surface only — same posture as
+    // hook-config's nesting.
+    version: 'v2',
+    baseFileSuffix: 'v2',
+    name: 'marketplace-catalog',
+    symbol: 'MarketplaceCatalog',
+    constPrefix: 'MARKETPLACE_CATALOG',
+    fieldConstPrefix: 'MARKETPLACE',
+    contractIndex: 6,
+    headerSuffix: 'marketplace.json catalog — DR-062 projection-mirrored v2 base',
+    baseProvenance: 'code.claude.com plugin-marketplaces',
+    baseDoc:
+      ' * The DR-062 projection-mirrored v2 base (REGENERATED from the captured\n' +
+      ' * projection, spec_version unversioned-2026-06-12 — not a byte-copy of the\n' +
+      " * frozen v1 base). Required presence of upstream's standardFloor\n" +
+      ' * ([name, owner, plugins]) + type/constraint on the FULL documented\n' +
+      ' * surface: name as a bare string guarded by the documented 14-entry\n' +
+      ' * reserved-name blocklist (the 061 #5 carve-out — kebab-case is prose-only\n' +
+      ' * upstream, so the structural encoding lives in the overlay per DR-062 C3);\n' +
+      ' * owner as an object with a required inner name; plugins as an array of\n' +
+      ' * entry objects each requiring [name, source] with NO minItems (the doc\n' +
+      ' * states no minimum); the documented top-level optionals $schema,\n' +
+      ' * description, version, allowCrossMarketplaceDependenciesOn; and the\n' +
+      ' * DOCUMENTED metadata surface (metadata.pluginRoot + the\n' +
+      ' * description/version back-compat keys) — unlike the sibling contracts,\n' +
+      " * this contract's metadata is upstream-documented, so it lives in the\n" +
+      ' * BASE. The 18 documented entry optionals + the 5 documented source forms\n' +
+      ' * (./-prefixed relative-path string; github/url/git-subdir/npm object\n' +
+      ' * types under the `source` discriminator) are enforced by the published\n' +
+      ' * JSON Schema (ajv); this generated layer checks the entry floor + the\n' +
+      ' * top-level surface only (depth boundary — the hook-config posture).',
+    overlayDoc:
+      ' * The IS-only v2 delta: two upstream-optional fields promoted to\n' +
+      ' * IS-required (version — NARROWED to strict SemVer 2.0.0 — and\n' +
+      ' * description) + three net-new IS-required fields (license, homepage URI,\n' +
+      ' * keywords) + the RELOCATED plugins minItems 1 (DR-062 C3, 061 #1 — the\n' +
+      ' * corpus-rationalized minimum the doc does not state) + the RELOCATED\n' +
+      ' * structural name encoding (kebab pattern + 64-char cap; DR-062 C3,\n' +
+      ' * 061 #5 — prose-only upstream). NO metadata entry here: the documented\n' +
+      ' * metadata surface lives in the v2 base (the 061 #2 convergence condition\n' +
+      ' * is already satisfied upstream). A field whose type is already enforced\n' +
+      ' * by the base is not re-typed here — its presence is the required check —\n' +
+      ' * to keep messages single-sourced.',
+  },
 ];
 
 // ─── Schema IO ───────────────────────────────────────────────────────────────
@@ -1016,16 +1080,51 @@ function baseFieldCheck(field: string, schema: FieldSchema, fieldConstPrefix: st
     return lines;
   }
 
+  // Bare array with a minItems floor and NO item shape (DR-062 relocated
+  // narrowing: marketplace-catalog overlay `plugins` minItems 1 — 061 #1, the
+  // corpus-rationalized minimum relocated from the v1 base; the v2 base carries
+  // the full documented item shape, the overlay re-states only the array form +
+  // the floor). Feature-gated: no v1 schema declares a bare minItems array, so
+  // all other generated outputs are byte-identical.
+  if (schema.type === 'array' && schema.items === undefined && (schema.minItems ?? 0) > 0) {
+    lines.push(
+      `  if ('${field}' in artifact) {`,
+      `    const ${field} = ${access};`,
+      `    if (!Array.isArray(${field})) {`,
+      `      issues.push({ message: '${field} must be an array', path: ['${field}'] });`,
+      `    } else if (${field}.length < ${schema.minItems}) {`,
+      `      issues.push({ message: '${field} must not be empty', path: ['${field}'] });`,
+      `    }`,
+      `  }`,
+    );
+    return lines;
+  }
+
   // Generic array — NO documented item shape (DR-062 projection-mirrored v2:
   // plugin-manifest `channels`/`dependencies`, whose projection type is the
   // bare `array`). The base mirrors the projection: Array.isArray only —
-  // inventing an item type would exceed the documented surface.
+  // inventing an item type would exceed the documented surface. Prettier-aware:
+  // a long field name (e.g. marketplace-catalog
+  // `allowCrossMarketplaceDependenciesOn`) pushes the single-line forms past
+  // the 100-char print width, so emit the wrapped forms prettier produces.
   if (schema.type === 'array' && schema.items === undefined) {
-    lines.push(
-      `  if ('${field}' in artifact && !Array.isArray(${access})) {`,
-      `    issues.push({ message: '${field} must be an array', path: ['${field}'] });`,
-      `  }`,
-    );
+    const single = `  if ('${field}' in artifact && !Array.isArray(${access})) {`;
+    const pushSingle = `    issues.push({ message: '${field} must be an array', path: ['${field}'] });`;
+    if (single.length <= 100 && pushSingle.length <= 100) {
+      lines.push(single, pushSingle, `  }`);
+    } else {
+      lines.push(
+        `  if (`,
+        `    '${field}' in artifact &&`,
+        `    !Array.isArray(${access})`,
+        `  ) {`,
+        `    issues.push({`,
+        `      message: '${field} must be an array',`,
+        `      path: ['${field}'],`,
+        `    });`,
+        `  }`,
+      );
+    }
     return lines;
   }
 
@@ -1110,6 +1209,37 @@ function baseFieldCheck(field: string, schema: FieldSchema, fieldConstPrefix: st
     lines.push(
       `  if ('${field}' in artifact && !isStringArray(${access})) {`,
       `    issues.push({ message: '${field} must be an array of strings', path: ['${field}'] });`,
+      `  }`,
+    );
+    return lines;
+  }
+
+  // Bare string with an upstream-documented RESERVED-NAME blocklist — a negated
+  // enum (`not.enum`) on a string field (DR-062 C1, the 061 #5 carve-out:
+  // marketplace-catalog's 14 reserved names are DOCUMENTED upstream, so the
+  // blocklist adopts into the v2 BASE while the prose-only kebab encoding
+  // relocates to the overlay). Feature-gated to exactly the bare-string +
+  // not.enum shape; no v1 schema declares one, so all other generated outputs
+  // are byte-identical.
+  if (
+    schema.type === 'string' &&
+    schema.not?.enum !== undefined &&
+    schema.pattern === undefined &&
+    schema.maxLength === undefined &&
+    schema.enum === undefined
+  ) {
+    const reservedConst = constName(fieldConstPrefix, field, 'RESERVED');
+    lines.push(
+      `  if ('${field}' in artifact) {`,
+      `    const ${field} = artifact['${field}'];`,
+      `    if (typeof ${field} !== 'string') {`,
+      `      issues.push({ message: '${field} must be a string', path: ['${field}'] });`,
+      `    } else if ((${reservedConst} as readonly string[]).includes(${field})) {`,
+      `      issues.push({`,
+      `        message: '${field} must not be an upstream-reserved marketplace name',`,
+      `        path: ['${field}'],`,
+      `      });`,
+      `    }`,
       `  }`,
     );
     return lines;
@@ -1791,6 +1921,17 @@ function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSc
       constLines.push(
         `/** ${prov} ${field} numeric floor (upstream-base). */`,
         `export const ${constName(fieldConstPrefix, field, 'MIN')} = ${min};`,
+      );
+    } else if (schema.type === 'string' && schema.not?.enum !== undefined) {
+      // The upstream-documented reserved-name blocklist (DR-062 C1, 061 #5
+      // carve-out — a negated enum in the BASE). One element per line (the
+      // blocklist never fits the 100-char print width).
+      const name = constName(fieldConstPrefix, field, 'RESERVED');
+      constLines.push(
+        `/** ${prov} ${field} reserved-name blocklist (upstream-base — documented, not.enum). */`,
+        `export const ${name} = [`,
+        ...schema.not.enum.map((v) => `  '${v}',`),
+        `] as const;`,
       );
     }
   }

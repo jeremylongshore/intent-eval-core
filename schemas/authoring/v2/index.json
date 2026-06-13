@@ -136,6 +136,31 @@
       },
       "baseRequired": ["hooks"],
       "overlayRequired": []
+    },
+    "marketplace-catalog": {
+      "path": "marketplace-catalog.schema.json",
+      "title": "marketplace-catalog — IS marketplace-tier v2 contract (projection-mirrored composition)",
+      "kind": "authoring-contract",
+      "contractIndex": 6,
+      "lifecycle": "SHIPPED-INTERNAL",
+      "spec": "DR-062 (marketplace-catalog rows: C1 = 061 #2/#3/#4 + the #5 reserved-names carve-out, C2 = none, C3 = 061 #1/#5, C4 = 061 #6 not adopted) / DR-049 structure / spec-projection/v1 spec_version unversioned-2026-06-12",
+      "supersedes": "authoring/v1 marketplace-catalog composition (v1 frozen at 0.4.1; v1 stays the PUBLISHED contract with the narrower 4-field base and minItems 1)",
+      "v2Deltas": [
+        "base: the 4 documented top-level optionals adopted ($schema, allowCrossMarketplaceDependenciesOn, description, version) + the DOCUMENTED metadata surface (metadata.pluginRoot + the description/version back-compat keys) — unlike the sibling contracts, metadata is upstream-documented here, so it lives in the base (061 #2, C1 adopt)",
+        "base: all 18 documented plugin-entry optionals adopted with the projection's types (author object; category/description/displayName/homepage/license/repository/version strings; keywords/tags bare arrays; defaultEnabled/strict booleans; commands/agents/skills string|array; hooks/mcpServers/lspServers string|object) (061 #3, C1 adopt)",
+        "base: the 5 documented source forms adopted — ./-prefixed relative-path string + github/url/git-subdir/npm object types with per-type required/optional sets under the `source` discriminator; plugins carries NO minItems, matching the doc (061 #4, C1 adopt)",
+        "base: the doc's 14 reserved marketplace names adopted as a negated enum on `name` (the 061 #5 carve-out — documented upstream, so it belongs in the base) (C1 adopt)",
+        "overlay: the corpus-rationalized plugins minItems 1 relocated from the base with a convergence trigger (061 #1, C3 — the doc states no minimum)",
+        "overlay: the structural kebab name pattern + 64-char cap relocated from the base (061 #5, C3 — upstream documents kebab-case in prose only)",
+        "not adopted: `commit` on github sources, `path` on url sources, the non-kebab plugin name wordpress.com in the official catalog (061 #6, C4 — documented-vs-observed provenance rule)"
+      ],
+      "layers": {
+        "upstreamBase": "upstream-base/marketplace-catalog.v2.json",
+        "universalFolds": "marketplace-tier.schema.json#/$defs/universalFolds",
+        "isOverlay": "is-overlay/marketplace-catalog.v2.json"
+      },
+      "baseRequired": ["name", "owner", "plugins"],
+      "overlayRequired": ["version", "description", "license", "homepage", "keywords"]
     }
   }
 }

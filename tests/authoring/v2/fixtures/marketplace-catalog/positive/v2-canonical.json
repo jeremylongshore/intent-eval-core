@@ -1,0 +1,26 @@
+{
+  "name": "example-marketplace",
+  "owner": { "name": "Example Maintainers", "email": "maintainers@example.com" },
+  "plugins": [
+    {
+      "name": "alpha-tools",
+      "source": "./plugins/alpha-tools",
+      "description": "Alpha tools plugin.",
+      "version": "1.2.3",
+      "strict": false
+    },
+    {
+      "name": "beta-bridge",
+      "source": { "source": "github", "repo": "example/beta-bridge", "ref": "main" },
+      "displayName": "Beta Bridge",
+      "category": "productivity",
+      "keywords": ["bridge"]
+    }
+  ],
+  "version": "1.0.0",
+  "description": "A valid v2 marketplace catalog: relative-path and github object sources.",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/example/marketplace",
+  "keywords": ["plugins", "marketplace"],
+  "metadata": { "pluginRoot": "./plugins" }
+}

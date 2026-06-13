@@ -137,3 +137,28 @@ export {
   HookConfigSchema as HookConfigV2Schema,
   type HookConfig as HookConfigV2,
 } from './hook-config.js';
+
+// Contract #6 — marketplace-catalog (DR-062 projection-mirrored v2 base;
+// contract-scoped public surface). The v2 base mirrors the captured projection
+// (the documented top-level optionals incl. the upstream-documented `metadata`
+// surface; all 18 documented plugin-entry optionals; the 5 documented source
+// forms under the `source` discriminator; NO minItems on plugins — the doc
+// states no minimum; `name` is a bare string guarded by the documented 14-name
+// reserved blocklist, the 061 #5 carve-out). The relocated IS narrowings
+// (plugins minItems 1, kebab name pattern + 64-char cap) bind via the overlay +
+// composition — the per-entry depth (entry field types, source forms) is
+// enforced by the published JSON Schema (ajv); the generated Zod layer checks
+// the entry floor + the top-level surface (depth boundary documented in the
+// generated module). The sample-only tolerances (`commit` on github sources,
+// `path` on url sources, wordpress.com) are NOT adopted (DR-062 C4, 061 #6).
+export {
+  MARKETPLACE_CATALOG_BASE_REQUIRED as MARKETPLACE_CATALOG_V2_BASE_REQUIRED,
+  MARKETPLACE_CATALOG_OVERLAY_REQUIRED as MARKETPLACE_CATALOG_V2_OVERLAY_REQUIRED,
+  MARKETPLACE_CATALOG_REQUIRED_FIELDS as MARKETPLACE_CATALOG_V2_REQUIRED_FIELDS,
+  MARKETPLACE_NAME_PATTERN as MARKETPLACE_NAME_PATTERN_V2,
+  MARKETPLACE_NAME_MAX as MARKETPLACE_NAME_MAX_V2,
+  MARKETPLACE_NAME_RESERVED as MARKETPLACE_NAME_RESERVED_V2,
+  marketplaceCatalogIssues as marketplaceCatalogV2Issues,
+  MarketplaceCatalogSchema as MarketplaceCatalogV2Schema,
+  type MarketplaceCatalog as MarketplaceCatalogV2,
+} from './marketplace-catalog.js';
