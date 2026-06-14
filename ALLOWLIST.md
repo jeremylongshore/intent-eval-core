@@ -59,6 +59,7 @@ Files allowed at repo root (anything not in this list triggers a BLOCK on the Ax
 .prettierignore
 .markdownlint-cli2.jsonc
 .prettierrc.json
+.typos.toml
 .vale
 .vale.ini
 AGENTS.md
@@ -94,6 +95,7 @@ Annotations (what each is):
 - `.npmrc` — (optional) npm registry config; MUST NOT contain tokens
 - `.nvmrc` — Node version pin
 - `.prettierignore` / `.prettierrc.json` — Prettier
+- `.typos.toml` — crate-ci/typos config (IEP domain-term ignore-list) consumed by the advisory `typos.yml` lane
 - `AGENTS.md` — vendor-neutral agent contract (cross-CLI)
 - `ALLOWLIST.md` — this file
 - `CHANGELOG.md` — Keep a Changelog

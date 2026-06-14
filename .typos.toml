@@ -1,0 +1,58 @@
+# typos (crate-ci/typos) configuration for intent-eval-core.
+#
+# Advisory spell-check lane (.github/workflows/typos.yml). This file holds the
+# Intent Eval Platform (IEP) domain vocabulary that typos must NOT flag as
+# misspellings — repo/family prefixes, tooling names, and crypto/supply-chain
+# terms that are correct-as-written. Add new legitimate terms here rather than
+# rewording prose to satisfy the checker.
+
+[files]
+# Generated, vendored, and lockfile surfaces are not authored prose — exclude
+# them so the advisory lane only reports on human-written content.
+extend-exclude = [
+  "node_modules/",
+  "dist/",
+  "coverage/",
+  ".beads/",
+  "*.lock",
+  "pnpm-lock.yaml",
+  "src/validators/v1/_generated/",
+  "api/*.api.md",
+]
+
+[default.extend-words]
+# IEP repo + bead-prefix family. These are deliberate identifiers, not typos.
+iep = "iep"
+iec = "iec"
+iel = "iel"
+iah = "iah"
+iar = "iar"
+iaj = "iaj"
+isedc = "isedc"
+
+# Supply-chain / crypto / tooling vocabulary.
+sops = "sops"
+sigstore = "sigstore"
+rekor = "rekor"
+zod = "zod"
+otel = "otel"
+ot = "ot"
+
+# Common engineering abbreviations typos sometimes over-corrects.
+deps = "deps"
+crate = "crate"
+structs = "structs"
+ser = "ser"
+
+# Tokens the checker over-splits out of correct-as-written compounds in this
+# repo's prose, not genuine misspellings:
+#   - "mis"          — hyphenated prefix in "mis-generate" / "mis-resolve"
+#   - "SHOUL"/"COUL" — RFC-2119 plurals "SHOULDs" / "COULDs" in RTM.md / TEST_AUDIT.md
+mis = "mis"
+SHOUL = "SHOUL"
+COUL = "COUL"
+
+# "requireds" — the kernel's domain plural for JSON-Schema `required` arrays
+# ("per-type conditional requireds", "per-type requireds"); correct-as-written
+# across the authoring schemas + codegen, not a misspelling of "required".
+requireds = "requireds"
