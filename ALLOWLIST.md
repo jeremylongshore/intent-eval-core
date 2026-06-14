@@ -77,6 +77,7 @@ TEST_AUDIT.md
 api-extractor.json
 codecov.yml
 eslint.config.js
+lefthook.yml
 lychee.toml
 package.json
 pnpm-lock.yaml
@@ -108,6 +109,8 @@ Annotations (what each is):
 - `README.md` — package overview + install
 - `SECURITY.md` — vulnerability-disclosure policy + threat model
 - `eslint.config.js` — ESLint flat config
+- `lefthook.yml` — opt-in fast local git-hooks config (mirrors the husky pre-commit staged-only subset: escape-scan + boundaries + lint-staged). Advisory; husky remains the default installer (last-installer-wins on `.git/hooks`).
+- `lychee.toml` — lychee link-checker config (doc-quality lane)
 - `package.json` / `pnpm-lock.yaml` — npm manifest + lockfile
 - `tsconfig.json` / `tsconfig.build.json` — TypeScript configs
 - `vitest.config.ts` — vitest config

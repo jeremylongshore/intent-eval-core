@@ -1,0 +1,55 @@
+# lefthook — fast pre-commit gates for @intentsolutions/core (mj38).
+#
+# Mirrors the cheap, staged-only subset of the kernel's CI gates so obvious
+# problems are caught locally before a push, without re-running the full CI
+# matrix. The authoritative gates remain CI — boundary-check.yml, ci.yml,
+# lint.yml, coverage-map-gates.yml, et al. This is a fast local pre-filter,
+# intentionally non-exhaustive and advisory.
+#
+# OPT-IN. The default git-hook installer in this repo is husky (package.json
+# `"prepare": "husky"` + .husky/pre-commit). lefthook and husky BOTH write to
+# .git/hooks and the LAST installer wins, so this file is NOT wired up by
+# default. If you prefer lefthook, install it once after `pnpm install`:
+#
+#     pnpm dlx lefthook install      # or: npx lefthook install
+#
+# The lefthook jobs below run the SAME staged-only subset the husky
+# pre-commit already runs (escape-scan -> boundaries -> staged lint), so the
+# two are interchangeable — pick one installer, not both.
+#
+# Each job runs ONLY against the staged files matching its glob (where a glob
+# is set), so a commit that touches no .ts / .js files skips the irrelevant
+# gates entirely. `{staged_files}` is empty-safe: lefthook skips a job whose
+# file list is empty after glob filtering.
+
+pre-commit:
+  parallel: false
+  jobs:
+    # L1: the canonical AI-escape gate — refuse a staged diff that lowers a
+    # wall. Same invocation as .husky/pre-commit. REFUSES on policy violations.
+    - name: escape-scan
+      run: pnpm exec audit-harness escape-scan --staged
+
+    # L1: 4-axis boundary check (FORBIDDEN.md + ALLOWLIST.md). REFUSES on
+    # labs.intentsolutions.io / secret-shape files; CHALLENGEs on package /
+    # import-path / directory-name / top-level-file allowlist violations.
+    # Same invocation as .husky/pre-commit; mirrors boundary-check.yml in CI.
+    - name: boundaries
+      run: pnpm run boundaries
+
+    # L2: lint + format staged TS/JS/JSON/MD files only, via the lint-staged
+    # config in package.json (eslint --fix + prettier --write). Same staged
+    # subset husky runs; the full `eslint .` lane lives in CI.
+    - name: lint-staged
+      run: pnpm exec lint-staged
+
+pre-push:
+  parallel: false
+  jobs:
+    # A fast typecheck before push — the cheapest slice of `pnpm run check`.
+    # The full gate chain (codegen check, predicate-namespace, rubric-floor,
+    # prose-anchors, coverage-map, lint, test, arch, boundaries) is the
+    # authoritative gate and runs in CI on every PR + push to main; we do NOT
+    # duplicate-run it here.
+    - name: typecheck
+      run: pnpm run typecheck
