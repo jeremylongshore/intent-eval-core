@@ -1,0 +1,38 @@
+# yamllint config for @intentsolutions/core (the canonical contracts kernel).
+#
+# Vendored into .audit-harness/configs/ so the lint policy travels with the
+# repo and is hash-pinned alongside the other engineer-owned policy artifacts
+# (per .harness-hash-extra-patterns). Referenced by .github/workflows/lint.yml.
+#
+# Scope: the YAML the kernel actually carries — GitHub Actions workflows, the
+# schemas/v1/otel-attributes.yaml attribute table, codecov.yml. pnpm-lock.yaml
+# and node_modules/ are excluded (generated / vendored).
+#
+# Rationale for the relaxed rules below: GitHub Actions workflows routinely use
+# long `run:` one-liners and `on:`/`true` keys that the stock default profile
+# flags. We keep the structural checks (indentation, key duplication, trailing
+# whitespace, syntax) strict and relax only the cosmetic ones that conflict
+# with hand-authored Actions YAML.
+
+extends: default
+
+rules:
+  # GitHub Actions `run:` steps and schema descriptions run long; line-length
+  # as a hard error produces churn without catching real defects.
+  line-length: disable
+
+  # `on:` is the canonical Actions trigger key; the truthy check would flag it.
+  truthy:
+    allowed-values: ['true', 'false']
+    check-keys: false
+
+  # `---` document-start marker is optional for single-document workflow files.
+  document-start: disable
+
+  # Comments are hand-authored; don't require exactly two leading spaces.
+  comments:
+    min-spaces-from-content: 1
+
+  # Keep these STRICT — they catch real defects:
+  #   indentation, key-duplicates, trailing-spaces, new-line-at-end-of-file,
+  #   colons, commas, brackets, braces (inherited from `extends: default`).
