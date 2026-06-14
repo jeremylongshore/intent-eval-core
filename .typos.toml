@@ -51,3 +51,8 @@ ser = "ser"
 mis = "mis"
 SHOUL = "SHOUL"
 COUL = "COUL"
+
+# "requireds" — the kernel's domain plural for JSON-Schema `required` arrays
+# ("per-type conditional requireds", "per-type requireds"); correct-as-written
+# across the authoring schemas + codegen, not a misspelling of "required".
+requireds = "requireds"
