@@ -17,3 +17,11 @@ scripts/check-rubric-floor.ts
 # repos apply to their CI workflows + vendored policy files.
 .github/workflows/lint.yml
 .audit-harness/configs/.yamllint.yml
+
+# iep-typos-rollout (uska) — the advisory spell-check lane. typos.yml runs
+# crate-ci/typos over the tree; .typos.toml is the IEP domain-term ignore-list
+# it applies. The workflow is self-pinned for the same reason as lint.yml: a
+# silent weakening (e.g. dropping the lane to `|| true` or unpinning the action
+# to @master) fails `audit-harness verify` until a separate, reviewable
+# `audit-harness init` re-pins it.
+.github/workflows/typos.yml
