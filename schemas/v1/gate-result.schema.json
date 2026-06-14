@@ -89,6 +89,13 @@
       "type": "string",
       "description": "Replay fidelity level per iel-E11.",
       "enum": ["RF-0", "RF-1", "RF-2", "RF-3", "RF-4"]
+    },
+    "coverage_detail": {
+      "type": "array",
+      "description": "Richer per-dimension coverage metadata (deferral-D lockup, bd_000-projects-9xyk). OPTIONAL + additive — the required `coverage` string arrays are unchanged, so the predicate URI is unaffected per § 7.2. Each entry's id MUST be a member of the matching `coverage` array (enforced at the validator layer). Descriptive only; MUST NOT drive ship/no-ship.",
+      "items": {
+        "$ref": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json#/$defs/coverageDimensionDetail"
+      }
     }
   },
   "allOf": [

@@ -32,6 +32,24 @@ export const ReplayFidelityLevelSchema = z.enum(['RF-0', 'RF-1', 'RF-2', 'RF-3',
 /** Subject side (Blueprint B § 7.3 line 779). */
 export const SubjectSideSchema = z.enum(['client', 'server', 'ci', 'sandbox', 'local']);
 
+/** Per-dimension coverage status (deferral-D, bd_000-projects-9xyk). */
+export const CoverageDimensionStatusSchema = z.enum(['evaluated', 'skipped']);
+
+/**
+ * Richer per-dimension coverage element (deferral-D lockup,
+ * bd_000-projects-9xyk). Additive companion to the required `coverage` string
+ * arrays — see the cross-field consistency check in the body superRefine.
+ */
+export const CoverageDimensionDetailSchema = z
+  .object({
+    id: z.string(),
+    status: CoverageDimensionStatusSchema,
+    skip_reason: z.string().optional(),
+    threshold: z.number().optional(),
+    observed: z.number().optional(),
+  })
+  .strict();
+
 /**
  * The full gate-result/v1 predicate body.
  *
@@ -58,6 +76,7 @@ export const GateResultV1Schema = z
     advisory_severity: AdvisorySeveritySchema.optional(),
     cost_record_ref: Uuidv7Schema.optional(),
     replay_fidelity_level: ReplayFidelityLevelSchema.optional(),
+    coverage_detail: z.array(CoverageDimensionDetailSchema).optional(),
   })
   .strict()
   .superRefine((data, ctx) => {
@@ -84,6 +103,25 @@ export const GateResultV1Schema = z
         message:
           'gate_reasons MUST be non-empty when gate_decision is "fail", "advisory", or "error" per Blueprint B § 7.4 line 829 (empty permitted ONLY for pass)',
         path: ['gate_reasons'],
+      });
+    }
+    // Cross-field invariant (deferral-D, bd_000-projects-9xyk): every
+    // coverage_detail entry's id MUST appear in the matching `coverage` array —
+    // `evaluated` → dimensions_evaluated, `skipped` → dimensions_skipped. The
+    // richer detail describes the SAME dimensions the required arrays declare;
+    // a detail naming a dimension not in coverage is a contradiction.
+    if (data.coverage_detail !== undefined) {
+      const evaluated = new Set(data.coverage.dimensions_evaluated);
+      const skipped = new Set(data.coverage.dimensions_skipped);
+      data.coverage_detail.forEach((detail, i) => {
+        const pool = detail.status === 'evaluated' ? evaluated : skipped;
+        if (!pool.has(detail.id)) {
+          ctx.addIssue({
+            code: 'custom',
+            message: `coverage_detail[${i}].id "${detail.id}" (status=${detail.status}) is not in coverage.dimensions_${detail.status === 'evaluated' ? 'evaluated' : 'skipped'} (deferral-D cross-field invariant)`,
+            path: ['coverage_detail', i, 'id'],
+          });
+        }
       });
     }
   });

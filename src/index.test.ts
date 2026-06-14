@@ -134,7 +134,10 @@ describe('type-level: MatcherMap discriminated unions (Blueprint B § 2.3)', () 
   it('MatcherInputPattern is the closed 3-variant union', () => {
     const regex: MatcherInputPattern = { kind: 'regex', pattern: '.*' };
     const json: MatcherInputPattern = { kind: 'json-schema', schema: {} };
-    const structural: MatcherInputPattern = { kind: 'structural', matcher: null };
+    const structural: MatcherInputPattern = {
+      kind: 'structural',
+      matcher: { mode: 'all', constraints: [{ path: 'result.status', op: 'exists' }] },
+    };
     expect(regex.kind).toBe('regex');
     expect(json.kind).toBe('json-schema');
     expect(structural.kind).toBe('structural');

@@ -119,4 +119,14 @@ export interface EvalRun {
   readonly idempotency_key: Uuidv7;
 
   readonly submitted_by: ActorIdentity;
+
+  /**
+   * RESERVED multi-tenancy slot (deferral-G; bd_000-projects-k0fj). OPTIONAL
+   * and additive per Blueprint B § 7.2 — reserved so a future multi-tenant
+   * deployment does NOT force a consumer-side migration. Tenant-isolation
+   * SEMANTICS remain out-of-scope for v1 (deferred to a future DR); v1
+   * single-tenant runs omit it. SHOULD equal the parent EvalSpec.tenant_id
+   * when both are present (a runtime invariant, not enforced at this layer).
+   */
+  readonly tenant_id?: Uuidv7;
 }

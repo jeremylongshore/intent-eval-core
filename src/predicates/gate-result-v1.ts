@@ -97,11 +97,10 @@ export function isValidSubjectName(name: string): boolean {
 // ─── Coverage object (§ 7.4 line 807) ──────────────────────────────────────
 
 /**
- * Coverage declaration. Both arrays are required by § 7.4. Element shape is
- * NOT spec-bound — engineer's choice. The kernel models elements as `string`
- * because the most common shape is a kebab-slug dimension identifier; richer
- * shapes can be carried in the optional `metadata` field on the predicate
- * body if needed.
+ * Coverage declaration. Both arrays are required by § 7.4. The ELEMENT type is
+ * LOCKED as `string` (deferral-D resolution; bd_000-projects-9xyk) — a
+ * kebab-slug dimension identifier — and stays `string` forever for
+ * backward-compat: every v1 row already in the wild remains valid.
  *
  * The NOT_APPLICABLE encoding pattern (§ 7.4 line 832) writes `dimensions_
  * skipped` with a documented skip reason in `gate_reasons` — consumers MUST
@@ -110,6 +109,41 @@ export function isValidSubjectName(name: string): boolean {
 export interface Coverage {
   readonly dimensions_evaluated: readonly string[];
   readonly dimensions_skipped: readonly string[];
+}
+
+/**
+ * Per-dimension coverage status (deferral-D lockup; bd_000-projects-9xyk).
+ *   - `evaluated` — the dimension was assessed
+ *   - `skipped`   — the dimension was intentionally not assessed (N/A encoding)
+ */
+export type CoverageDimensionStatus = 'evaluated' | 'skipped';
+
+/**
+ * Richer per-dimension coverage element (deferral-D lockup; bd_000-projects-9xyk).
+ *
+ * § 7.4 line 807 fixed the `coverage` array element type as `string` and left
+ * "richer per-dimension metadata" as a forward-compat extension. Per § 7.2
+ * (adding an OPTIONAL field MUST NOT bump the URI) the richer shape lands as a
+ * SEPARATE optional `coverage_detail` array — `coverage`'s `string` elements
+ * are untouched, so this is purely additive and the predicate URI is unchanged.
+ *
+ * Each entry's `id` MUST appear in `coverage.dimensions_evaluated` (when
+ * `status: 'evaluated'`) or `coverage.dimensions_skipped` (when
+ * `status: 'skipped'`); the cross-field consistency is enforced at the
+ * validator layer. `threshold`/`observed` are OPTIONAL descriptive numbers —
+ * they describe what was measured, they do NOT drive ship/no-ship (that stays
+ * consumer-side per § 7.6, same as `metadata`).
+ */
+export interface CoverageDimensionDetail {
+  /** Dimension id — MUST match an entry in the matching `coverage` array. */
+  readonly id: string;
+  readonly status: CoverageDimensionStatus;
+  /** Optional skip reason (RECOMMENDED when status is `skipped`). */
+  readonly skip_reason?: string;
+  /** Optional descriptive threshold the dimension was measured against. */
+  readonly threshold?: number;
+  /** Optional descriptive observed value for the dimension. */
+  readonly observed?: number;
 }
 
 // ─── Predicate body (§ 7.4 line 800-823) ───────────────────────────────────
@@ -206,6 +240,15 @@ export interface GateResultV1Optional {
 
   /** Replay fidelity level claim per iel-E11. */
   readonly replay_fidelity_level?: ReplayFidelityLevel;
+
+  /**
+   * Richer per-dimension coverage metadata (deferral-D lockup;
+   * bd_000-projects-9xyk). OPTIONAL and additive — the required `coverage`
+   * string arrays are unchanged. When present, every entry's `id` MUST be a
+   * member of the matching `coverage` array (validator-enforced). Descriptive
+   * only — MUST NOT drive ship/no-ship decisions (mirrors `metadata`).
+   */
+  readonly coverage_detail?: readonly CoverageDimensionDetail[];
 }
 
 /**

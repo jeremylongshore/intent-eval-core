@@ -18,9 +18,20 @@ import {
   Uuidv7Schema,
 } from './_primitives.js';
 
+/**
+ * Error-class format (deferral-E, bd_000-projects-84li). Mirrors
+ * `_common.schema.json#/$defs/errorClass` and `ERROR_CLASS_PATTERN` on the
+ * entity: a `<domain>.<condition>` dot-separated lowercase string. The
+ * registration CONVENTION is constrained; the enum stays OPEN (a
+ * kernel-registered class and a tool-defined class both match this pattern).
+ */
+export const ErrorClassSchema = z
+  .string()
+  .regex(/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/, 'Must be a <domain>.<condition> error class');
+
 export const ToolInvocationErrorSchema = z
   .object({
-    enum_class: z.string(),
+    enum_class: ErrorClassSchema,
     message: z.string(),
   })
   .strict();

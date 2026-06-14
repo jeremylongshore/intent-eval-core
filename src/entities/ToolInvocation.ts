@@ -43,16 +43,57 @@ export type ToolInvocationArgs = Readonly<Record<string, unknown>>;
 export type ToolInvocationResultSummary = Readonly<Record<string, unknown>>;
 
 /**
+ * Cross-cutting error classes the KERNEL registers (deferral-E lockup;
+ * bd_000-projects-84li). These are the error classes that recur across every
+ * tool/provider — a tiny canonical index so downstream consumers can reason
+ * about the common cases uniformly WITHOUT closing the enum. Tool-specific
+ * classes (e.g. `audit-harness.escape-detected`) are still permitted as
+ * free-form `enum_class` strings — see {@link ToolInvocationError}.
+ *
+ * Convention: `<domain>.<condition>`, lowercase dot-separated. Adding a
+ * canonical class here is additive (§ 7.2) — it does not narrow `enum_class`.
+ */
+export const KERNEL_ERROR_CLASSES = [
+  'network.timeout',
+  'network.unreachable',
+  'provider.rate_limited',
+  'provider.unauthorized',
+  'provider.unavailable',
+  'tool.crashed',
+  'tool.invalid_args',
+  'tool.not_found',
+] as const;
+
+/** Union of the kernel-registered cross-cutting error classes. */
+export type KernelErrorClass = (typeof KERNEL_ERROR_CLASSES)[number];
+
+/** Format every tool-registered (non-kernel) `enum_class` MUST follow. */
+export const ERROR_CLASS_PATTERN = /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/;
+
+/** True iff `cls` is one of the kernel-registered cross-cutting classes. */
+export function isKernelErrorClass(cls: string): cls is KernelErrorClass {
+  return (KERNEL_ERROR_CLASSES as readonly string[]).includes(cls);
+}
+
+/** True iff `cls` is a well-formed `<domain>.<condition>` error class. */
+export function isWellFormedErrorClass(cls: string): boolean {
+  return ERROR_CLASS_PATTERN.test(cls);
+}
+
+/**
  * Tool-error record. Blueprint B § 2.11 specifies the SHAPE
- * (`{enum_class, message}`) but does NOT enumerate `enum_class` values —
- * that's tool-specific. Modeled as `string` here; downstream tools may
- * brand to a narrower literal union at their layer.
+ * (`{enum_class, message}`) but does NOT enumerate `enum_class` values.
+ * Deferral-E (bd_000-projects-84li) locks the REGISTRATION PATTERN: a kernel
+ * index of cross-cutting classes ({@link KERNEL_ERROR_CLASSES}) + a documented
+ * `<domain>.<condition>` format ({@link ERROR_CLASS_PATTERN}) every tool-defined
+ * class registers under. `enum_class` stays an open string at the type layer —
+ * the registry constrains the CONVENTION, not the type.
  */
 export interface ToolInvocationError {
   /**
-   * Tool-defined error class. NOT a closed enum at the kernel layer —
-   * each tool defines its own set (e.g., `network.timeout`,
-   * `provider.rate_limited`, `tool.crashed`).
+   * Error class. A kernel-registered {@link KernelErrorClass} OR a tool-defined
+   * `<domain>.<condition>` string per {@link ERROR_CLASS_PATTERN}. NOT a closed
+   * enum — each tool registers its own set in its own docs.
    */
   readonly enum_class: string;
   readonly message: string;

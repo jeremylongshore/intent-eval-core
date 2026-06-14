@@ -13,6 +13,38 @@ import {
   Uuidv7Schema,
 } from './_primitives.js';
 
+/** Structural-constraint comparison op (deferral-B, bd_000-projects-ra9a). */
+export const StructuralOpSchema = z.enum([
+  'exists',
+  'absent',
+  'equals',
+  'type-is',
+  'matches',
+  'length-equals',
+]);
+
+/** A single path-anchored structural constraint (deferral-B). */
+export const StructuralConstraintSchema = z
+  .object({
+    path: z.string().min(1),
+    op: StructuralOpSchema,
+    /**
+     * Required for value-bearing ops; omitted for presence ops (exists/absent).
+     * `.optional()` so the key may be absent — `z.unknown()` alone is treated
+     * as non-optional by Zod 4 under `.strict()`.
+     */
+    value: z.unknown().optional(),
+  })
+  .strict();
+
+/** Structural matcher payload — conjunction of constraints (deferral-B). */
+export const StructuralMatcherSchema = z
+  .object({
+    mode: z.literal('all'),
+    constraints: z.array(StructuralConstraintSchema),
+  })
+  .strict();
+
 /** Closed 3-variant union per Blueprint B § 2.3 line 159. */
 export const MatcherInputPatternSchema = z.discriminatedUnion('kind', [
   z
@@ -28,11 +60,13 @@ export const MatcherInputPatternSchema = z.discriminatedUnion('kind', [
       schema: z.record(z.string(), z.unknown()),
     })
     .strict(),
-  z.object({
-    kind: z.literal('structural'),
-    /** Wholly undefined per Blueprint B § 2.3 (bd_000-projects-ra9a). */
-    matcher: z.unknown(),
-  }),
+  z
+    .object({
+      kind: z.literal('structural'),
+      /** Structural payload LOCKED per deferral-B (bd_000-projects-ra9a). */
+      matcher: StructuralMatcherSchema,
+    })
+    .strict(),
 ]);
 
 export const MatcherExpectedBehaviorKindV1Schema = z.enum([

@@ -35,6 +35,10 @@
     },
     "storage_key": { "$ref": "_common.schema.json#/$defs/storageKey" },
     "created_at": { "$ref": "_common.schema.json#/$defs/rfc3339" },
-    "created_by": { "$ref": "_common.schema.json#/$defs/actorIdentity" }
+    "created_by": { "$ref": "_common.schema.json#/$defs/actorIdentity" },
+    "tenant_id": {
+      "$ref": "_common.schema.json#/$defs/uuidv7",
+      "description": "RESERVED multi-tenancy slot (deferral-G, bd_000-projects-k0fj). OPTIONAL + additive per § 7.2; tenant-isolation semantics deferred to a future DR. v1 single-tenant snapshots omit it."
+    }
   }
 }
