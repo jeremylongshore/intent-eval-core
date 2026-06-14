@@ -7,3 +7,13 @@
 # to this file fails `audit-harness verify` until a separate, reviewable
 # `audit-harness init` re-pins it.
 scripts/check-rubric-floor.ts
+
+# iec-lint-rollout (bd_000-projects-bbi6) — the non-JS lint policy surface.
+# lint.yml enforces yamllint + actionlint + markdownlint; the vendored
+# yamllint config is the YAML rule set it applies. Both are pinned so a
+# silent edit (e.g. relaxing a rule to `disable` or weakening the workflow
+# to `|| true`) fails `audit-harness verify` until a separate, reviewable
+# `audit-harness init` re-pins it — the same self-pin rationale the sibling
+# repos apply to their CI workflows + vendored policy files.
+.github/workflows/lint.yml
+.audit-harness/configs/.yamllint.yml

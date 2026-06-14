@@ -49,6 +49,7 @@ DevDeps don't count against the runtime cap — they don't ship in the published
 Files allowed at repo root (anything not in this list triggers a BLOCK on the Axis 3 directory check, extended to files):
 
 ```text
+.audit-harness
 .dependency-cruiser.cjs
 .gitignore
 .harness-hash
@@ -85,6 +86,7 @@ vitest.config.ts
 
 Annotations (what each is):
 
+- `.audit-harness` — vendored audit-harness configs (the `configs/.yamllint.yml` rule set consumed by `lint.yml`); same pattern as the sibling IEP repos
 - `.dependency-cruiser.cjs` — dep-cruiser config (hash-pinned)
 - `.gitignore` — git ignore patterns
 - `.harness-hash` — hash-pinned policy manifest
