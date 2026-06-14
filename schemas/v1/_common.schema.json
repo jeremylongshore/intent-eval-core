@@ -81,7 +81,7 @@
     },
     "coverage": {
       "type": "object",
-      "description": "Coverage declaration per Blueprint B § 7.4 line 807. Both arrays REQUIRED. NOT_APPLICABLE encoding (§ 7.4 line 832): gate_decision='pass' + populated dimensions_skipped + documented skip in gate_reasons.",
+      "description": "Coverage declaration per Blueprint B § 7.4 line 807. Both arrays REQUIRED. Element type LOCKED as string per deferral-D (bd_000-projects-9xyk). NOT_APPLICABLE encoding (§ 7.4 line 832): gate_decision='pass' + populated dimensions_skipped + documented skip in gate_reasons.",
       "required": ["dimensions_evaluated", "dimensions_skipped"],
       "additionalProperties": false,
       "properties": {
@@ -94,6 +94,30 @@
           "items": { "type": "string" }
         }
       }
+    },
+    "coverageDimensionDetail": {
+      "type": "object",
+      "description": "Richer per-dimension coverage element (deferral-D lockup, bd_000-projects-9xyk). The OPTIONAL companion to `coverage`'s string arrays — adopted additively per § 7.2 so the `coverage` element type stays `string`. Descriptive only; MUST NOT drive ship/no-ship (mirrors metadata rule).",
+      "required": ["id", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Dimension id — MUST appear in the matching coverage array (cross-field enforced at the validator layer)."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["evaluated", "skipped"]
+        },
+        "skip_reason": { "type": "string" },
+        "threshold": { "type": "number" },
+        "observed": { "type": "number" }
+      }
+    },
+    "errorClass": {
+      "type": "string",
+      "description": "Tool-error class (deferral-E lockup, bd_000-projects-84li). A kernel-registered cross-cutting class OR a tool-defined `<domain>.<condition>` string. The registration CONVENTION is locked (dot-separated, lowercase); the enum stays OPEN.",
+      "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$"
     }
   }
 }

@@ -26,6 +26,8 @@ export const SkillSnapshotSchema = z
     storage_key: StorageKeySchema,
     created_at: Rfc3339Schema,
     created_by: ActorIdentitySchema,
+    /** RESERVED multi-tenancy slot (deferral-G, bd_000-projects-k0fj). */
+    tenant_id: Uuidv7Schema.optional(),
   })
   .strict();
 

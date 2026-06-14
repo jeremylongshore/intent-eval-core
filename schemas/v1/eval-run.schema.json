@@ -108,6 +108,10 @@
       "$ref": "_common.schema.json#/$defs/uuidv7",
       "description": "Defaults to `id` if not explicitly provided."
     },
-    "submitted_by": { "$ref": "_common.schema.json#/$defs/actorIdentity" }
+    "submitted_by": { "$ref": "_common.schema.json#/$defs/actorIdentity" },
+    "tenant_id": {
+      "$ref": "_common.schema.json#/$defs/uuidv7",
+      "description": "RESERVED multi-tenancy slot (deferral-G, bd_000-projects-k0fj). OPTIONAL + additive per § 7.2; tenant-isolation semantics deferred to a future DR. SHOULD equal the parent EvalSpec.tenant_id when both present (runtime invariant). v1 single-tenant runs omit it."
+    }
   }
 }

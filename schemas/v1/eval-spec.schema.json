@@ -33,17 +33,73 @@
     },
     "assertions": {
       "type": "array",
-      "description": "Typed assertion expressions. Blueprint B § 2.1 says only 'typed expression' — no class enum, no payload grammar. Element shape deferred per spec STOP directive (bd_000-projects-gzgj, Class-2 ISEDC required to enumerate).",
-      "items": {}
+      "description": "Typed assertion expressions. Class union LOCKED additively per deferral-A (bd_000-projects-gzgj): a named-class discriminated union plus an open extension slot. Per-class `target` payload stays open (refined at the validator layer per engagement).",
+      "items": {
+        "type": "object",
+        "required": ["class", "target"],
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "class": {
+                "type": "string",
+                "enum": [
+                  "output-equals",
+                  "output-contains",
+                  "output-matches",
+                  "schema-conforms",
+                  "judge-verdict",
+                  "matcher-satisfied"
+                ]
+              },
+              "target": {},
+              "negate": { "type": "boolean" }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "required": ["class", "target", "extension"],
+            "properties": {
+              "class": { "type": "string" },
+              "target": {},
+              "negate": { "type": "boolean" },
+              "extension": { "const": true }
+            }
+          }
+        ]
+      }
     },
     "scoring": {
       "type": "object",
-      "description": "Scoring configuration. aggregation_rule is the ONLY spec-bound field per Blueprint B § 2.1. § 7.6 architectural rule: thresholds belong in consumer-side tests/TESTING.md, NOT here. Additions require ISEDC review (bd_000-projects-21re).",
+      "description": "Scoring configuration. aggregation_rule is the spec-bound field per Blueprint B § 2.1. weight_dimension/weights/tiebreaker are the deferral-C lockup (bd_000-projects-21re), additive + optional. § 7.6 architectural rule: ship/no-ship THRESHOLDS belong in consumer-side tests/TESTING.md, NOT here — only weights + exact-tie resolution are kernel-side.",
       "required": ["aggregation_rule"],
       "properties": {
         "aggregation_rule": {
           "type": "string",
           "enum": ["majority", "unanimous", "weighted"]
+        },
+        "weight_dimension": {
+          "type": "string",
+          "description": "Dimension the weighted rule distributes over (deferral-C, bd_000-projects-21re). Required when `weights` present; ignored otherwise.",
+          "enum": ["matcher", "mm-class", "judge"]
+        },
+        "weights": {
+          "type": "array",
+          "description": "Per-unit weights for the weighted rule (deferral-C). Normalized by their sum at scoring time.",
+          "items": {
+            "type": "object",
+            "required": ["key", "weight"],
+            "additionalProperties": false,
+            "properties": {
+              "key": { "type": "string" },
+              "weight": { "type": "number", "minimum": 0 }
+            }
+          }
+        },
+        "tiebreaker": {
+          "type": "string",
+          "description": "Deterministic resolution of an exact aggregate tie (deferral-C). NOT a threshold — it resolves a tie, it does not set a pass bar.",
+          "enum": ["fail-closed", "fail-open", "first-listed"]
         },
         "extensions": {
           "type": "object",
@@ -126,6 +182,10 @@
     },
     "created_at": { "$ref": "_common.schema.json#/$defs/rfc3339" },
     "created_by": { "$ref": "_common.schema.json#/$defs/actorIdentity" },
-    "content_hash": { "$ref": "_common.schema.json#/$defs/sha256" }
+    "content_hash": { "$ref": "_common.schema.json#/$defs/sha256" },
+    "tenant_id": {
+      "$ref": "_common.schema.json#/$defs/uuidv7",
+      "description": "RESERVED multi-tenancy slot (deferral-G, bd_000-projects-k0fj). OPTIONAL + additive per § 7.2; tenant-isolation semantics deferred to a future DR. v1 single-tenant specs omit it."
+    }
   }
 }

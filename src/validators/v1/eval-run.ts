@@ -54,6 +54,8 @@ export const EvalRunSchema = z
     parent_run_id: Uuidv7Schema.nullable(),
     idempotency_key: Uuidv7Schema,
     submitted_by: ActorIdentitySchema,
+    /** RESERVED multi-tenancy slot (deferral-G, bd_000-projects-k0fj). */
+    tenant_id: Uuidv7Schema.optional(),
   })
   .strict();
 

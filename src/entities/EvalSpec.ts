@@ -8,14 +8,7 @@
  * Mutable in `draft`; immutable once `published`.
  */
 
-import type {
-  ActorIdentity,
-  KebabSlug,
-  Rfc3339,
-  Sha256,
-  SemVer,
-  Uuidv7,
-} from '../primitives.js';
+import type { ActorIdentity, KebabSlug, Rfc3339, Sha256, SemVer, Uuidv7 } from '../primitives.js';
 import type { TransitionMap } from '../state-machines/types.js';
 
 /** State machine states for EvalSpec (Blueprint B § 2.1). */
@@ -32,22 +25,68 @@ export const evalSpecTransitions: TransitionMap<EvalSpecState> = {
 export type ScoringAggregationRule = 'majority' | 'unanimous' | 'weighted';
 
 /**
+ * Dimension over which `weighted` aggregation distributes weight
+ * (deferral-C lockup; bd_000-projects-21re). The `weighted` rule needs to
+ * know WHAT the weights are over; this names the v1 set:
+ *   - `matcher` — weight per referenced MatcherMap decision
+ *   - `mm-class` — weight per failure-mode class (MM-1..MM-6)
+ *   - `judge` — weight per JudgeDecision input
+ */
+export type ScoringWeightDimension = 'matcher' | 'mm-class' | 'judge';
+
+/**
+ * A single weight entry under the `weighted` aggregation rule. `key`
+ * identifies the weighted unit (a MatcherMap id, MM-class literal, or judge
+ * identity, per `dimension`); `weight` is its relative contribution. Weights
+ * are normalized by their sum at scoring time (the kernel SAYS the shape; it
+ * does not run the normalization — that is runtime).
+ */
+export interface ScoringWeight {
+  readonly key: string;
+  /** Non-negative relative weight; normalized by the sum at scoring time. */
+  readonly weight: number;
+}
+
+/**
  * Scoring configuration.
  *
- * `aggregation_rule` is the ONLY spec-bound field per Blueprint B § 2.1. The
- * `weighted` variant implies per-something weights, but the spec never names
- * a `weights` field, what they are over (matchers? judges? MM-classes?), or
- * how they normalize. Tiebreakers, thresholds, and confidence floors are
- * also intentionally unspecified — § 7.6 cordons threshold semantics OFF
- * the predicate URI surface and INTO consumer-side `tests/TESTING.md`
- * policy. **Adding fields here without ISEDC review is forbidden.**
+ * `aggregation_rule` is the spec-bound field per Blueprint B § 2.1. The
+ * `weights`/`tiebreaker` fields are the deferral-C lockup
+ * (bd_000-projects-21re): the `weighted` variant's per-unit weights are now
+ * NAMED (dimension + entries), and a deterministic `tiebreaker` resolves
+ * equal-aggregate ties — both additive and OPTIONAL, so existing
+ * `majority`/`unanimous` specs stay valid unchanged.
  *
- * The `extensions` bag is the typed escape hatch: consumers MAY carry
+ * **Thresholds/confidence-floors are NOT here, by binding.** Per § 7.6 the
+ * ship/no-ship threshold semantics live in consumer-side `tests/TESTING.md`
+ * policy, NEVER on the predicate/spec surface — the deferral-C AC reinforces
+ * this separation rather than importing thresholds into the kernel.
+ *
+ * The `extensions` bag remains the typed escape hatch: consumers MAY carry
  * tool-specific scoring metadata, but it MUST NOT be used for ship/no-ship
  * decisions (mirrors the § 7.4 `metadata` field rule for gate-result/v1).
  */
 export interface ScoringConfig {
   readonly aggregation_rule: ScoringAggregationRule;
+  /**
+   * Weight dimension for the `weighted` rule. REQUIRED when `weights` is
+   * present; ignored by `majority`/`unanimous`.
+   */
+  readonly weight_dimension?: ScoringWeightDimension;
+  /**
+   * Per-unit weights for the `weighted` rule. Each `key` is interpreted per
+   * `weight_dimension`. Omitted under `majority`/`unanimous`.
+   */
+  readonly weights?: readonly ScoringWeight[];
+  /**
+   * Deterministic tiebreaker when two aggregate outcomes tie:
+   *   - `fail-closed` — a tie resolves to FAIL (conservative default sense)
+   *   - `fail-open`   — a tie resolves to PASS
+   *   - `first-listed`— the first listed matcher's decision wins
+   * NOT a threshold — it resolves an exact-tie ambiguity, it does not set a
+   * pass bar (that stays consumer-side per § 7.6).
+   */
+  readonly tiebreaker?: 'fail-closed' | 'fail-open' | 'first-listed';
   /**
    * Tool-specific scoring metadata. Intentionally typed as `unknown` —
    * Blueprint B does not bless any inner shape, and codifying one here
@@ -68,15 +107,83 @@ export interface RuntimeLimits {
 }
 
 /**
- * Typed assertion expression. Blueprint B § 2.1 says only "typed assertion
- * expression"; no class enum, no payload grammar, no discriminator field
- * is named. The spec extraction explicitly directs **STOP — do not invent
- * an assertion-class enum** (extension would be a Class-2 ISEDC pair DR).
+ * Assertion-class discriminator (deferral-A lockup; bd_000-projects-gzgj).
  *
- * Modeled as `unknown` to surface the deferral. Consumers brand to a
- * specific assertion grammar at the validator layer (epic iec-E04).
+ * Blueprint B § 2.1 names assertions as "typed expressions" but stopped short
+ * of enumerating the class union. This is the v1 canonical class set, locked
+ * additively per the Class-2 ISEDC pair-DR routing the bead calls for:
+ *
+ *   - `output-equals`       — observed output equals an expected literal value
+ *   - `output-contains`     — observed output contains an expected substring/element
+ *   - `output-matches`      — observed output matches a regex pattern
+ *   - `schema-conforms`     — observed output conforms to a JSON Schema fragment
+ *   - `judge-verdict`       — a JudgeDecision verdict gates the assertion
+ *   - `matcher-satisfied`   — a referenced MatcherMap's expected_behavior holds
+ *
+ * The trailing extension slot (`AssertionExpressionExtension`) keeps the union
+ * OPEN per § 7.2 backward-compat: new named classes are added here (a code
+ * change + Class-2 DR), while tool-specific classes ride the extension variant
+ * WITHOUT a kernel change. Adding a NAMED class to this enum requires a
+ * Class-2 ISEDC pair Decision Record (touches the canonical-domain schema
+ * surface per DR-010 § 7 Q6).
  */
-export type AssertionExpression = unknown;
+export type AssertionClass =
+  | 'output-equals'
+  | 'output-contains'
+  | 'output-matches'
+  | 'schema-conforms'
+  | 'judge-verdict'
+  | 'matcher-satisfied';
+
+/** The v1 named assertion-class set as a runtime tuple (for iteration/enum). */
+export const ASSERTION_CLASSES = [
+  'output-equals',
+  'output-contains',
+  'output-matches',
+  'schema-conforms',
+  'judge-verdict',
+  'matcher-satisfied',
+] as const satisfies readonly AssertionClass[];
+
+/**
+ * Named assertion expression — discriminated on `class`.
+ *
+ * Per-class `target` payload shape is deliberately NOT codified by Blueprint B
+ * (an `output-equals` target is probably a literal; a `schema-conforms` target
+ * a JSON Schema fragment; a `judge-verdict` target a verdict literal — but the
+ * spec does not say). It is carried as `unknown` so the per-engagement DRs that
+ * codify each class can refine it at the validator layer (epic iec-E04) without
+ * a kernel break. `negate` flips the assertion sense (default false).
+ */
+export interface NamedAssertionExpression {
+  readonly class: AssertionClass;
+  /** Class-specific target payload — refined per-class at the validator layer. */
+  readonly target: unknown;
+  /** When true, the assertion passes iff the underlying predicate is FALSE. */
+  readonly negate?: boolean;
+}
+
+/**
+ * Open extension assertion expression. The `class` string MUST NOT collide
+ * with any `AssertionClass` literal — discriminating consumers check the named
+ * set first, then fall through to extension handling (mirrors the
+ * `MatcherExpectedBehavior` extension pattern).
+ */
+export interface AssertionExpressionExtension {
+  readonly class: string;
+  readonly target: unknown;
+  readonly negate?: boolean;
+  readonly extension: true;
+}
+
+/**
+ * Typed assertion expression. Blueprint B § 2.1 says only "typed assertion
+ * expression"; the v1 class union is now LOCKED additively (deferral-A,
+ * bd_000-projects-gzgj) as a discriminated union of named classes plus an open
+ * extension slot. Consumers brand the per-class `target` to a specific grammar
+ * at the validator layer (epic iec-E04).
+ */
+export type AssertionExpression = NamedAssertionExpression | AssertionExpressionExtension;
 
 /**
  * Composition DAG node — every node is either an EvalRun or a
@@ -174,4 +281,13 @@ export interface EvalSpec {
   readonly created_by: ActorIdentity;
   /** sha256 of canonical-form serialization. */
   readonly content_hash: Sha256;
+  /**
+   * RESERVED multi-tenancy slot (deferral-G; bd_000-projects-k0fj). OPTIONAL
+   * and additive per Blueprint B § 7.2 — present so a future multi-tenant
+   * deployment does NOT force a consumer-side migration. The kernel reserves
+   * the SLOT only; tenant-isolation SEMANTICS (scoping, RLS, cross-tenant
+   * visibility) remain out-of-scope for v1 and are deferred to a future DR.
+   * v1 single-tenant specs simply omit it.
+   */
+  readonly tenant_id?: Uuidv7;
 }

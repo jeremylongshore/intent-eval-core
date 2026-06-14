@@ -31,7 +31,25 @@ export function ancestorChain(edges: readonly LineageEdge[], id: Uuidv7): readon
 export function asEventId(value: string): EventId | null;
 
 // @public
-export type AssertionExpression = unknown;
+export const ASSERTION_CLASSES: readonly ["output-equals", "output-contains", "output-matches", "schema-conforms", "judge-verdict", "matcher-satisfied"];
+
+// @public
+export type AssertionClass = 'output-equals' | 'output-contains' | 'output-matches' | 'schema-conforms' | 'judge-verdict' | 'matcher-satisfied';
+
+// @public
+export type AssertionExpression = NamedAssertionExpression | AssertionExpressionExtension;
+
+// @public
+export interface AssertionExpressionExtension {
+    // (undocumented)
+    readonly class: string;
+    // (undocumented)
+    readonly extension: true;
+    // (undocumented)
+    readonly negate?: boolean;
+    // (undocumented)
+    readonly target: unknown;
+}
 
 // @public
 export function assertTransition<S extends string>(map: TransitionMap<S>, from: S, to: S): void;
@@ -112,6 +130,19 @@ export interface Coverage {
 }
 
 // @public
+export interface CoverageDimensionDetail {
+    readonly id: string;
+    readonly observed?: number;
+    readonly skip_reason?: string;
+    // (undocumented)
+    readonly status: CoverageDimensionStatus;
+    readonly threshold?: number;
+}
+
+// @public
+export type CoverageDimensionStatus = 'evaluated' | 'skipped';
+
+// @public
 export const DASHBOARD_RENDER_V1_URI: "https://evals.intentsolutions.io/dashboard-render/v1";
 
 // @public
@@ -171,6 +202,9 @@ export interface DsseSignature {
 }
 
 // @public
+export const ERROR_CLASS_PATTERN: RegExp;
+
+// @public
 export interface EvalRun {
     // (undocumented)
     readonly archived_at: Rfc3339 | null;
@@ -197,6 +231,7 @@ export interface EvalRun {
     readonly state: EvalRunState;
     // (undocumented)
     readonly submitted_by: ActorIdentity;
+    readonly tenant_id?: Uuidv7;
     readonly terminal_reason: EvalRunTerminalReason | null;
     readonly worker_id: string | null;
 }
@@ -231,6 +266,7 @@ export interface EvalSpec {
     readonly provider_constraints: readonly string[];
     readonly runtime_limits: RuntimeLimits;
     readonly scoring: ScoringConfig;
+    readonly tenant_id?: Uuidv7;
     readonly version: SemVer;
 }
 
@@ -325,6 +361,7 @@ export type GateResultV1 = GateResultV1Required & GateResultV1Optional;
 export interface GateResultV1Optional {
     readonly advisory_severity?: AdvisorySeverity;
     readonly cost_record_ref?: Uuidv7;
+    readonly coverage_detail?: readonly CoverageDimensionDetail[];
     readonly failure_mode?: string;
     readonly metadata?: Readonly<Record<string, unknown>>;
     readonly replay_fidelity_level?: ReplayFidelityLevel;
@@ -389,6 +426,9 @@ export function isDeadLetterReason(reason: string): reason is DeadLetterReason;
 export function isEventId(value: string): value is EventId;
 
 // @public
+export function isKernelErrorClass(cls: string): cls is KernelErrorClass;
+
+// @public
 export function isSha256(value: string): value is Sha256;
 
 // @public
@@ -402,6 +442,9 @@ export function isUuidv7(value: string): value is Uuidv7;
 
 // @public
 export function isValidSubjectName(name: string): boolean;
+
+// @public
+export function isWellFormedErrorClass(cls: string): boolean;
 
 // @public
 export interface JudgeDecision {
@@ -436,6 +479,12 @@ export type JudgeVerdict = 'PASS' | 'FAIL' | 'ADVISORY' | 'NOT_APPLICABLE' | 'ER
 
 // @public
 export type KebabSlug = Brand<string, 'KebabSlug'>;
+
+// @public
+export const KERNEL_ERROR_CLASSES: readonly ["network.timeout", "network.unreachable", "provider.rate_limited", "provider.unauthorized", "provider.unavailable", "tool.crashed", "tool.invalid_args", "tool.not_found"];
+
+// @public
+export type KernelErrorClass = (typeof KERNEL_ERROR_CLASSES)[number];
 
 // @public (undocumented)
 export type KnownPredicateUri = (typeof PREDICATE_URIS)[keyof typeof PREDICATE_URIS];
@@ -475,7 +524,7 @@ export type MatcherInputPattern = {
     readonly schema: Readonly<Record<string, unknown>>;
 } | {
     readonly kind: 'structural';
-    readonly matcher: unknown;
+    readonly matcher: StructuralMatcher;
 };
 
 // @public
@@ -524,6 +573,14 @@ export type MmClass = 'MM-1' | 'MM-2' | 'MM-3' | 'MM-4' | 'MM-5' | 'MM-6';
 
 // @public
 export type MmClassId = `MM-${number}`;
+
+// @public
+export interface NamedAssertionExpression {
+    // (undocumented)
+    readonly class: AssertionClass;
+    readonly negate?: boolean;
+    readonly target: unknown;
+}
 
 // @public
 export type OtelSpanId = Brand<string, 'OtelSpanId'>;
@@ -721,7 +778,20 @@ export interface ScoringConfig {
     // (undocumented)
     readonly aggregation_rule: ScoringAggregationRule;
     readonly extensions?: Readonly<Record<string, unknown>>;
+    readonly tiebreaker?: 'fail-closed' | 'fail-open' | 'first-listed';
+    readonly weight_dimension?: ScoringWeightDimension;
+    readonly weights?: readonly ScoringWeight[];
 }
+
+// @public
+export interface ScoringWeight {
+    // (undocumented)
+    readonly key: string;
+    readonly weight: number;
+}
+
+// @public
+export type ScoringWeightDimension = 'matcher' | 'mm-class' | 'judge';
 
 // @public
 export type SemVer = Brand<string, 'SemVer'>;
@@ -775,6 +845,7 @@ export interface SkillSnapshot {
     readonly skill_id: KebabSlug;
     readonly source_sha: Sha256;
     readonly storage_key: StorageKey;
+    readonly tenant_id?: Uuidv7;
     readonly version_label: SemVer | null;
 }
 
@@ -786,6 +857,30 @@ export const skillSnapshotTransitions: TransitionMap<SkillSnapshotState>;
 
 // @public
 export type StorageKey = Brand<string, 'StorageKey'>;
+
+// @public
+export const STRUCTURAL_OPS: readonly ["exists", "absent", "equals", "type-is", "matches", "length-equals"];
+
+// @public
+export interface StructuralConstraint {
+    // (undocumented)
+    readonly op: StructuralOp;
+    // (undocumented)
+    readonly path: string;
+    // (undocumented)
+    readonly value?: unknown;
+}
+
+// @public
+export interface StructuralMatcher {
+    // (undocumented)
+    readonly constraints: readonly StructuralConstraint[];
+    // (undocumented)
+    readonly mode: 'all';
+}
+
+// @public
+export type StructuralOp = 'exists' | 'absent' | 'equals' | 'type-is' | 'matches' | 'length-equals';
 
 // @public
 export const SUBJECT_NAME_REGEX: RegExp;

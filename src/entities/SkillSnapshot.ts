@@ -86,4 +86,13 @@ export interface SkillSnapshot {
 
   readonly created_at: Rfc3339;
   readonly created_by: ActorIdentity;
+
+  /**
+   * RESERVED multi-tenancy slot (deferral-G; bd_000-projects-k0fj). OPTIONAL
+   * and additive per Blueprint B § 7.2 — reserved so a future multi-tenant
+   * deployment does NOT force a consumer-side migration. Tenant-isolation
+   * SEMANTICS remain out-of-scope for v1 (deferred to a future DR); v1
+   * single-tenant snapshots omit it.
+   */
+  readonly tenant_id?: Uuidv7;
 }

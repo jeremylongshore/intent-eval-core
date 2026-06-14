@@ -14,6 +14,20 @@ import {
 
 export const ScoringAggregationRuleSchema = z.enum(['majority', 'unanimous', 'weighted']);
 
+/** Weight dimension for the weighted rule (deferral-C, bd_000-projects-21re). */
+export const ScoringWeightDimensionSchema = z.enum(['matcher', 'mm-class', 'judge']);
+
+/** A single weight entry under the weighted rule (deferral-C). */
+export const ScoringWeightSchema = z
+  .object({
+    key: z.string(),
+    weight: z.number().nonnegative(),
+  })
+  .strict();
+
+/** Deterministic exact-tie resolution (deferral-C) — NOT a pass threshold. */
+export const ScoringTiebreakerSchema = z.enum(['fail-closed', 'fail-open', 'first-listed']);
+
 /**
  * Open-world per the canonical JSON Schema: schemas/v1/eval-spec.schema.json
  * declares `scoring` WITHOUT `additionalProperties: false` (unlike the
@@ -27,6 +41,9 @@ export const ScoringAggregationRuleSchema = z.enum(['majority', 'unanimous', 'we
 export const ScoringConfigSchema = z
   .object({
     aggregation_rule: ScoringAggregationRuleSchema,
+    weight_dimension: ScoringWeightDimensionSchema.optional(),
+    weights: z.array(ScoringWeightSchema).optional(),
+    tiebreaker: ScoringTiebreakerSchema.optional(),
     extensions: z.record(z.string(), z.unknown()).optional(),
   })
   .passthrough();
@@ -67,8 +84,38 @@ export const CompositionDagSchema = z
   })
   .strict();
 
-/** Assertion expressions are typed `unknown` per spec STOP directive. */
-export const AssertionExpressionSchema = z.unknown();
+/** v1 named assertion-class set (deferral-A, bd_000-projects-gzgj). */
+export const AssertionClassSchema = z.enum([
+  'output-equals',
+  'output-contains',
+  'output-matches',
+  'schema-conforms',
+  'judge-verdict',
+  'matcher-satisfied',
+]);
+
+/**
+ * Assertion expression — named-class discriminated union plus an open
+ * extension slot (deferral-A lockup, bd_000-projects-gzgj). Per-class `target`
+ * payload stays `unknown` — refined per engagement at a higher layer.
+ */
+export const AssertionExpressionSchema = z.union([
+  z
+    .object({
+      class: AssertionClassSchema,
+      target: z.unknown(),
+      negate: z.boolean().optional(),
+    })
+    .strict(),
+  z
+    .object({
+      class: z.string(),
+      target: z.unknown(),
+      negate: z.boolean().optional(),
+      extension: z.literal(true),
+    })
+    .strict(),
+]);
 
 export const EvalSpecSchema = z
   .object({
@@ -86,6 +133,8 @@ export const EvalSpecSchema = z
     created_at: Rfc3339Schema,
     created_by: ActorIdentitySchema,
     content_hash: Sha256Schema,
+    /** RESERVED multi-tenancy slot (deferral-G, bd_000-projects-k0fj). */
+    tenant_id: Uuidv7Schema.optional(),
   })
   .strict();
 

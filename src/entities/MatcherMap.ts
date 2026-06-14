@@ -7,14 +7,7 @@
  * Immutable once published; revisions = new row + incremented version.
  */
 
-import type {
-  ActorIdentity,
-  KebabSlug,
-  Rfc3339,
-  Sha256,
-  SemVer,
-  Uuidv7,
-} from '../primitives.js';
+import type { ActorIdentity, KebabSlug, Rfc3339, Sha256, SemVer, Uuidv7 } from '../primitives.js';
 import type { TransitionMap } from '../state-machines/types.js';
 
 /**
@@ -73,11 +66,62 @@ export type MatcherInputPattern =
   | {
       readonly kind: 'structural';
       /**
-       * Wholly undefined in Blueprint B § 2.3. Lock when a downstream
-       * engagement specifies the matcher format.
+       * Structural-matcher payload (deferral-B lockup; bd_000-projects-ra9a).
+       * Blueprint B § 2.3 left this undefined; it is now LOCKED as a
+       * conjunction of path-anchored structural constraints over the candidate
+       * input's parsed tree. See {@link StructuralMatcher}.
        */
-      readonly matcher: unknown;
+      readonly matcher: StructuralMatcher;
     };
+
+/**
+ * Comparison operator for a single structural constraint (deferral-B lockup;
+ * bd_000-projects-ra9a). Closed v1 set:
+ *   - `exists`       — the path resolves to a value (the value is irrelevant)
+ *   - `absent`       — the path does NOT resolve
+ *   - `equals`       — resolved value deep-equals `value`
+ *   - `type-is`      — resolved value's JSON type equals `value` (a type tag)
+ *   - `matches`      — resolved STRING value matches the regex in `value`
+ *   - `length-equals`— resolved array/string length equals `value`
+ */
+export type StructuralOp = 'exists' | 'absent' | 'equals' | 'type-is' | 'matches' | 'length-equals';
+
+/** The v1 structural-op set as a runtime tuple. */
+export const STRUCTURAL_OPS = [
+  'exists',
+  'absent',
+  'equals',
+  'type-is',
+  'matches',
+  'length-equals',
+] as const satisfies readonly StructuralOp[];
+
+/**
+ * A single structural constraint: anchor a `path` into the candidate's parsed
+ * tree, apply `op`, optionally compare against `value`.
+ *
+ * `path` is a dotted/bracketed accessor (e.g. `result.items[0].status`); the
+ * exact accessor grammar is the runtime's concern (the kernel SAYS the shape,
+ * it does not walk the tree). `value` is required for the value-bearing ops
+ * (`equals`/`type-is`/`matches`/`length-equals`) and omitted for the
+ * presence ops (`exists`/`absent`) — enforced at the validator layer.
+ */
+export interface StructuralConstraint {
+  readonly path: string;
+  readonly op: StructuralOp;
+  readonly value?: unknown;
+}
+
+/**
+ * Structural matcher — a conjunction (AND) of path-anchored constraints. All
+ * constraints must hold for the structural match to succeed. `mode` is fixed
+ * to `all` in v1 (every constraint must hold); the field is present so a
+ * future `any` (OR) mode lands additively without a shape break.
+ */
+export interface StructuralMatcher {
+  readonly mode: 'all';
+  readonly constraints: readonly StructuralConstraint[];
+}
 
 /**
  * Expected-behavior variant identifiers blessed by Blueprint B § 2.3

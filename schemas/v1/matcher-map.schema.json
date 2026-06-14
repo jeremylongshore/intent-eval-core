@@ -45,12 +45,51 @@
         },
         {
           "type": "object",
-          "additionalProperties": true,
+          "additionalProperties": false,
           "required": ["kind", "matcher"],
           "properties": {
             "kind": { "const": "structural" },
             "matcher": {
-              "description": "Wholly undefined in Blueprint B § 2.3. Lock when a downstream engagement specifies (bd_000-projects-ra9a)."
+              "description": "Structural-matcher payload — LOCKED per deferral-B (bd_000-projects-ra9a). A conjunction of path-anchored constraints over the candidate's parsed tree.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["mode", "constraints"],
+              "properties": {
+                "mode": {
+                  "type": "string",
+                  "description": "v1 fixes `all` (every constraint must hold); reserved for a future additive `any`.",
+                  "enum": ["all"]
+                },
+                "constraints": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["path", "op"],
+                    "properties": {
+                      "path": {
+                        "type": "string",
+                        "description": "Dotted/bracketed accessor into the candidate's parsed tree. Accessor grammar is the runtime's concern.",
+                        "minLength": 1
+                      },
+                      "op": {
+                        "type": "string",
+                        "enum": [
+                          "exists",
+                          "absent",
+                          "equals",
+                          "type-is",
+                          "matches",
+                          "length-equals"
+                        ]
+                      },
+                      "value": {
+                        "description": "Required for value-bearing ops (equals/type-is/matches/length-equals); omitted for presence ops (exists/absent). Cross-field enforced at the validator layer."
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }
