@@ -20,6 +20,24 @@ pnpm install
 pnpm run check          # full 9-step gate chain
 ```
 
+### Git hooks
+
+`pnpm install` runs `husky`, which installs the default pre-commit hook
+(`.husky/pre-commit`: escape-scan → boundaries → lint-staged). That is the
+canonical local gate — no extra step is required.
+
+A [`lefthook.yml`](lefthook.yml) is also provided as an **opt-in** alternative
+that mirrors the same staged-only subset (plus a fast `pre-push` typecheck). It
+is *not* wired up by default — lefthook and husky both write to `.git/hooks` and
+the last installer wins. If you prefer lefthook, install it once:
+
+```bash
+pnpm dlx lefthook install   # or: npx lefthook install
+```
+
+Both installers are interchangeable; pick one, not both. The authoritative gates
+remain CI regardless of which (or neither) you install locally.
+
 ### Quick self-check
 
 ```bash
