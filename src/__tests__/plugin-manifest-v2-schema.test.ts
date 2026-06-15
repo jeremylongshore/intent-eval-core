@@ -394,6 +394,36 @@ describe('plugin-manifest v2 — ajv ↔ Zod fold agreement on composition branc
   });
 });
 
+describe('plugin-manifest v2 — non-empty (minLength 1) fold-agreement (ajv ↔ Zod)', () => {
+  // The STRICT v2 contract floors `description` (upstream-base) and `license`
+  // (is-overlay) at minLength:1. Before the v2 Zod mirrored those floors, ajv
+  // REJECTED an empty string on each field while the generated Zod ACCEPTED it
+  // — the ajv ↔ Zod fold-agreement gap this PR closes (the D8 backstop). These
+  // cases pin the agreement at the COMPOSITION tier: BOTH validators reject an
+  // empty string and accept a single character (the floor is exactly 1, not 2).
+  it.each([
+    ['empty description', { description: '' }],
+    ['empty license', { license: '' }],
+  ])('both ajv and v2 Zod reject %s', (_label, patch) => {
+    const artifact = { ...V2_VALID, ...(patch as Record<string, unknown>) };
+    expect(validateComposition(artifact), `ajv must reject ${_label}`).toBe(false);
+    expect(PluginManifestV2Schema.safeParse(artifact).success, `v2 Zod must reject ${_label}`).toBe(
+      false,
+    );
+  });
+
+  it('a single-character value on each floored field is accepted (floor is exactly minLength 1)', () => {
+    for (const field of ['description', 'license'] as const) {
+      const artifact = { ...V2_VALID, [field]: 'x' };
+      expect(validateComposition(artifact), `ajv accepts 1-char ${field}`).toBe(true);
+      expect(
+        PluginManifestV2Schema.safeParse(artifact).success,
+        `v2 Zod accepts 1-char ${field}`,
+      ).toBe(true);
+    }
+  });
+});
+
 describe('plugin-manifest v2 — monotonicity (overlay strictly additive/narrowing on the v2 base)', () => {
   it('base required is exactly the upstream floor [name]', () => {
     expect([...PLUGIN_MANIFEST_V2_BASE_REQUIRED]).toEqual(['name']);

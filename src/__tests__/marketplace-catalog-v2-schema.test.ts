@@ -365,7 +365,13 @@ describe('marketplace-catalog v2 — ajv ↔ Zod fold agreement on composition b
     ['non-string version rejected', { version: 42 }, false],
     ['prerelease semver accepted', { version: '1.0.0-rc.1' }, true],
     ['non-string description rejected', { description: 42 }, false],
+    // minLength:1 floors (ajv ↔ Zod parity per this PR): an empty optional
+    // `description`/`license` is rejected by BOTH validators; 1-char is accepted.
+    ['empty description rejected (minLength 1)', { description: '' }, false],
+    ['1-char description accepted (floor is exactly 1)', { description: 'x' }, true],
     ['non-string license rejected', { license: 7 }, false],
+    ['empty license rejected (minLength 1)', { license: '' }, false],
+    ['1-char license accepted (floor is exactly 1)', { license: 'x' }, true],
     ['non-uri homepage rejected', { homepage: 'not a uri at all' }, false],
     ['non-string homepage rejected', { homepage: 7 }, false],
     ['string keywords rejected', { keywords: 'plugins' }, false],
