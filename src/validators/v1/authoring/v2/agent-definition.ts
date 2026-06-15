@@ -122,8 +122,13 @@ export function upstreamBaseIssues(artifact: AuthoringArtifact): FoldIssue[] {
     issues.push({ message: 'name must be a string', path: ['name'] });
   }
 
-  if ('description' in artifact && typeof artifact['description'] !== 'string') {
-    issues.push({ message: 'description must be a string', path: ['description'] });
+  if ('description' in artifact) {
+    const description = artifact['description'];
+    if (typeof description !== 'string') {
+      issues.push({ message: 'description must be a string', path: ['description'] });
+    } else if (description.length < 1) {
+      issues.push({ message: 'description must not be empty', path: ['description'] });
+    }
   }
 
   if ('tools' in artifact) {
@@ -285,8 +290,13 @@ export function isOverlayIssues(artifact: AuthoringArtifact): FoldIssue[] {
     }
   }
 
-  if ('author' in artifact && typeof artifact['author'] !== 'string') {
-    issues.push({ message: 'author must be a string', path: ['author'] });
+  if ('author' in artifact) {
+    const author = artifact['author'];
+    if (typeof author !== 'string') {
+      issues.push({ message: 'author must be a string', path: ['author'] });
+    } else if (author.length < 1) {
+      issues.push({ message: 'author must not be empty', path: ['author'] });
+    }
   }
 
   if ('tags' in artifact && !isStringArray(artifact['tags'])) {

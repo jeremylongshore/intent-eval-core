@@ -847,14 +847,61 @@ function constName(fieldConstPrefix: string, field: string, suffix: string): str
 }
 
 /**
+ * The non-empty (minLength >= 1) emit for the universal-fold-owned `description`
+ * field. Across every contract the base leaves `description`'s TYPE to itself
+ * (type-only check) and its TOKEN-BUDGET CAP to the disclosureMarkers fold — but
+ * the fold only caps the MAXimum, so a base schema that declares `minLength: 1`
+ * on `description` (every authoring base does, per agentskills.io "1-1024 chars,
+ * non-empty") needs the FLOOR mirrored somewhere for the Zod layer to agree with
+ * ajv (which enforces it from the base schema). v1 is BYTE-FROZEN at 0.4.1 and its
+ * Zod was authored without this floor, so the emit is GATED to the v2 family —
+ * adding it to v1 would be a forbidden tightening of the frozen contract.
+ */
+function descriptionNonEmptyCheck(): string[] {
+  return [
+    `  if ('description' in artifact) {`,
+    `    const description = artifact['description'];`,
+    `    if (typeof description !== 'string') {`,
+    `      issues.push({ message: 'description must be a string', path: ['description'] });`,
+    `    } else if (description.length < 1) {`,
+    `      issues.push({ message: 'description must not be empty', path: ['description'] });`,
+    `    }`,
+    `  }`,
+  ];
+}
+
+/**
  * Render the per-field type/constraint checks for a base-layer field, dispatched
  * off the field's JSON-Schema keywords (type / pattern / maxLength / format /
  * items / nested-required) — NOT off the field name. This is what lets a new
  * contract's distinct fields generate without per-name special-casing.
+ *
+ * `version` gates the v2-only `description` non-empty floor (see
+ * descriptionNonEmptyCheck): the v1 family is byte-frozen, so a tightening of its
+ * generated Zod is forbidden — only the v2 family mirrors the base `minLength`.
  */
-function baseFieldCheck(field: string, schema: FieldSchema, fieldConstPrefix: string): string[] {
+function baseFieldCheck(
+  field: string,
+  schema: FieldSchema,
+  fieldConstPrefix: string,
+  version: AuthoringVersion,
+): string[] {
   const lines: string[] = [];
   const access = `artifact['${field}']`;
+
+  // v2-only: the `description` non-empty floor. The base schema declares
+  // `minLength: 1` on `description` (agentskills.io "non-empty"); ajv enforces it,
+  // and the disclosureMarkers fold caps only the MAXimum — so the v2 Zod mirrors
+  // the FLOOR here to keep ajv ↔ Zod fold-agreement. v1 stays type-only (frozen):
+  // mirroring the floor into v1 would tighten the byte-frozen 0.4.1 contract.
+  if (
+    version === 'v2' &&
+    field === 'description' &&
+    schema.type === 'string' &&
+    (schema.minLength ?? 0) >= 1
+  ) {
+    return descriptionNonEmptyCheck();
+  }
 
   // String with a kebab-case pattern + a maxLength ceiling (e.g. `name`).
   if (schema.type === 'string' && schema.pattern !== undefined && schema.maxLength !== undefined) {
@@ -1255,20 +1302,79 @@ function baseFieldCheck(field: string, schema: FieldSchema, fieldConstPrefix: st
 }
 
 /**
+ * Whether an overlay STRING field NARROWS the base with a non-empty floor that the
+ * base layer does not already enforce — i.e. the overlay declares `minLength >= 1`
+ * on a plain scalar string (no pattern / format / enum / SemVer / scoped-tool /
+ * union shape, which carry their own dedicated emit) AND the base either does not
+ * declare that field or declares it without the same `minLength` floor. This is
+ * the v2 `author` (net-new, minLength 1), `license`/`compatibility` (promoted from
+ * the base, which types them but does NOT floor them) case — the ajv ↔ Zod
+ * fold-agreement gap the v2 Zod must close. v1 is byte-frozen, so this emit is
+ * GATED to the v2 family by the caller.
+ */
+function overlayNarrowsNonEmpty(
+  field: string,
+  schema: FieldSchema,
+  baseProps: Readonly<Record<string, FieldSchema>>,
+): boolean {
+  if (
+    schema.type !== 'string' ||
+    (schema.minLength ?? 0) < 1 ||
+    schema.pattern !== undefined ||
+    schema.format !== undefined ||
+    schema.enum !== undefined ||
+    schema.maxLength !== undefined
+  ) {
+    return false;
+  }
+  const baseFloor = baseProps[field]?.minLength ?? 0;
+  return (schema.minLength ?? 0) > baseFloor;
+}
+
+/**
  * Render the per-field narrowing checks for an overlay-layer field, dispatched
  * off JSON-Schema keywords. A field whose TYPE is already enforced by the base
  * (the overlay only ADDS it to `required`, re-declaring no narrowing constraint)
  * is skipped here — its presence is the required check, its type the base's — to
  * keep messages single-sourced.
+ *
+ * `version` gates the v2-only non-empty narrowing (overlayNarrowsNonEmpty): the v1
+ * family is byte-frozen, so its generated Zod must not gain a tightening — only the
+ * v2 family mirrors the overlay's `minLength` floor on `author`/`license`/
+ * `compatibility`.
  */
 function overlayFieldCheck(
   field: string,
   schema: FieldSchema,
   baseProps: Readonly<Record<string, FieldSchema>>,
   fieldConstPrefix: string,
+  version: AuthoringVersion,
 ): string[] {
   const lines: string[] = [];
   const access = `artifact['${field}']`;
+
+  // v2-only: the overlay non-empty floor. When the overlay narrows a plain scalar
+  // string with `minLength >= 1` that the base does not floor (v2 `author` —
+  // net-new — and `license`/`compatibility` — promoted from a base that types but
+  // does not floor them), emit the type + non-empty check so the v2 Zod agrees
+  // with ajv (which enforces the floor from the overlay schema). This runs BEFORE
+  // the `field in baseProps` single-sourcing short-circuit below, because for a
+  // promoted field the FLOOR is the overlay's narrowing — not a base constraint —
+  // so it would otherwise be silently dropped. v1 stays as-is (frozen): mirroring
+  // the floor into v1 would tighten the byte-frozen 0.4.1 contract.
+  if (version === 'v2' && overlayNarrowsNonEmpty(field, schema, baseProps)) {
+    lines.push(
+      `  if ('${field}' in artifact) {`,
+      `    const ${field} = artifact['${field}'];`,
+      `    if (typeof ${field} !== 'string') {`,
+      `      issues.push({ message: '${field} must be a string', path: ['${field}'] });`,
+      `    } else if (${field}.length < ${schema.minLength}) {`,
+      `      issues.push({ message: '${field} must not be empty', path: ['${field}'] });`,
+      `    }`,
+      `  }`,
+    );
+    return lines;
+  }
 
   // x-scoped-tool (v2) — the STRICT scoped-tool narrowing on a string|array field
   // (e.g. `allowed-tools` narrowed so a BARE unscoped `Bash` is rejected; only
@@ -1827,7 +1933,7 @@ function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSc
   // Base-layer checks: every declared base property gets a check, in declaration
   // order (the JSON Schema's key order is the canonical order).
   const baseChecks = Object.keys(baseProps)
-    .map((f) => baseFieldCheck(f, baseProps[f] ?? {}, fieldConstPrefix).join('\n'))
+    .map((f) => baseFieldCheck(f, baseProps[f] ?? {}, fieldConstPrefix, spec.version).join('\n'))
     .join('\n\n');
 
   // Layer-level conditional requiredness on the base (DR-062 per-transport
@@ -1841,7 +1947,11 @@ function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSc
   // here — then the visibility-array loop (if any), then
   // required_environment_variables (if present).
   const overlayCheckBlocks = overlayReq
-    .map((f) => overlayFieldCheck(f, overlayProps[f] ?? {}, baseProps, fieldConstPrefix).join('\n'))
+    .map((f) =>
+      overlayFieldCheck(f, overlayProps[f] ?? {}, baseProps, fieldConstPrefix, spec.version).join(
+        '\n',
+      ),
+    )
     .filter((s) => s.length > 0);
   const optionalOverlayBlocks = Object.keys(overlayProps)
     .filter(
@@ -1850,7 +1960,7 @@ function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSc
         !VISIBILITY_FIELDS.has(f) &&
         f !== 'required_environment_variables',
     )
-    .map((f) => baseFieldCheck(f, overlayProps[f] ?? {}, fieldConstPrefix).join('\n'))
+    .map((f) => baseFieldCheck(f, overlayProps[f] ?? {}, fieldConstPrefix, spec.version).join('\n'))
     .filter((s) => s.length > 0);
   const overlayChecks = [...overlayCheckBlocks, ...optionalOverlayBlocks].join('\n\n');
 

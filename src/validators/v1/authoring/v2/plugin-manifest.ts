@@ -295,6 +295,24 @@ export function isOverlayIssues(artifact: AuthoringArtifact): FoldIssue[] {
     }
   }
 
+  if ('description' in artifact) {
+    const description = artifact['description'];
+    if (typeof description !== 'string') {
+      issues.push({ message: 'description must be a string', path: ['description'] });
+    } else if (description.length < 1) {
+      issues.push({ message: 'description must not be empty', path: ['description'] });
+    }
+  }
+
+  if ('license' in artifact) {
+    const license = artifact['license'];
+    if (typeof license !== 'string') {
+      issues.push({ message: 'license must be a string', path: ['license'] });
+    } else if (license.length < 1) {
+      issues.push({ message: 'license must not be empty', path: ['license'] });
+    }
+  }
+
   if ('commands' in artifact && !isStringArray(artifact['commands'])) {
     issues.push({ message: 'commands must be an array of strings', path: ['commands'] });
   }

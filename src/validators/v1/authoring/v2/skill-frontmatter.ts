@@ -108,8 +108,13 @@ export function upstreamBaseIssues(artifact: AuthoringArtifact): FoldIssue[] {
     }
   }
 
-  if ('description' in artifact && typeof artifact['description'] !== 'string') {
-    issues.push({ message: 'description must be a string', path: ['description'] });
+  if ('description' in artifact) {
+    const description = artifact['description'];
+    if (typeof description !== 'string') {
+      issues.push({ message: 'description must be a string', path: ['description'] });
+    } else if (description.length < 1) {
+      issues.push({ message: 'description must not be empty', path: ['description'] });
+    }
   }
 
   if ('license' in artifact && typeof artifact['license'] !== 'string') {
@@ -170,8 +175,31 @@ export function isOverlayIssues(artifact: AuthoringArtifact): FoldIssue[] {
     }
   }
 
-  if ('author' in artifact && typeof artifact['author'] !== 'string') {
-    issues.push({ message: 'author must be a string', path: ['author'] });
+  if ('author' in artifact) {
+    const author = artifact['author'];
+    if (typeof author !== 'string') {
+      issues.push({ message: 'author must be a string', path: ['author'] });
+    } else if (author.length < 1) {
+      issues.push({ message: 'author must not be empty', path: ['author'] });
+    }
+  }
+
+  if ('license' in artifact) {
+    const license = artifact['license'];
+    if (typeof license !== 'string') {
+      issues.push({ message: 'license must be a string', path: ['license'] });
+    } else if (license.length < 1) {
+      issues.push({ message: 'license must not be empty', path: ['license'] });
+    }
+  }
+
+  if ('compatibility' in artifact) {
+    const compatibility = artifact['compatibility'];
+    if (typeof compatibility !== 'string') {
+      issues.push({ message: 'compatibility must be a string', path: ['compatibility'] });
+    } else if (compatibility.length < 1) {
+      issues.push({ message: 'compatibility must not be empty', path: ['compatibility'] });
+    }
   }
 
   if ('tags' in artifact && !isStringArray(artifact['tags'])) {
