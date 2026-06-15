@@ -226,8 +226,22 @@ export function isOverlayIssues(artifact: AuthoringArtifact): FoldIssue[] {
     }
   }
 
-  if ('license' in artifact && typeof artifact['license'] !== 'string') {
-    issues.push({ message: 'license must be a string', path: ['license'] });
+  if ('description' in artifact) {
+    const description = artifact['description'];
+    if (typeof description !== 'string') {
+      issues.push({ message: 'description must be a string', path: ['description'] });
+    } else if (description.length < 1) {
+      issues.push({ message: 'description must not be empty', path: ['description'] });
+    }
+  }
+
+  if ('license' in artifact) {
+    const license = artifact['license'];
+    if (typeof license !== 'string') {
+      issues.push({ message: 'license must be a string', path: ['license'] });
+    } else if (license.length < 1) {
+      issues.push({ message: 'license must not be empty', path: ['license'] });
+    }
   }
 
   if ('homepage' in artifact) {

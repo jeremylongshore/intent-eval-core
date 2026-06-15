@@ -29,6 +29,28 @@ family pointer v1 → v2.)
 
 ## [Unreleased]
 
+### Codegen / Zod — non-empty (`minLength: 1`) fold-agreement parity (all v2 contracts)
+
+> **Acting-CTO call from the 2026-06-14 umbrella review.** The v2 STRICT schemas already
+> declared `minLength: 1` on `description` (upstream-base) and on
+> `author` / `license` / `compatibility` (is-overlay), and ajv enforced those floors — but the
+> codegen-generated v2 Zod validators checked those string fields by TYPE only, never the floor.
+> So an empty string (`{description:''}` / `{author:''}` / `{license:''}` / `{compatibility:''}`)
+> PASSED Zod while ajv REJECTED it — an ajv ↔ Zod fold-agreement gap (the DR-044 D8 backstop). This
+> is a Zod-side parity fix to an existing schema constraint, **not a schema tightening** — **no v2
+> schema file changed**; the floors were already present.
+
+| Layer | Change |
+| --- | --- |
+| `scripts/codegen-authoring.ts` | The keyword-driven codegen now emits a non-empty check for a `minLength >= 1` string field in two v2-gated spots: (a) the universal-fold-owned `description` (its TYPE is the base's, its MAX cap is the disclosureMarkers fold's, but its FLOOR is the base schema's `minLength` — now mirrored); (b) an overlay field that NARROWS a base string with `minLength` the base does not floor (`author` net-new; `license`/`compatibility` promoted from a base that types but does not floor them). Both emits are **gated to `version === 'v2'`** so the BYTE-FROZEN v1 generated Zod is untouched (mirroring the floor into v1 would be a forbidden tightening of the `@intentsolutions/core@0.4.1` contract). Feature-gated: regenerating leaves every v1 output byte-identical (the authoring-v1-frozen guard stays green). lineage: dr-049@authoring-v2-zod-minlength-parity |
+| `src/validators/v1/authoring/v2/skill-frontmatter.ts` | REGENERATED: `description` / `author` / `license` / `compatibility` now reject an empty string, agreeing with ajv. lineage: dr-049@authoring-v2-zod-minlength-parity |
+| `src/validators/v1/authoring/v2/{mcp-config,plugin-manifest,agent-definition,marketplace-catalog}.ts` | REGENERATED: the same v2-gated `description` non-empty floor (their v2 bases declare `minLength: 1` on `description`). `hook-config` has no top-level `description` floor (nested handler shape), so it is unaffected. lineage: dr-049@authoring-v2-zod-minlength-parity |
+| tests | `src/__tests__/skill-frontmatter-v2-schema.test.ts` gains a non-empty fold-agreement block asserting BOTH ajv (composed v2 schema) AND v2 Zod reject each empty-string case, that a 1-char value is accepted (floor is exactly `minLength 1`), and that the floor is a genuine v2-only tightening (v1 ACCEPTS empty, v2 REJECTS). lineage: dr-049@authoring-v2-zod-minlength-parity |
+
+The one remaining documented ajv ↔ Zod disagreement (INV-ENV-DISJOINT / kyh9 — Zod-only, not
+JSON-Schema-expressible) is recorded for AJV-only consumers in the root
+[`CONSUMERS.md`](../../../CONSUMERS.md).
+
 ### Contract #4 — `mcp-config` (DR-062 projection-mirrored v2 base — tier-3 reconciliation)
 
 > **DR-062 family note.** Per `062-AT-DECR-tier3-reconciliation-authoring-v2-bases-2026-06-12`

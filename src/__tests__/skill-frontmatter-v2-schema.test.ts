@@ -386,6 +386,61 @@ describe('skill-frontmatter v2 — Zod surface completeness (ajv ↔ Zod agree o
   });
 });
 
+describe('skill-frontmatter v2 — non-empty (minLength 1) fold-agreement (ajv ↔ Zod)', () => {
+  // The STRICT v2 schemas enforce minLength:1 on `description` (upstream-base) and
+  // `author`/`license`/`compatibility` (is-overlay). Before the v2 Zod mirrored
+  // those floors, ajv REJECTED an empty string on each field while the generated
+  // Zod ACCEPTED it — an ajv ↔ Zod fold-agreement gap (the D8 backstop). These
+  // cases pin the agreement: BOTH validators must reject an empty string on each
+  // of the four floored fields. (They FAIL on the pre-fix v2 Zod, PASS on the
+  // fixed one.) The frozen v1 family deliberately does NOT carry this floor — see
+  // authoring-v1-frozen.test.ts; tightening v1 is forbidden.
+  it.each([
+    ['empty description', { description: '' }],
+    ['empty author', { author: '' }],
+    ['empty license', { license: '' }],
+    ['empty compatibility', { compatibility: '' }],
+  ])('both ajv and v2 Zod reject %s', (_label, patch) => {
+    const artifact = { ...V2_VALID, ...(patch as Record<string, unknown>) };
+    expect(validateV2(artifact), `ajv must reject ${_label}`).toBe(false);
+    expect(
+      SkillFrontmatterV2Schema.safeParse(artifact).success,
+      `v2 Zod must reject ${_label}`,
+    ).toBe(false);
+  });
+
+  it('a single-character value on each floored field is accepted (floor is exactly minLength 1)', () => {
+    // Sanity that the floor is non-empty (>= 1), not an over-tightening (>= 2).
+    for (const field of ['description', 'author', 'license', 'compatibility'] as const) {
+      const artifact = { ...V2_VALID, [field]: 'x' };
+      expect(validateV2(artifact), `ajv accepts 1-char ${field}`).toBe(true);
+      expect(
+        SkillFrontmatterV2Schema.safeParse(artifact).success,
+        `v2 Zod accepts 1-char ${field}`,
+      ).toBe(true);
+    }
+  });
+
+  it('the empty-string floor is a v2-only tightening (v1 ACCEPTS, v2 REJECTS)', () => {
+    // Proves these are genuinely NEW v2 tightenings (the frozen v1 contract accepts
+    // an empty string on each field — its hand-authored Zod never floored them),
+    // not pre-existing rules. Mirrors the V2_ONLY_VIOLATIONS monotonic-additive
+    // proof for the four floored fields.
+    for (const field of ['description', 'author', 'license', 'compatibility'] as const) {
+      const artifact = { ...V2_VALID, [field]: '' };
+      expect(
+        SkillFrontmatterV1Schema.safeParse(artifact).success,
+        `v1 accepts empty ${field}`,
+      ).toBe(true);
+      expect(validateV2(artifact), `v2 ajv rejects empty ${field}`).toBe(false);
+      expect(
+        SkillFrontmatterV2Schema.safeParse(artifact).success,
+        `v2 Zod rejects empty ${field}`,
+      ).toBe(false);
+    }
+  });
+});
+
 describe('skill-frontmatter v2 — fold-schema + helper exports', () => {
   it('the exported v2 fold schemas each accept a clean artifact and reject their own violation', () => {
     const clean = { name: 'ok-skill', description: 'A clean description.' };

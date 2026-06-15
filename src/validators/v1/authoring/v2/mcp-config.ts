@@ -173,8 +173,13 @@ export function upstreamBaseIssues(artifact: AuthoringArtifact): FoldIssue[] {
 export function isOverlayIssues(artifact: AuthoringArtifact): FoldIssue[] {
   const issues: FoldIssue[] = [...requiredFieldsIssues(artifact, MCP_CONFIG_OVERLAY_REQUIRED)];
 
-  if ('description' in artifact && typeof artifact['description'] !== 'string') {
-    issues.push({ message: 'description must be a string', path: ['description'] });
+  if ('description' in artifact) {
+    const description = artifact['description'];
+    if (typeof description !== 'string') {
+      issues.push({ message: 'description must be a string', path: ['description'] });
+    } else if (description.length < 1) {
+      issues.push({ message: 'description must not be empty', path: ['description'] });
+    }
   }
 
   if ('version' in artifact) {

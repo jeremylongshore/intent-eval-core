@@ -359,6 +359,31 @@ describe('mcp-config v2 — ajv ↔ Zod fold agreement on composition branches',
   });
 });
 
+describe('mcp-config v2 — non-empty (minLength 1) fold-agreement (ajv ↔ Zod)', () => {
+  // The STRICT v2 contract floors the optional `description` at minLength:1.
+  // Before the v2 Zod mirrored that floor, ajv REJECTED an empty string while
+  // the generated Zod ACCEPTED it — the ajv ↔ Zod fold-agreement gap this PR
+  // closes (the D8 backstop). These cases pin the agreement at the COMPOSITION
+  // tier: BOTH validators reject an empty string and accept a single character
+  // (the floor is exactly 1, not 2).
+  it('both ajv and v2 Zod reject an empty description', () => {
+    const artifact = { ...V2_VALID, description: '' };
+    expect(validateComposition(artifact), 'ajv must reject empty description').toBe(false);
+    expect(
+      McpConfigV2Schema.safeParse(artifact).success,
+      'v2 Zod must reject empty description',
+    ).toBe(false);
+  });
+
+  it('a single-character description is accepted (floor is exactly minLength 1)', () => {
+    const artifact = { ...V2_VALID, description: 'x' };
+    expect(validateComposition(artifact), 'ajv accepts 1-char description').toBe(true);
+    expect(McpConfigV2Schema.safeParse(artifact).success, 'v2 Zod accepts 1-char description').toBe(
+      true,
+    );
+  });
+});
+
 describe('mcp-config v2 — monotonicity (overlay strictly additive/narrowing on the v2 base)', () => {
   it('base required is exactly the upstream flat floor [name]', () => {
     expect([...MCP_CONFIG_V2_BASE_REQUIRED]).toEqual(['name']);

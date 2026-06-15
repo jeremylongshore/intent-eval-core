@@ -68,6 +68,7 @@ CHANGELOG.md
 CLAUDE.md
 CODE_OF_CONDUCT.md
 CODEOWNERS
+CONSUMERS.md
 CONTRIBUTING.md
 FORBIDDEN.md
 LICENSE
@@ -103,6 +104,7 @@ Annotations (what each is):
 - `CLAUDE.md` — Claude-Code-specific guidance
 - `CODE_OF_CONDUCT.md` — Contributor Covenant 2.1
 - `CODEOWNERS` — codeowner routing for PR review
+- `CONSUMERS.md` — informative consumer note: the one AJV-only-vs-Zod carve-out (INV-ENV-DISJOINT / kyh9) an AJV-only consumer must enforce itself
 - `CONTRIBUTING.md` — contribution guidelines + architectural bindings
 - `FORBIDDEN.md` — boundary forbidden set
 - `LICENSE` — Apache 2.0
