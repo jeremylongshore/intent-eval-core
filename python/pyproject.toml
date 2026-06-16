@@ -1,0 +1,78 @@
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "intent-eval-core"
+# LOCKSTEP with the npm @intentsolutions/core package.json#version. The JSON
+# Schemas under schemas/v1/ are the shared source of truth for both
+# distributions, so the versions move together. CI gate:
+# scripts/check_version_lockstep.py.
+version = "0.6.0"
+description = "Python (Pydantic v2) distribution of @intentsolutions/core — the canonical contracts kernel for the Intent Eval Platform. The same entity + predicate contracts the TypeScript package exposes as Zod validators + JSON Schemas, as Pydantic v2 models."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+license-files = ["LICENSE", "NOTICE"]
+authors = [
+  { name = "Jeremy Longshore", email = "jeremy@intentsolutions.io" },
+]
+keywords = [
+  "intent-eval",
+  "contracts",
+  "kernel",
+  "pydantic",
+  "json-schema",
+  "evidence-bundle",
+  "gate-result",
+  "validation",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries",
+  "Topic :: Software Development :: Quality Assurance",
+  "Typing :: Typed",
+]
+dependencies = [
+  "pydantic>=2.5,<3",
+]
+
+[project.optional-dependencies]
+# Codegen + parity-test toolchain. The datamodel-code-generator version is
+# PINNED for reproducible generation (matches DCG_PIN in scripts/codegen_pydantic.py).
+dev = [
+  "datamodel-code-generator[http]==0.25.9",
+  "pytest>=8.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/jeremylongshore/intent-eval-core"
+Repository = "https://github.com/jeremylongshore/intent-eval-core"
+Issues = "https://github.com/jeremylongshore/intent-eval-core/issues"
+Changelog = "https://github.com/jeremylongshore/intent-eval-core/blob/main/CHANGELOG.md"
+"npm package" = "https://www.npmjs.com/package/@intentsolutions/core"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/intent_eval_core"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src",
+  "/tests",
+  "/README.md",
+  "/pyproject.toml",
+  "/LICENSE",
+  "/NOTICE",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

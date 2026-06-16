@@ -34,6 +34,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          # ISEDC E09 DR / CISO reproducible-from-tag invariant: pin the
+          # checked-out bytes to the exact ref that triggered this run (the
+          # pushed tag), not actions/checkout's implicit default. The bytes we
+          # publish + provenance-attest MUST be the tag's bytes, never a moving
+          # branch head — provenance is a one-way door.
+          ref: ${{ github.ref }}
           fetch-depth: 0
 
       - name: Setup pnpm
@@ -98,6 +104,132 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+  # ── Publish the Python (Pydantic v2) distribution to PyPI (iec-E08c/E08d) ──
+  #
+  # Tag-only (v*.*.*). Mirrors the proven audit-harness pattern. GUARDED: the
+  # publish + sign steps no-op when PYPI_TOKEN is not configured as a repo
+  # secret — the job runs, detects the missing token, and exits 0 with an
+  # explanatory log instead of failing the release. Ships wired-but-DORMANT; it
+  # activates automatically the moment the secret is set, with no further code
+  # change. NEVER publishes on a PR (PRs don't push tags; the `on:` trigger is
+  # tag-only).
+  #
+  # First-publish note: intent-eval-core is a NEW public PyPI package; the very
+  # first upload is an immutable claim on the name. The maintainer controls when
+  # the first tag is pushed — this job does nothing until then.
+  publish-pypi:
+    name: Publish Python distribution to PyPI (guarded on PYPI_TOKEN)
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # create/attach to the GitHub Release (.sigstore bundles)
+      id-token: write # sigstore-python keyless signing (Fulcio OIDC)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # ISEDC E09 DR / CISO reproducible-from-tag invariant: the PyPI
+          # sdist/wheel is BUILT from this checkout, so the bytes MUST be the
+          # pushed tag's bytes. This job is tag-only.
+          ref: ${{ github.ref }}
+
+      - name: Verify tag matches Python distribution version (lockstep)
+        run: |
+          tag_version="${GITHUB_REF#refs/tags/v}"
+          # check_version_lockstep.py asserts npm == pyproject == __init__; this
+          # additionally pins all three to the pushed tag.
+          py_version=$(python3 -c "import re,sys; t=open('python/pyproject.toml').read(); print(re.search(r'(?m)^\s*version\s*=\s*\"([^\"]+)\"', t).group(1))")
+          if [ "$tag_version" != "$py_version" ]; then
+            echo "::error::Tag v$tag_version does not match python/pyproject.toml version $py_version"
+            exit 1
+          fi
+          python3 scripts/check_version_lockstep.py
+          echo "Tag, npm, and Python versions all: $tag_version"
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      # Guard: surface whether the publish token exists. secrets.* cannot be read
+      # in a job-level `if`, so we gate the publish + sign steps on this output.
+      - name: Check for PyPI token
+        id: guard
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          if [ -n "${PYPI_TOKEN}" ]; then
+            echo "token_present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "token_present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::PYPI_TOKEN secret is not set — skipping PyPI publish. Set it in repo secrets to activate this job automatically."
+          fi
+
+      - name: Build sdist + wheel
+        if: steps.guard.outputs.token_present == 'true'
+        run: |
+          python -m pip install --upgrade build twine
+          cd python
+          python -m build
+          twine check dist/*
+
+      # ── Keyless-sign the wheel + sdist with sigstore-python (iec-E08d) ──
+      #
+      # Per DR-010 Q2 hybrid-language allowance, the Python signing surface uses
+      # sigstore-python (the PyPI-ecosystem-native signer), mirroring how the npm
+      # leg uses `pnpm publish --provenance` and the emit-evidence job uses
+      # cosign. Produces a `<artifact>.sigstore` Sigstore bundle (Fulcio OIDC
+      # cert + Rekor inclusion proof) next to each dist artifact, attached to the
+      # Release below. Guarded on the same PYPI_TOKEN gate as the publish: a
+      # signature only has meaning alongside the bytes that actually ship.
+      - name: Sign wheel + sdist (sigstore-python keyless → Rekor)
+        if: steps.guard.outputs.token_present == 'true'
+        uses: sigstore/gh-action-sigstore-python@v3.4.0
+        with:
+          inputs: ./python/dist/*.whl ./python/dist/*.tar.gz
+          # We attach the bundles onto the Release ourselves below; don't let the
+          # action upload its own duplicate workflow artifacts.
+          upload-signing-artifacts: false
+
+      - name: Publish to PyPI
+        if: steps.guard.outputs.token_present == 'true'
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          cd python
+          # Upload ONLY the built distributions — NOT the .sigstore.json bundles
+          # the signing step drops into dist/ (twine rejects those as "Unknown
+          # distribution format"). The Sigstore bundles are attached to the
+          # GitHub Release in the next step. (This is the audit-harness v1.2.1
+          # twine-upload fix applied up front.)
+          twine upload --non-interactive dist/*.whl dist/*.tar.gz
+          echo "✓ published intent-eval-core to PyPI"
+
+      # Create-or-attach: ensure a Release exists on this tag, then attach the
+      # Sigstore bundles so consumers can `python -m sigstore verify identity ...`
+      # the downloaded wheel/sdist. The emit-evidence job may also create this
+      # Release; both use create-or-upload, so order does not matter.
+      - name: Attach .sigstore bundles onto the Release
+        if: steps.guard.outputs.token_present == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          tag="${GITHUB_REF#refs/tags/}"
+          bundles=(python/dist/*.sigstore python/dist/*.sigstore.json)
+          if [ "${#bundles[@]}" -eq 0 ]; then
+            echo "::error::sigstore signing produced no bundles to attach"
+            exit 1
+          fi
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --title "$tag" --generate-notes --verify-tag
+          fi
+          gh release upload "$tag" "${bundles[@]}" --clobber
+          echo "✓ attached ${#bundles[@]} Sigstore bundle(s) to release $tag"
+
   # ── Emit this repo's own testing evidence for the dashboard (bead nr75.4) ──
   #
   # Runs the deterministic gates → kernel gate-result/v1 rows → kernel
@@ -126,6 +258,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          # ISEDC E09 DR / CISO reproducible-from-tag invariant: this job signs
+          # the EvidenceBundle, so the canonical bytes it hashes + cosign-signs
+          # MUST come from the pushed tag, not a moving branch head.
+          ref: ${{ github.ref }}
           fetch-depth: 0
 
       - name: Setup pnpm
@@ -205,7 +341,7 @@ jobs:
   # be reachable, then POSTs to the tailnet-only ntfy `prod-deploys` topic.
   alert-on-failure:
     name: alert-on-failure
-    needs: [release, emit-evidence]
+    needs: [release, publish-pypi, emit-evidence]
     if: failure()
     runs-on: ubuntu-latest
     permissions:

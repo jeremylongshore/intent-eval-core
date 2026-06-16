@@ -45,3 +45,13 @@ api/temp/
 
 # reports/ (audit-harness output)
 reports/
+
+# Python build/test artifacts. The codegen'd python/.../_generated/ source IS
+# committed (like the Zod _generated/ reference output) — only build outputs +
+# caches are excluded. (dist/ + build/ above already match python/dist/ +
+# python/build/ at any depth; these add the Python-specific caches.)
+python/.venv/
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/

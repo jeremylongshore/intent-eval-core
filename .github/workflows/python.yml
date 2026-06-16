@@ -1,0 +1,61 @@
+name: Python
+
+# Gates the Python (Pydantic v2) distribution of @intentsolutions/core.
+#
+# The Python models are code-generated from the SAME canonical schemas/v1/*.json
+# JSON Schemas that drive the TypeScript Zod validators, and validated for
+# byte-for-byte parity against the SAME golden fixtures (tests/fixtures/v1/) the
+# TypeScript suite consumes. This lane enforces three things on every PR:
+#   1. The committed _generated/ Pydantic models are not stale (codegen --check).
+#   2. The version is in lockstep with the npm package.json.
+#   3. The parity test suite passes — the Python models accept/reject exactly
+#      what AJV/Zod accept/reject.
+#
+# Runs across the supported Python versions (3.10–3.12) so the generated models'
+# `X | Y` union syntax + std-collection generics hold on the 3.10 floor.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: python-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: codegen-check + parity (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package + dev toolchain (pinned datamodel-code-generator)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ./python[dev]
+
+      - name: Version lockstep (npm <-> pyproject <-> __init__)
+        run: python scripts/check_version_lockstep.py
+
+      - name: Pydantic codegen up to date (idempotency gate)
+        run: python scripts/codegen_pydantic.py --check
+
+      - name: Parity tests (shared golden fixtures, accept/reject vs AJV/Zod)
+        run: python -m pytest python/tests -q
