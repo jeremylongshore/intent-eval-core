@@ -25,7 +25,11 @@ Python mirror of the Zod ``.superRefine()`` blocks in
 
 from __future__ import annotations
 
-from typing import Self
+# `typing.Self` is 3.11+; import from typing_extensions (a guaranteed transitive
+# dependency of pydantic v2) so the 3.10 floor keeps working. The annotation
+# itself is a string at runtime via `from __future__ import annotations`; this
+# only guards the import statement.
+from typing_extensions import Self
 
 from pydantic import model_validator
 
