@@ -106,6 +106,10 @@ A **non-breaking relaxation** of the `skill-frontmatter` authoring contract's `a
 
 The **bicameral kernel** release. Lands the new `schemas/authoring/v1/` family alongside the unchanged `schemas/v1/` runtime family — the kernel now serves two chambers: runtime contracts (Evidence Bundle, gate-result/v1, the 13 entities) and authoring contracts (the Spec Authority Kernel surface that validates skills, plugins, agents, MCP configs, hooks, and marketplace catalogs). Purely **additive** — no `schemas/v1/` runtime contract is changed, renamed, or removed; every prior EvidenceBundle and gate-result/v1 row stays valid. SemVer MINOR. ISEDC Session 8 charter DR-044 (Spec Authority Kernel charter) + Session 9 charter DR-049 (kernel-hardening gates). Acting-CTO publish authorization.
 
+> **Unchanged:** The `schemas/v1/` runtime family (Evidence Bundle, `gate-result/v1`, the 13 canonical entities, and all v0.1–v0.3 predicate bodies) is **untouched**. No runtime contract is changed, renamed, or removed. No breaking changes — new `schemas/authoring/v1/` exports + new CI gates only; the runtime surface is byte-stable.
+>
+> **Cross-references:** DR-044 (ISEDC Session 8 — Spec Authority Kernel charter): `intent-eval-lab/000-docs/044-AT-DECR-isedc-council-session-8-sak-charter-2026-06-09.md`. DR-049 (ISEDC Session 9 — kernel-hardening gates + lifecycle binding): the predicate-namespace isolation, rubric-floor self-pin, and predicate-comment coherence gates plus the `skill-frontmatter` PUBLISHED / contracts #2–#6 SHIPPED-INTERNAL lifecycle posture. Engineering beads: `bd_000-projects-3kye` (.5/.6/.7 DR-049 gates) + `bd_000-projects-kyh9`.
+
 ### Added
 
 - **`schemas/authoring/v1/` bicameral authoring-contract family** (#26, #29, #30, DR-044 D7/D8). Six per-contract schemas, each composed as an `allOf` of an upstream-base layer (authored by the open standard), the three universal folds (`deprecationRegistry`, `securityChecks`, `disclosureMarkers`), and an is-overlay layer (authored by IS). Each contract is importable as `@intentsolutions/core/schemas/authoring/v1/<name>.schema.json` and via its Zod validator under `@intentsolutions/core/validators/v1/authoring`:
@@ -126,16 +130,6 @@ The **bicameral kernel** release. Lands the new `schemas/authoring/v1/` family a
 
 - **Lifecycle posture** — **`skill-frontmatter` is STABLE/published** (`lifecycle: "PUBLISHED"` in `schemas/authoring/v1/index.json`, CFO binding under acting-CTO sign-off) — endorsed as the stable, consumer-endorsed authoring contract. **Contracts #2–#6 (`plugin-manifest`, `agent-definition`, `mcp-config`, `hook-config`, `marketplace-catalog`) ship in the package but are EXPERIMENTAL** (`lifecycle: "SHIPPED-INTERNAL"`). Their `authoring/v1` stability is **pending the vendored deep-capture + the § 14.A policy-eval refinement** (planned for a future minor) before they are endorsed as stable. Treat their shape as subject to change.
 - **`CompositionDag` wire format ratified** as adjacency-list-with-typed-edges (#27).
-
-### Unchanged
-
-- The `schemas/v1/` runtime family (Evidence Bundle, `gate-result/v1`, the 13 canonical entities, and all v0.1–v0.3 predicate bodies) is **untouched**. No runtime contract is changed, renamed, or removed. No breaking changes — new `schemas/authoring/v1/` exports + new CI gates only; the runtime surface is byte-stable.
-
-### Cross-references
-
-- DR-044 (ISEDC Session 8 — Spec Authority Kernel charter): `intent-eval-lab/000-docs/044-AT-DECR-isedc-council-session-8-sak-charter-2026-06-09.md`.
-- DR-049 (ISEDC Session 9 — kernel-hardening gates + lifecycle binding): the predicate-namespace isolation, rubric-floor self-pin, and predicate-comment coherence gates plus the `skill-frontmatter` PUBLISHED / contracts #2–#6 SHIPPED-INTERNAL lifecycle posture.
-- Engineering beads: `bd_000-projects-3kye` (.5/.6/.7 DR-049 gates) + `bd_000-projects-kyh9`.
 
 ## [0.3.1] - 2026-06-08
 
@@ -211,6 +205,18 @@ Maintenance release. No new exported API surface — additions are CI/architectu
 
 First public release. The canonical contracts kernel for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab) — TypeScript types, JSON Schemas, Zod validators, and state machines for the 13 canonical entities.
 
+> **Adoption notes for downstream consumers.** Three sibling platform repos will migrate to this package.
+
+| Repo | What to import | Migration shape |
+| --- | --- | --- |
+| `audit-harness` | `@intentsolutions/core` types for entities the harness emits predicate rows about; `@intentsolutions/core/validators/v1/gate-result-v1` for runtime parsing | Replace any local `gate-result/v1`-shaped types; brand existing identifier strings via the Zod parsers; emit signed rows whose predicate body satisfies `GateResultV1Schema` |
+| `j-rig-skill-binary-eval` | `@intentsolutions/core` for `JudgeDecision`, `EvalRun`, `SessionTrace`, `ToolInvocation`; `@intentsolutions/core/validators/v1` for runtime parsing | Move existing entity types into this package; map judge verdicts (UPPERCASE `JudgeVerdict`) through the `@j-rig/rollout-gate` translator to RolloutGate decisions (lowercase `RolloutGateDecision`) |
+| `intent-rollout-gate` | `@intentsolutions/core/validators/v1/gate-result-v1` for parsing DSSE-wrapped predicate bodies | Replace local schema definitions with the canonical `GateResultV1Schema`; verify DSSE signatures externally (out of kernel scope); apply consumer-side policy from `tests/TESTING.md` per § 7.6 architectural separation |
+
+> **Codegen tooling:** the consuming codemod work was scoped down to "hand-migration acceptable" per iec-E09 acceptance criteria (sub-children E09b/c/d demoted to P2). No automated codemod ships in v0.1.0; the migration shape above is the documented manual recipe.
+>
+> **Tracking:** bead epic `bd_000-projects-00t` (iec-E09); Plane LAB-86; GH epic issue jeremylongshore/intent-eval-core#5.
+
 ### Added
 
 - **`@intentsolutions/core`** (main entry) — pure types only, zero runtime dependencies.
@@ -236,20 +242,6 @@ First public release. The canonical contracts kernel for the [Intent Eval Platfo
 
 - **Architectural bindings**: [DR-010](https://github.com/jeremylongshore/intent-eval-lab/blob/main/000-docs/010-AT-DECR-isedc-council-session-4-widened-scope-2026-05-13.md) (ISEDC Session 4 widened-scope lock; TS-primary signing surfaces; unification thesis binding); [Blueprint A](https://github.com/jeremylongshore/intent-eval-lab/blob/main/000-docs/011-AT-ARCH-ecosystem-master-blueprint.md) (12 binding principles, kernel-only anti-goals); [Blueprint B](https://github.com/jeremylongshore/intent-eval-lab/blob/main/000-docs/012-AT-ARCH-platform-runtime-blueprint.md) (runtime architecture, 13-entity domain model, `gate-result/v1` NORMATIVE spec); [Blueprint C](https://github.com/jeremylongshore/intent-eval-lab/blob/main/000-docs/013-AT-SPEC-repo-blueprint-template.md) (repo template, this repo's blueprint per `iec-E10`); [Canonical Glossary](https://github.com/jeremylongshore/intent-eval-lab/blob/main/000-docs/014-DR-GLOS-canonical-glossary.md) (single source of truth for platform terminology).
 - **Quality posture**: 100% line/branch/function/statement coverage on all consumer-facing code; 0 architecture violations across 8 forbidden dep-cruiser rules (kernel-no-runtime-deps, predicates-no-entities, state-machines-pure, validators-only-import-zod, …); 154 vitest tests + ~80 tsd negative assertions ≈ 170 type-level + runtime assertions; 31 ajv-based JSON Schema validation tests with positive + negative golden fixtures; 31 Zod validator tests with positive + negative fixtures; full ERD-walk integration test locks every Blueprint B § 6.2 cross-entity invariant; `@intentsolutions/audit-harness@0.1.0` wired (escape-scan + arch + harness-hash via husky pre-commit + GitHub Actions CI); sigstore provenance attached to the published tarball — verify with `npm audit signatures`.
-
-### Adoption notes for downstream consumers
-
-Three sibling platform repos will migrate to this package:
-
-| Repo | What to import | Migration shape |
-| --- | --- | --- |
-| `audit-harness` | `@intentsolutions/core` types for entities the harness emits predicate rows about; `@intentsolutions/core/validators/v1/gate-result-v1` for runtime parsing | Replace any local `gate-result/v1`-shaped types; brand existing identifier strings via the Zod parsers; emit signed rows whose predicate body satisfies `GateResultV1Schema` |
-| `j-rig-skill-binary-eval` | `@intentsolutions/core` for `JudgeDecision`, `EvalRun`, `SessionTrace`, `ToolInvocation`; `@intentsolutions/core/validators/v1` for runtime parsing | Move existing entity types into this package; map judge verdicts (UPPERCASE `JudgeVerdict`) through the `@j-rig/rollout-gate` translator to RolloutGate decisions (lowercase `RolloutGateDecision`) |
-| `intent-rollout-gate` | `@intentsolutions/core/validators/v1/gate-result-v1` for parsing DSSE-wrapped predicate bodies | Replace local schema definitions with the canonical `GateResultV1Schema`; verify DSSE signatures externally (out of kernel scope); apply consumer-side policy from `tests/TESTING.md` per § 7.6 architectural separation |
-
-**Codegen tooling**: the consuming codemod work was scoped down to "hand-migration acceptable" per iec-E09 acceptance criteria (sub-children E09b/c/d demoted to P2). No automated codemod ships in v0.1.0; the migration shape above is the documented manual recipe.
-
-**Tracking**: bead epic `bd_000-projects-00t` (iec-E09); Plane LAB-86; GH epic issue jeremylongshore/intent-eval-core#5.
 
 [Unreleased]: https://github.com/jeremylongshore/intent-eval-core/compare/v0.7.0...HEAD
 [0.7.0]: https://github.com/jeremylongshore/intent-eval-core/compare/v0.6.0...v0.7.0
