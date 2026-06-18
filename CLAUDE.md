@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`@intentsolutions/core` — the canonical contracts kernel for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab). TypeScript types, JSON Schemas, Zod validators, and state machines for the 13 canonical platform entities. **Every** validator in the platform (`audit-harness`, `j-rig`, `intent-rollout-gate`) depends on this package for canonical contract definitions.
+`@intentsolutions/core` — the canonical contracts kernel for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab). TypeScript types, JSON Schemas, Zod validators, and state machines for the 14 canonical platform entities (the 13 from Blueprint B § 2 + `SkillVersion`, the 14th per DR-028 T1). **Every** validator in the platform (`audit-harness`, `j-rig`, `intent-rollout-gate`) depends on this package for canonical contract definitions.
 
 This repo is **kernel-only**:
 

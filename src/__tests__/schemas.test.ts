@@ -61,6 +61,7 @@ const ENTITY_SCHEMAS = [
   'regression-pack',
   'rollout-gate',
   'skill-snapshot',
+  'skill-version',
   'session-trace',
   'tool-invocation',
   'cost-record',
@@ -68,19 +69,21 @@ const ENTITY_SCHEMAS = [
 ] as const;
 
 describe('schemas/v1 — structural integrity', () => {
-  it('ships exactly 13 entity schemas + 4 predicates + 1 common + 1 index = 19 files', () => {
+  it('ships exactly 14 entity schemas + 4 predicates + 1 common + 1 index = 20 files', () => {
     // v0.2.0 added retraction/v1 + dashboard-render/v1 predicate schemas
     // alongside the v0.1 gate-result/v1 (16 → 18 files). Class-1 ADR DR-082
-    // added skill-refiner-pass/v1 (18 → 19 files).
+    // added skill-refiner-pass/v1 (18 → 19 files). DR-028 T1 added the
+    // skill-version entity — the 14th canonical entity (19 → 20 files).
     const files = readdirSync(SCHEMAS_DIR).filter((f) => f.endsWith('.json'));
-    expect(files).toHaveLength(19);
+    expect(files).toHaveLength(20);
   });
 
   it('every entity schema is referenced in index.json', () => {
     const idx = loadJson(join(SCHEMAS_DIR, 'index.json'));
     const schemas = idx['schemas'] as Record<string, { kind: string }>;
     const entityEntries = Object.values(schemas).filter((s) => s.kind === 'entity');
-    expect(entityEntries).toHaveLength(13);
+    // 13 Blueprint B § 2 entities + SkillVersion (14th, DR-028 T1 DISCRIMINATOR).
+    expect(entityEntries).toHaveLength(14);
   });
 
   it('every schema declares draft 2020-12', () => {
@@ -434,6 +437,73 @@ describe('schemas/v1 — skill-refiner-pass/v1 additive predicate (Class-1 ADR D
     const fix = loadJson(join(FIXTURES_DIR, 'skill-refiner-pass.valid.json'));
     const bad = { ...fix, surprise: true };
     expect(validateSkillRefinerPass(bad)).toBe(false);
+  });
+});
+
+describe('schemas/v1 — SkillVersion entity (14th canonical, DR-028 T1 DISCRIMINATOR)', () => {
+  let ajv: AjvInstance;
+  let validateSkillVersion: (data: unknown) => boolean;
+
+  beforeAll(() => {
+    ajv = buildAjv();
+    const common = loadJson(join(SCHEMAS_DIR, '_common.schema.json'));
+    ajv.addSchema(
+      common,
+      'https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json',
+    );
+    validateSkillVersion = ajv.compile(loadJson(join(SCHEMAS_DIR, 'skill-version.schema.json')));
+  });
+
+  it('skill-version.valid.json validates (full lineage record)', () => {
+    expect(validateSkillVersion(loadJson(join(FIXTURES_DIR, 'skill-version.valid.json')))).toBe(
+      true,
+    );
+  });
+
+  it('skill-version.root.valid.json validates (parent_version_id: null root version)', () => {
+    expect(
+      validateSkillVersion(loadJson(join(FIXTURES_DIR, 'skill-version.root.valid.json'))),
+    ).toBe(true);
+  });
+
+  it('skill-version with version_kind out of the closed enum → REJECT (widening is /v2)', () => {
+    expect(
+      validateSkillVersion(
+        loadJson(join(FIXTURES_DIR, 'skill-version.invalid-bad-version-kind.json')),
+      ),
+    ).toBe(false);
+  });
+
+  it('skill-version missing refiner_strategy_id → REJECT (CISO mechanism-traceability, DR-028 P0-RATIFY-5)', () => {
+    const fix = loadJson(join(FIXTURES_DIR, 'skill-version.valid.json'));
+    const bad = JSON.parse(JSON.stringify(fix)) as Record<string, unknown>;
+    delete bad['refiner_strategy_id'];
+    expect(validateSkillVersion(bad)).toBe(false);
+  });
+
+  it('skill-version with a bare (un-prefixed) source_snapshot_hash → REJECT (must be sha256:<hex>)', () => {
+    const fix = loadJson(join(FIXTURES_DIR, 'skill-version.valid.json'));
+    const bad = { ...fix, source_snapshot_hash: '7'.repeat(64) };
+    expect(validateSkillVersion(bad)).toBe(false);
+  });
+
+  it('skill-version with an unknown extra field → REJECT (additionalProperties: false; e.g. deferred status field)', () => {
+    // status / signing_mode / rekor_log_index are DEFERRED to the v0.4.0
+    // state-machine DR (DR-028 T1 lines 105/108) — NOT part of this shape yet.
+    const fix = loadJson(join(FIXTURES_DIR, 'skill-version.valid.json'));
+    const bad = { ...fix, status: 'active' };
+    expect(validateSkillVersion(bad)).toBe(false);
+  });
+
+  it('skill-version source_snapshot_hash aligns with the skill-refiner-pass/v1 predicate reference', () => {
+    // The entity is referenced BY the predicate (skill_version_id /
+    // parent_version_id / source_snapshot_hash). The valid fixtures share IDs so
+    // the cross-reference is concrete: same id, same hash typing.
+    const sv = loadJson(join(FIXTURES_DIR, 'skill-version.valid.json'));
+    const pred = loadJson(join(FIXTURES_DIR, 'skill-refiner-pass.valid.json'));
+    expect(sv['id']).toBe(pred['skill_version_id']);
+    expect(sv['parent_version_id']).toBe(pred['parent_version_id']);
+    expect(sv['source_snapshot_hash']).toBe(pred['source_snapshot_hash']);
   });
 });
 

@@ -929,6 +929,24 @@ export type SkillSnapshotState = 'created';
 export const skillSnapshotTransitions: TransitionMap<SkillSnapshotState>;
 
 // @public
+export interface SkillVersion {
+    // (undocumented)
+    readonly created_at: Rfc3339;
+    // (undocumented)
+    readonly created_by: ActorIdentity;
+    readonly id: Uuidv7;
+    readonly parent_version_id: Uuidv7 | null;
+    readonly refiner_strategy_id: string;
+    readonly skill_id: KebabSlug;
+    readonly source_snapshot_hash: Sha256Prefixed;
+    readonly tenant_id?: Uuidv7;
+    readonly version_kind: SkillVersionKind;
+}
+
+// @public
+export type SkillVersionKind = 'edit' | 'revert' | 'restore';
+
+// @public
 export type StorageKey = Brand<string, 'StorageKey'>;
 
 // @public

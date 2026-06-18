@@ -31,6 +31,7 @@ import {
   SessionTraceSchema,
   SkillRefinerPassV1Schema,
   SkillSnapshotSchema,
+  SkillVersionSchema,
   ToolInvocationSchema,
 } from './index.js';
 
@@ -68,6 +69,12 @@ describe('Zod validators — positive fixtures parse cleanly', () => {
   });
   it('SkillSnapshot', () => {
     expect(() => SkillSnapshotSchema.parse(loadJson('skill-snapshot.valid.json'))).not.toThrow();
+  });
+  it('SkillVersion (full lineage record)', () => {
+    expect(() => SkillVersionSchema.parse(loadJson('skill-version.valid.json'))).not.toThrow();
+  });
+  it('SkillVersion (root version, parent_version_id: null)', () => {
+    expect(() => SkillVersionSchema.parse(loadJson('skill-version.root.valid.json'))).not.toThrow();
   });
   it('SessionTrace', () => {
     expect(() => SessionTraceSchema.parse(loadJson('session-trace.valid.json'))).not.toThrow();
@@ -115,6 +122,25 @@ describe('Zod validators — negative fixtures REJECT', () => {
 
   it('eval-spec with aggregation_rule=plurality → REJECT (not in closed enum)', () => {
     const result = EvalSpecSchema.safeParse(loadJson('eval-spec.invalid-bad-aggregation.json'));
+    expect(result.success).toBe(false);
+  });
+
+  it('skill-version with version_kind out of the closed enum → REJECT (DR-028 T1, widening is /v2)', () => {
+    const result = SkillVersionSchema.safeParse(
+      loadJson('skill-version.invalid-bad-version-kind.json'),
+    );
+    expect(result.success).toBe(false);
+  });
+
+  it('skill-version with a bare (un-prefixed) source_snapshot_hash → REJECT (must be sha256:<hex>)', () => {
+    const fix = loadJson('skill-version.valid.json') as Record<string, unknown>;
+    const result = SkillVersionSchema.safeParse({ ...fix, source_snapshot_hash: '7'.repeat(64) });
+    expect(result.success).toBe(false);
+  });
+
+  it('skill-version with an unknown extra field (deferred status) → REJECT (.strict())', () => {
+    const fix = loadJson('skill-version.valid.json') as Record<string, unknown>;
+    const result = SkillVersionSchema.safeParse({ ...fix, status: 'active' });
     expect(result.success).toBe(false);
   });
 });

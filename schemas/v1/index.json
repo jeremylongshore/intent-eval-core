@@ -96,6 +96,12 @@
       "kind": "entity",
       "spec": "Blueprint B § 2.9"
     },
+    "skill-version": {
+      "path": "skill-version.schema.json",
+      "title": "SkillVersion",
+      "kind": "entity",
+      "spec": "DR-028 T1 DISCRIMINATOR (intent-eval-lab 028-AT-DECR-isedc-council-session-7-skill-refiner-plan-ratification-2026-05-27.md) — 14th canonical entity"
+    },
     "session-trace": {
       "path": "session-trace.schema.json",
       "title": "SessionTrace",

@@ -57,6 +57,7 @@ VALID_FIXTURES = {
     iec.RegressionPack: "regression-pack",
     iec.RolloutGate: "rollout-gate",
     iec.SkillSnapshot: "skill-snapshot",
+    iec.SkillVersion: "skill-version",
     iec.SessionTrace: "session-trace",
     iec.ToolInvocation: "tool-invocation",
     iec.CostRecord: "cost-record",
@@ -74,11 +75,12 @@ class TestPackageSurface:
         assert iec.__version__.count(".") == 2  # X.Y.Z SemVer core
 
     def test_all_canonical_models_exported(self) -> None:
-        # 13 entities + 4 predicate bodies = 17 models, all importable by name.
+        # 14 entities + 4 predicate bodies = 18 models, all importable by name.
         # skill-refiner-pass/v1 added staging-first by Class-1 ADR DR-082.
+        # SkillVersion is the 14th canonical entity (DR-028 T1 DISCRIMINATOR).
         for name in (
             "EvalSpec EvalRun MatcherMap EvidenceBundle JudgeDecision "
-            "RuntimeReceipt RegressionPack RolloutGate SkillSnapshot "
+            "RuntimeReceipt RegressionPack RolloutGate SkillSnapshot SkillVersion "
             "SessionTrace ToolInvocation CostRecord FailureTaxonomy "
             "GateResultV1 RetractionV1 DashboardRenderV1 SkillRefinerPassV1"
         ).split():
@@ -147,6 +149,28 @@ class TestNegativeFixtures:
         base.pop("refiner_strategy_id")
         assert not accepts(iec.SkillRefinerPassV1, base)
 
+    def test_skill_version_bad_version_kind_rejected(self) -> None:
+        # version_kind is a CLOSED enum (edit|revert|restore); DR-028 T1.
+        assert not accepts(
+            iec.SkillVersion, load("skill-version.invalid-bad-version-kind.json")
+        )
+
+    def test_skill_version_root_null_parent_accepted(self) -> None:
+        # parent_version_id is nullable for a ROOT version (DR-028 T1).
+        assert accepts(iec.SkillVersion, load("skill-version.root.valid.json"))
+
+    def test_skill_version_missing_strategy_id_rejected(self) -> None:
+        # refiner_strategy_id is required (DR-028 P0-RATIFY-5 CISO mechanism-traceability).
+        base = load("skill-version.valid.json")
+        base.pop("refiner_strategy_id")
+        assert not accepts(iec.SkillVersion, base)
+
+    def test_skill_version_bad_source_snapshot_hash_prefix_rejected(self) -> None:
+        # source_snapshot_hash is Sha256Prefixed (sha256:<64-hex>); a bare digest is rejected.
+        base = load("skill-version.valid.json")
+        base["source_snapshot_hash"] = "7" * 64
+        assert not accepts(iec.SkillVersion, base)
+
 
 class TestClosedWorld:
     """additionalProperties: false on entities => extra='forbid'."""
@@ -158,6 +182,10 @@ class TestClosedWorld:
     def test_eval_spec_extra_top_level_key_rejected(self) -> None:
         base = load("eval-spec.valid.json")
         assert not accepts(iec.EvalSpec, {**base, "surprise": True})
+
+    def test_skill_version_extra_unknown_key_rejected(self) -> None:
+        base = load("skill-version.valid.json")
+        assert not accepts(iec.SkillVersion, {**base, "status": "active"})
 
     def test_eval_spec_scoring_extra_key_accepted(self) -> None:
         # scoring is the OPEN object (additionalProperties default) — a

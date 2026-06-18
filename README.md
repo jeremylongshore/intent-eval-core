@@ -7,7 +7,7 @@ Part of the **[Intent Eval Platform](https://github.com/intent-solutions-io/inte
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 [![Provenance](https://img.shields.io/badge/sigstore-provenance-066da5)](https://www.npmjs.com/package/@intentsolutions/core)
 
-Canonical contracts kernel for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab) — TypeScript types, JSON Schemas, Zod validators, and state machines for the 13 canonical platform entities.
+Canonical contracts kernel for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab) — TypeScript types, JSON Schemas, Zod validators, and state machines for the 14 canonical platform entities (the 13 from Blueprint B § 2 + `SkillVersion`, the 14th per DR-028 T1).
 
 > **Status — v0.1.0 (2026-05-17):** first public release. Contracts are stable at v0.1; breaking changes will bump to v0.2 per SemVer. Published with Sigstore provenance — verify via `npm audit signatures`.
 
