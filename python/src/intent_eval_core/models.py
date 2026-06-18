@@ -81,6 +81,9 @@ from ._generated.runtime_receipt_schema import (
 from ._generated.session_trace_schema import (
     SessiontraceOtelCompatibleExecutionTraceForAnEvalrunBlueprintB210 as SessionTrace,
 )
+from ._generated.skill_refiner_pass_schema import (
+    SkillRefinerPassV1InTotoPredicateBodyAttestingASkillversionClearedTheSkillRefinerAcceptanceGate as SkillRefinerPassV1,  # noqa: E501
+)
 from ._generated.skill_snapshot_schema import (
     SkillsnapshotContentAddressedPinOfASkillSSourceDepsConfigBlueprintB29 as SkillSnapshot,
 )
@@ -175,6 +178,7 @@ __all__ = [
     "GateResultV1",
     "RetractionV1",
     "DashboardRenderV1",
+    "SkillRefinerPassV1",
     # Constants
     "GATE_RESULT_V1_URI",
 ]

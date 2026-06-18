@@ -556,8 +556,9 @@ Across **MAJOR bumps**: only items explicitly preserved in the MAJOR release not
 | `evals.intentsolutions.io/eval-verdict/v1` | deferred | (forthcoming) | `sigstore_staging` |
 | `evals.intentsolutions.io/cost-attribution/v1` | deferred | (forthcoming) | `sigstore_staging` |
 | `evals.intentsolutions.io/runtime-receipt/v1` | deferred | (forthcoming) | `sigstore_staging` |
+| `evals.intentsolutions.io/skill-refiner-pass/v1` | approved (Class-1 ADR DR-082, staging) | `intent-eval-lab/082-AT-DECR-isedc-skill-refiner-pass-v1-predicate-uri-2026-06-17.md` (URI MINTED staging-first; SPEC.md normative section forthcoming) | `ln` (staging) — production-Rekor needs ALL FOUR DR-082 Q3 triggers, AND-gated: (1) skill-refiner-pass/v1 SPEC.md normative section lands; (2) DNSSEC + CAA green on `evals.intentsolutions.io`; (3) the authoring chamber's SEPARATE signing trust root is provisioned-and-live (DR-081 no-shared-root); (4) ≥1 REAL SkillVersion clears the behavioral gate on a FROZEN, signed eval-set. None met as of this landing. |
 
-Per Blueprint A § 4.2 + DR-010 § 7 Q5 CISO non-negotiable: production-Rekor signing for any predicate URI is gated on that predicate's SPEC.md normative section landing. The kernel ships **only the schema and the URI constant** — it does not emit signed rows itself; consumer runtimes emit rows once their SPEC.md gates pass.
+Per Blueprint A § 4.2 + DR-010 § 7 Q5 CISO non-negotiable: production-Rekor signing for any predicate URI is gated on that predicate's SPEC.md normative section landing. The kernel ships **only the schema and the URI constant** — it does not emit signed rows itself; consumer runtimes emit rows once their SPEC.md gates pass. `skill-refiner-pass/v1` was minted by the Class-1 ADR DR-082 (FLAT URI, no `/authoring/` segment — Q1; determinant-only signed body — Q2; in-toto mirror of gate-result/v1 — Q4); its provenance triple references the SkillVersion (DR-028 14th entity) by the kernel's existing `Uuidv7` + `Sha256Prefixed` primitives and does NOT define a SkillVersion entity here.
 
 ### § 11.6 License audit
 

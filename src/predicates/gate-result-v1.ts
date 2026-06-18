@@ -20,6 +20,7 @@
 import type { Rfc3339, Sha256Prefixed, Uuidv7 } from '../primitives.js';
 import { DASHBOARD_RENDER_V1_URI } from './dashboard-render-v1.js';
 import { RETRACTION_V1_URI } from './retraction-v1.js';
+import { SKILL_REFINER_PASS_V1_URI } from './skill-refiner-pass-v1.js';
 
 // ─── Predicate URI ─────────────────────────────────────────────────────────
 
@@ -332,6 +333,9 @@ export const PREDICATE_URIS = {
   // ADDITIVE in v0.2.0 — bodies ship in src/predicates/ (B4 + B3 bindings).
   RETRACTION_V1: RETRACTION_V1_URI,
   DASHBOARD_RENDER_V1: DASHBOARD_RENDER_V1_URI,
+  // ADDITIVE — minted staging-first by Class-1 ADR DR-082; body ships in
+  // src/predicates/skill-refiner-pass-v1.ts, runs in sigstore_staging (`ln`).
+  SKILL_REFINER_PASS_V1: SKILL_REFINER_PASS_V1_URI,
   VALIDATION_RESULT_V1: 'https://evals.intentsolutions.io/validation-result/v1',
   EVAL_VERDICT_V1: 'https://evals.intentsolutions.io/eval-verdict/v1',
   COST_ATTRIBUTION_V1: 'https://evals.intentsolutions.io/cost-attribution/v1',

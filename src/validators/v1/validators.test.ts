@@ -29,6 +29,7 @@ import {
   RolloutGateSchema,
   RuntimeReceiptSchema,
   SessionTraceSchema,
+  SkillRefinerPassV1Schema,
   SkillSnapshotSchema,
   ToolInvocationSchema,
 } from './index.js';
@@ -344,6 +345,63 @@ describe('Zod validators — v0.2.0 additive: dashboard-render/v1 (B3 binding)',
     const base = loadJson('dashboard-render.valid.json') as Record<string, unknown>;
     const result = DashboardRenderV1Schema.safeParse({ ...base, renderer: 'not a runner id' });
     expect(result.success).toBe(false);
+  });
+});
+
+describe('Zod validators — additive: skill-refiner-pass/v1 (Class-1 ADR DR-082)', () => {
+  it('valid skill-refiner-pass parses (Zod ⇄ AJV parity on the golden fixture)', () => {
+    expect(() =>
+      SkillRefinerPassV1Schema.parse(loadJson('skill-refiner-pass.valid.json')),
+    ).not.toThrow();
+  });
+
+  it('test_statistic_kind != one-sided-z → REJECT (const for v1, /v2 to change)', () => {
+    const result = SkillRefinerPassV1Schema.safeParse(
+      loadJson('skill-refiner-pass.invalid-bad-test-kind.json'),
+    );
+    expect(result.success).toBe(false);
+  });
+
+  it('missing refiner_strategy_id → REJECT (mechanism-traceability, DR-028)', () => {
+    const base = loadJson('skill-refiner-pass.valid.json') as Record<string, unknown>;
+    const { refiner_strategy_id, ...without } = base;
+    void refiner_strategy_id;
+    expect(SkillRefinerPassV1Schema.safeParse(without).success).toBe(false);
+  });
+
+  it('empty reason array → REJECT (emitted on a real verdict, never silent)', () => {
+    const base = loadJson('skill-refiner-pass.valid.json') as Record<string, unknown>;
+    expect(SkillRefinerPassV1Schema.safeParse({ ...base, reason: [] }).success).toBe(false);
+  });
+
+  it('alpha out of (0,1) → REJECT (falsifiability anchor)', () => {
+    const base = loadJson('skill-refiner-pass.valid.json') as Record<string, unknown>;
+    expect(SkillRefinerPassV1Schema.safeParse({ ...base, alpha: 0 }).success).toBe(false);
+    expect(SkillRefinerPassV1Schema.safeParse({ ...base, alpha: 1 }).success).toBe(false);
+  });
+
+  it('eval_set_ref missing lineage_id → REJECT', () => {
+    const base = loadJson('skill-refiner-pass.valid.json') as Record<string, unknown>;
+    const ref = base['eval_set_ref'] as Record<string, unknown>;
+    const { lineage_id, ...partialRef } = ref;
+    void lineage_id;
+    expect(SkillRefinerPassV1Schema.safeParse({ ...base, eval_set_ref: partialRef }).success).toBe(
+      false,
+    );
+  });
+
+  it('unknown extra field → REJECT (.strict / additionalProperties: false)', () => {
+    const base = loadJson('skill-refiner-pass.valid.json') as Record<string, unknown>;
+    expect(SkillRefinerPassV1Schema.safeParse({ ...base, surprise: true }).success).toBe(false);
+  });
+
+  it('predicate URI is FLAT at evals.intentsolutions.io (DR-082 Q1, never labs)', async () => {
+    const { SKILL_REFINER_PASS_V1_URI } = await import('./skill-refiner-pass-v1.js');
+    expect(SKILL_REFINER_PASS_V1_URI).toBe(
+      'https://evals.intentsolutions.io/skill-refiner-pass/v1',
+    );
+    expect(SKILL_REFINER_PASS_V1_URI).not.toContain('labs.intentsolutions.io');
+    expect(SKILL_REFINER_PASS_V1_URI).not.toContain('/authoring/');
   });
 });
 

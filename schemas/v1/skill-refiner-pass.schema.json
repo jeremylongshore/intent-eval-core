@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evals.intentsolutions.io/skill-refiner-pass/v1.schema.json",
+  "title": "skill-refiner-pass/v1 — in-toto predicate body attesting a SkillVersion cleared the Skill Refiner acceptance gate",
+  "description": "Predicate body of an in-toto Statement v1 whose predicateType is https://evals.intentsolutions.io/skill-refiner-pass/v1. Attests that a real SkillVersion cleared the @j-rig/refiner-core acceptance gate: significant Pareto-dominance on the behavioral dimension AND non-regression on every named dimension, by a one-sided z-test at the stated alpha. The signed body carries exactly the accept DETERMINANTS — the fields a verifier needs to independently re-derive the accept decision from immutable inputs (DR-082 Q2): strip any one and the PASS becomes an unfalsifiable 'trust me, it passed'. Provenance bulk (raw per-eval-item transcripts, human-readable diff prose, dashboard-render metadata) is OUT of the signed body, referenced by hash via the EvidenceBundle side-channel. This schema validates ONLY the predicate body — the enclosing in-toto Statement envelope (_type, subject, predicateType) is validated separately; the in-toto subject[].digest.sha256 MUST equal source_snapshot_hash without the sha256: prefix (the wire-discipline mirror of gate-result/v1's input_hash binding, DR-082 Q4). Each row independently verifiable; NO top-level bundle signature per Blueprint B § 7 line 754.\n\nThe skill_version_id / parent_version_id / source_snapshot_hash provenance triple references the SkillVersion by the kernel's EXISTING id/hash primitives (UUIDv7 + sha256-prefixed) — it does NOT define a SkillVersion kernel entity (DR-028 T1 one-way-door: SkillVersion stays a separate entity, minted elsewhere). Net-new predicate URI, ADDITIVE per § 7.2 backward-compat — no v1 contract is changed.\n\nRuns in sigstore_staging (SigningMode ln) until ALL FOUR DR-082 Q3 production triggers hold, AND-gated: (1) the skill-refiner-pass/v1 SPEC.md normative section lands (RESERVED→ACTIVE); (2) the DNSSEC + CAA pre-flight is green on evals.intentsolutions.io; (3) the authoring chamber's SEPARATE signing trust root is provisioned-and-live (DR-081 no-shared-root); (4) ≥1 REAL SkillVersion clears the behavioral gate on a FROZEN, signed eval-set. Until then signing_mode=staging, rekor_log_index=null.",
+  "$comment": "Class-1 ADR DR-082 (intent-eval-lab 082-AT-DECR-isedc-skill-refiner-pass-v1-predicate-uri-2026-06-17.md) MINTED this predicate URI staging-first. The field set is the DR-082 Q2 determinant-only signed body. Adding OR loosening ANY field (including enum widening, or relaxing refiner_strategy_id) requires a fresh Class-1 ISEDC convening (DR-082 Q5, inheriting DR-064); a breaking change mints a NEW URI skill-refiner-pass/v2 on its own lane — v1 is NEVER edited in place. FLAT URI, no /authoring/ segment (DR-082 Q1) — the chamber boundary lives in the separate signing trust root + $schemaVersion lane + file tree, never the URL string.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "verdict",
+    "reason",
+    "refiner_strategy_id",
+    "skill_version_id",
+    "parent_version_id",
+    "source_snapshot_hash",
+    "eval_set_ref",
+    "edit_proposal_hash",
+    "behavioral_delta",
+    "named_dimension_deltas",
+    "alpha",
+    "test_statistic_kind"
+  ],
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "description": "Decision verdict. CLOSED enum — a row is EMITTED on accept, so verdict is the accept-record discriminator (DR-082 Q2). Widening this enum is a /v2 trigger (CISO binding: a consumer that hard-codes the closed set must never silently encounter a new verdict on an immutable row).",
+      "enum": ["accept", "reject"]
+    },
+    "reason": {
+      "type": "array",
+      "description": "Structured reason entries — non-empty always, since this predicate is emitted on a real verdict. Reasons SHOULD be structured codes rather than free prose to avoid leaking skill content onto a public transparency log (CISO + GC binding).",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "refiner_strategy_id": {
+      "type": "string",
+      "description": "Identifier of the RefinerStrategy that produced this verdict. REQUIRED in the signed body per the DR-028 CISO Session-7 binding (mechanism-swappable must not become mechanism-untraceable). Strategy ids are append-only-registered — a retired id is burned forever, never reused for a different mechanism (DR-082 Q5 CISO clarification).",
+      "minLength": 1
+    },
+    "skill_version_id": {
+      "$ref": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json#/$defs/uuidv7",
+      "description": "UUIDv7 of the accepted SkillVersion (the 14th entity per DR-028 T1). Referenced by the kernel's EXISTING UUIDv7 primitive — this predicate does NOT define a SkillVersion entity (DR-028 one-way-door)."
+    },
+    "parent_version_id": {
+      "$ref": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json#/$defs/uuidv7",
+      "description": "UUIDv7 of the parent SkillVersion the accepted version was refined from. Binds parent→child so a refiner cannot launder an unrelated skill through a forged lineage (CISO binding)."
+    },
+    "source_snapshot_hash": {
+      "$ref": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json#/$defs/sha256Prefixed",
+      "description": "sha256-prefixed content hash of the post-edit SkillVersion source snapshot. The in-toto subject[].digest.sha256 for the row MUST equal this value WITHOUT the sha256: prefix (the authoring-chamber analogue of gate-result/v1's input_hash === subject digest binding, DR-082 Q4). References the SkillSnapshot content by the kernel's EXISTING sha256-prefixed primitive."
+    },
+    "eval_set_ref": {
+      "type": "object",
+      "description": "Reference to the FROZEN eval-set the verdict was derived against — the entire epistemic basis of the claim. The hash pins exact content; version + lineage_id pin which published eval-set and its provenance lineage.",
+      "additionalProperties": false,
+      "required": ["hash", "version", "lineage_id"],
+      "properties": {
+        "hash": {
+          "$ref": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json#/$defs/sha256Prefixed",
+          "description": "sha256-prefixed digest of the frozen eval-set content."
+        },
+        "version": {
+          "type": "string",
+          "description": "Version identifier of the frozen eval-set.",
+          "minLength": 1
+        },
+        "lineage_id": {
+          "$ref": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json#/$defs/uuidv7",
+          "description": "UUIDv7 of the eval-set lineage the frozen version belongs to."
+        }
+      }
+    },
+    "edit_proposal_hash": {
+      "$ref": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json#/$defs/sha256Prefixed",
+      "description": "sha256-prefixed hash of the EditProposal (the bounded edit-ops) that earned the pass — binds WHAT changed."
+    },
+    "behavioral_delta": {
+      "type": "number",
+      "description": "Observed delta on the behavioral dimension the accept gate requires significant Pareto-dominance on. A determinant of the accept decision (DR-082 Q2)."
+    },
+    "named_dimension_deltas": {
+      "type": "array",
+      "description": "Per-named-dimension observed deltas — the non-regression surface of the accept gate. Each entry is independently re-checkable: a verifier re-runs the one-sided z-test on these deltas at the stated alpha. MAY be empty when the skill declares no named dimensions beyond the behavioral one.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "delta", "non_regressed"],
+        "properties": {
+          "id": {
+            "$ref": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json#/$defs/kebabSlug",
+            "description": "Named-dimension identifier (kebab-slug)."
+          },
+          "delta": {
+            "type": "number",
+            "description": "Observed delta on this named dimension."
+          },
+          "non_regressed": {
+            "type": "boolean",
+            "description": "Whether this dimension cleared the non-regression bar at the stated alpha. For an accept verdict every entry MUST be true."
+          }
+        }
+      }
+    },
+    "alpha": {
+      "type": "number",
+      "description": "The significance level (α) the one-sided z-test was evaluated at — the falsifiability anchor. A 'pass' with no published alpha is an unfalsifiable assertion (DR-082 Q2). Bound in (0, 1).",
+      "exclusiveMinimum": 0,
+      "exclusiveMaximum": 1
+    },
+    "test_statistic_kind": {
+      "type": "string",
+      "description": "Statistical-test family identifier. CONST for v1 — the acceptance gate is a one-sided z-test (DR-028 + DR-082 Q2). Changing the test family is a SEMANTIC change that mints /v2 (the same deltas/alpha would no longer mean the same verdict).",
+      "const": "one-sided-z"
+    },
+    "cost_record_ref": {
+      "$ref": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json#/$defs/uuidv7",
+      "description": "OPTIONAL FK → CostRecord.id for cost attribution of the refiner run. Descriptive — not a determinant of accept."
+    },
+    "replay_fidelity_level": {
+      "type": "string",
+      "description": "OPTIONAL replay-fidelity claim for the refiner run (RF-0 bit-exact … RF-4 non-reproducible), mirroring gate-result/v1's iel-E11 levels.",
+      "enum": ["RF-0", "RF-1", "RF-2", "RF-3", "RF-4"]
+    },
+    "signing_downgrade_reason": {
+      "type": "string",
+      "description": "OPTIONAL structured reason recorded ONLY when the signing_mode was downgraded for this row (e.g. production→staging fallback). Absent on a normally-signed row.",
+      "minLength": 1
+    }
+  }
+}
