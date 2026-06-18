@@ -208,6 +208,16 @@ class TestNegativeFixtures:
         child = load("skill-version.valid.json")
         assert not accepts(iec.SkillVersion, {**child, "tenant_id": None})
 
+    def test_skill_version_missing_parent_keys_rejected(self) -> None:
+        # DR-085 D3 required-but-nullable parity: parent_version_id +
+        # parent_content_hash are in the schema `required` array (key MUST be
+        # present; value MAY be null for a root). Omitting the key must be rejected
+        # by Pydantic exactly as AJV + Zod reject it — not silently optional.
+        child = load("skill-version.valid.json")
+        for key in ("parent_version_id", "parent_content_hash"):
+            without = {k: v for k, v in child.items() if k != key}
+            assert not accepts(iec.SkillVersion, without), f"omitting {key} must be rejected"
+
     # ── DR-085 D4 (semantic collision) + D5 (accept invariant) on the predicate ─
 
     def test_skill_refiner_pass_reject_fixture_validates(self) -> None:
@@ -238,6 +248,14 @@ class TestNegativeFixtures:
         assert not accepts(iec.SkillRefinerPassV1, {**base, "cost_record_ref": None})
         assert not accepts(iec.SkillRefinerPassV1, {**base, "replay_fidelity_level": None})
         assert not accepts(iec.SkillRefinerPassV1, {**base, "signing_downgrade_reason": None})
+
+    def test_skill_refiner_pass_missing_parent_version_id_rejected(self) -> None:
+        # DR-085 D3 required-but-nullable parity: parent_version_id is in the schema
+        # `required` array (key MUST be present; value MAY be null for a root). The
+        # generated `... | None = None` made the key omittable — drift vs AJV + Zod.
+        base = load("skill-refiner-pass.valid.json")
+        without = {k: v for k, v in base.items() if k != "parent_version_id"}
+        assert not accepts(iec.SkillRefinerPassV1, without)
 
 
 class TestClosedWorld:

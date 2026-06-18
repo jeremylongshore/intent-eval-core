@@ -198,6 +198,15 @@ class SkillVersion(_SkillVersionGenerated):
     # `.optional()`): absence allowed, explicit `null` rejected.
     tenant_id: _schema.Uuidv7 = None  # type: ignore[assignment]
 
+    # DR-085 D3 REQUIRED-but-nullable parity: `parent_version_id` +
+    # `parent_content_hash` are in the schema `required` array (key MUST be
+    # present) AND `oneOf[<hash/uuid>, null]` (value MAY be null). datamodel-code-
+    # generator renders them `... | None = None`, which makes the KEY omittable
+    # (optional) — three-way drift vs AJV + Zod, which require the key. Re-declare
+    # without a default so the key is required, value still nullable.
+    parent_version_id: _schema.Uuidv7 | None
+    parent_content_hash: _schema.Sha256 | None
+
     @model_validator(mode="after")
     def _enforce_dr085_lineage_invariants(self) -> Self:
         # Rule 1 (DR-085 D3): parent_content_hash null iff parent_version_id null.
@@ -254,6 +263,13 @@ class SkillRefinerPassV1(_SkillRefinerPassV1Generated):
     cost_record_ref: _schema.Uuidv7 = None  # type: ignore[assignment]
     replay_fidelity_level: _ReplayFidelityLevel = None  # type: ignore[assignment]
     signing_downgrade_reason: str = None  # type: ignore[assignment]
+
+    # DR-085 D3 REQUIRED-but-nullable parity: `parent_version_id` is in the schema
+    # `required` array (key MUST be present) AND `oneOf[uuidv7, null]` (value MAY be
+    # null, for a root SkillVersion). The generated `... | None = None` makes the key
+    # omittable — drift vs AJV + Zod. Re-declare without a default: key required,
+    # value still nullable.
+    parent_version_id: _schema.Uuidv7 | None
 
     @model_validator(mode="after")
     def _enforce_dr085_accept_invariant(self) -> Self:
