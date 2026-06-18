@@ -51,6 +51,7 @@ Files allowed at repo root (anything not in this list triggers a BLOCK on the Ax
 ```text
 .audit-harness
 .dependency-cruiser.cjs
+.gemini
 .gitignore
 .harness-hash
 .harness-hash-extra-patterns
@@ -91,6 +92,7 @@ Annotations (what each is):
 
 - `.audit-harness` — vendored audit-harness configs (the `configs/.yamllint.yml` rule set consumed by `lint.yml`); same pattern as the sibling IEP repos
 - `.dependency-cruiser.cjs` — dep-cruiser config (hash-pinned)
+- `.gemini` — Gemini Code Assist config + styleguide (workhorse code-review gate; non-overlapping with CodeQL security scanning)
 - `.gitignore` — git ignore patterns
 - `.harness-hash` — hash-pinned policy manifest
 - `.harness-hash-extra-patterns` — extra harness-hash glob patterns (self-pins the DR-049 rubric-floor guard)
