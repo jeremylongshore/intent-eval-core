@@ -68,11 +68,12 @@ const ENTITY_SCHEMAS = [
 ] as const;
 
 describe('schemas/v1 — structural integrity', () => {
-  it('ships exactly 13 entity schemas + 3 predicates + 1 common + 1 index = 18 files', () => {
+  it('ships exactly 13 entity schemas + 4 predicates + 1 common + 1 index = 19 files', () => {
     // v0.2.0 added retraction/v1 + dashboard-render/v1 predicate schemas
-    // alongside the v0.1 gate-result/v1 (16 → 18 files).
+    // alongside the v0.1 gate-result/v1 (16 → 18 files). Class-1 ADR DR-082
+    // added skill-refiner-pass/v1 (18 → 19 files).
     const files = readdirSync(SCHEMAS_DIR).filter((f) => f.endsWith('.json'));
-    expect(files).toHaveLength(18);
+    expect(files).toHaveLength(19);
   });
 
   it('every entity schema is referenced in index.json', () => {
@@ -109,6 +110,10 @@ describe('schemas/v1 — structural integrity', () => {
       'dashboard-render.schema.json',
       'https://evals.intentsolutions.io/dashboard-render/v1.schema.json',
     ],
+    [
+      'skill-refiner-pass.schema.json',
+      'https://evals.intentsolutions.io/skill-refiner-pass/v1.schema.json',
+    ],
   ])('%s predicate URI lives at evals.intentsolutions.io (NOT labs)', (file, id) => {
     // CISO binding (DR-004 + DR-010): predicate URIs NEVER on labs.*
     const s = loadJson(join(SCHEMAS_DIR, file));
@@ -116,20 +121,33 @@ describe('schemas/v1 — structural integrity', () => {
     expect(JSON.stringify(s)).not.toContain('labs.intentsolutions.io');
   });
 
-  it.each(['retraction.schema.json', 'dashboard-render.schema.json'])(
-    '%s is closed-world (additionalProperties: false) + declares draft 2020-12',
-    (file) => {
-      const s = loadJson(join(SCHEMAS_DIR, file));
-      expect(s['additionalProperties']).toBe(false);
-      expect(s['$schema']).toBe('https://json-schema.org/draft/2020-12/schema');
-    },
-  );
+  it('skill-refiner-pass/v1 $id is FLAT — no /authoring/ segment (DR-082 Q1)', () => {
+    const s = loadJson(join(SCHEMAS_DIR, 'skill-refiner-pass.schema.json'));
+    expect(JSON.stringify(s['$id'])).not.toContain('/authoring/');
+    expect(s['$id']).toBe('https://evals.intentsolutions.io/skill-refiner-pass/v1.schema.json');
+  });
 
-  it('index.json catalogs 3 predicate schemas (gate-result + retraction + dashboard-render)', () => {
+  it.each([
+    'retraction.schema.json',
+    'dashboard-render.schema.json',
+    'skill-refiner-pass.schema.json',
+  ])('%s is closed-world (additionalProperties: false) + declares draft 2020-12', (file) => {
+    const s = loadJson(join(SCHEMAS_DIR, file));
+    expect(s['additionalProperties']).toBe(false);
+    expect(s['$schema']).toBe('https://json-schema.org/draft/2020-12/schema');
+  });
+
+  it('index.json catalogs 4 predicate schemas (gate-result + retraction + dashboard-render + skill-refiner-pass)', () => {
     const idx = loadJson(join(SCHEMAS_DIR, 'index.json'));
     const schemas = idx['schemas'] as Record<string, { kind: string }>;
     const predicateEntries = Object.values(schemas).filter((s) => s.kind === 'predicate');
-    expect(predicateEntries).toHaveLength(3);
+    expect(predicateEntries).toHaveLength(4);
+  });
+
+  it('skill-refiner-pass/v1 is registered with signing_mode "ln" (DR-082 staging-first)', () => {
+    const idx = loadJson(join(SCHEMAS_DIR, 'index.json'));
+    const schemas = idx['schemas'] as Record<string, { signing_mode?: string }>;
+    expect(schemas['skill-refiner-pass-v1']?.signing_mode).toBe('ln');
   });
 });
 
@@ -352,6 +370,70 @@ describe('schemas/v1 — v0.2.0 additive predicates (retraction/v1 + dashboard-r
     const fix = loadJson(join(FIXTURES_DIR, 'evidence-bundle.valid.json'));
     const bad = { ...fix, pre_registration_hash: 'not-a-hash' };
     expect(validateBundle(bad)).toBe(false);
+  });
+});
+
+describe('schemas/v1 — skill-refiner-pass/v1 additive predicate (Class-1 ADR DR-082)', () => {
+  let ajv: AjvInstance;
+  let validateSkillRefinerPass: (data: unknown) => boolean;
+
+  beforeAll(() => {
+    ajv = buildAjv();
+    const common = loadJson(join(SCHEMAS_DIR, '_common.schema.json'));
+    ajv.addSchema(
+      common,
+      'https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json',
+    );
+    ajv.addSchema(common, 'https://evals.intentsolutions.io/_common.schema.json');
+    validateSkillRefinerPass = ajv.compile(
+      loadJson(join(SCHEMAS_DIR, 'skill-refiner-pass.schema.json')),
+    );
+  });
+
+  it('skill-refiner-pass.valid.json validates (full determinants + optionals)', () => {
+    const ok = validateSkillRefinerPass(
+      loadJson(join(FIXTURES_DIR, 'skill-refiner-pass.valid.json')),
+    );
+    expect(ok).toBe(true);
+  });
+
+  it('skill-refiner-pass with test_statistic_kind != one-sided-z → REJECT (const for v1)', () => {
+    const ok = validateSkillRefinerPass(
+      loadJson(join(FIXTURES_DIR, 'skill-refiner-pass.invalid-bad-test-kind.json')),
+    );
+    expect(ok).toBe(false);
+  });
+
+  it('skill-refiner-pass missing refiner_strategy_id → REJECT (mechanism-traceability, DR-028)', () => {
+    const fix = loadJson(join(FIXTURES_DIR, 'skill-refiner-pass.valid.json'));
+    const bad = JSON.parse(JSON.stringify(fix)) as Record<string, unknown>;
+    delete bad['refiner_strategy_id'];
+    expect(validateSkillRefinerPass(bad)).toBe(false);
+  });
+
+  it('skill-refiner-pass with empty reason array → REJECT (minItems: 1)', () => {
+    const fix = loadJson(join(FIXTURES_DIR, 'skill-refiner-pass.valid.json'));
+    const bad = JSON.parse(JSON.stringify(fix)) as Record<string, unknown>;
+    bad['reason'] = [];
+    expect(validateSkillRefinerPass(bad)).toBe(false);
+  });
+
+  it('skill-refiner-pass with alpha = 1 → REJECT (exclusiveMaximum, falsifiability anchor in (0,1))', () => {
+    const fix = loadJson(join(FIXTURES_DIR, 'skill-refiner-pass.valid.json'));
+    const bad = { ...fix, alpha: 1 };
+    expect(validateSkillRefinerPass(bad)).toBe(false);
+  });
+
+  it('skill-refiner-pass with verdict out of the closed enum → REJECT (widening is /v2)', () => {
+    const fix = loadJson(join(FIXTURES_DIR, 'skill-refiner-pass.valid.json'));
+    const bad = { ...fix, verdict: 'incomparable' };
+    expect(validateSkillRefinerPass(bad)).toBe(false);
+  });
+
+  it('skill-refiner-pass with an unknown extra field → REJECT (additionalProperties: false)', () => {
+    const fix = loadJson(join(FIXTURES_DIR, 'skill-refiner-pass.valid.json'));
+    const bad = { ...fix, surprise: true };
+    expect(validateSkillRefinerPass(bad)).toBe(false);
   });
 });
 

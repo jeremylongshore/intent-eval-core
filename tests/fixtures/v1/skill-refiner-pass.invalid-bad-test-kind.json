@@ -1,0 +1,18 @@
+{
+  "verdict": "accept",
+  "reason": ["behavioral-pareto-dominant"],
+  "refiner_strategy_id": "naive-in-context@1",
+  "skill_version_id": "0192cae6-000b-7000-8000-000000000001",
+  "parent_version_id": "0192cae6-000b-7000-8000-000000000000",
+  "source_snapshot_hash": "sha256:7777777777777777777777777777777777777777777777777777777777777777",
+  "eval_set_ref": {
+    "hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "version": "2026.06.01",
+    "lineage_id": "0192cae6-000b-7000-8000-0000000000ee"
+  },
+  "edit_proposal_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "behavioral_delta": 0.12,
+  "named_dimension_deltas": [],
+  "alpha": 0.05,
+  "test_statistic_kind": "two-sided-t"
+}

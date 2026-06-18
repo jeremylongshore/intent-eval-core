@@ -252,6 +252,13 @@ export const evalRunTerminalStates: readonly ["archived", "skipped_due_to_gate",
 export const evalRunTransitions: TransitionMap<EvalRunState>;
 
 // @public
+export interface EvalSetRef {
+    readonly hash: Sha256Prefixed;
+    readonly lineage_id: Uuidv7;
+    readonly version: string;
+}
+
+// @public
 export interface EvalSpec {
     readonly assertions: readonly AssertionExpression[];
     readonly composition: CompositionDag;
@@ -583,6 +590,13 @@ export interface NamedAssertionExpression {
 }
 
 // @public
+export interface NamedDimensionDelta {
+    readonly delta: number;
+    readonly id: string;
+    readonly non_regressed: boolean;
+}
+
+// @public
 export type OtelSpanId = Brand<string, 'OtelSpanId'>;
 
 // @public
@@ -590,6 +604,7 @@ export const PREDICATE_URIS: {
     readonly GATE_RESULT_V1: "https://evals.intentsolutions.io/gate-result/v1";
     readonly RETRACTION_V1: "https://evals.intentsolutions.io/retraction/v1";
     readonly DASHBOARD_RENDER_V1: "https://evals.intentsolutions.io/dashboard-render/v1";
+    readonly SKILL_REFINER_PASS_V1: "https://evals.intentsolutions.io/skill-refiner-pass/v1";
     readonly VALIDATION_RESULT_V1: "https://evals.intentsolutions.io/validation-result/v1";
     readonly EVAL_VERDICT_V1: "https://evals.intentsolutions.io/eval-verdict/v1";
     readonly COST_ATTRIBUTION_V1: "https://evals.intentsolutions.io/cost-attribution/v1";
@@ -831,6 +846,64 @@ export type Sha256Prefixed = Brand<string, 'Sha256Prefixed'>;
 
 // @public
 export type SigningMode = 'sigstore_staging' | 'rekor_production' | 'unsigned_experimental';
+
+// @public
+export const SKILL_REFINER_PASS_V1_URI: "https://evals.intentsolutions.io/skill-refiner-pass/v1";
+
+// @public
+export type SkillRefinerPassV1 = SkillRefinerPassV1Required & SkillRefinerPassV1Optional;
+
+// @public
+export interface SkillRefinerPassV1Optional {
+    readonly cost_record_ref?: Uuidv7;
+    readonly replay_fidelity_level?: SkillRefinerReplayFidelityLevel;
+    readonly signing_downgrade_reason?: string;
+}
+
+// @public
+export interface SkillRefinerPassV1Required {
+    readonly alpha: number;
+    readonly behavioral_delta: number;
+    readonly edit_proposal_hash: Sha256Prefixed;
+    readonly eval_set_ref: EvalSetRef;
+    readonly named_dimension_deltas: readonly NamedDimensionDelta[];
+    readonly parent_version_id: Uuidv7;
+    readonly reason: readonly string[];
+    readonly refiner_strategy_id: string;
+    readonly skill_version_id: Uuidv7;
+    readonly source_snapshot_hash: Sha256Prefixed;
+    readonly test_statistic_kind: SkillRefinerTestStatisticKind;
+    readonly verdict: SkillRefinerVerdict;
+}
+
+// @public
+export interface SkillRefinerPassV1Statement {
+    // (undocumented)
+    readonly predicate: SkillRefinerPassV1;
+    // (undocumented)
+    readonly predicateType: SkillRefinerPassV1Uri;
+    // (undocumented)
+    readonly subject: readonly {
+        readonly name: string;
+        readonly digest: {
+            readonly sha256: string;
+        };
+    }[];
+    // (undocumented)
+    readonly _type: 'https://in-toto.io/Statement/v1';
+}
+
+// @public (undocumented)
+export type SkillRefinerPassV1Uri = typeof SKILL_REFINER_PASS_V1_URI;
+
+// @public
+export type SkillRefinerReplayFidelityLevel = 'RF-0' | 'RF-1' | 'RF-2' | 'RF-3' | 'RF-4';
+
+// @public
+export type SkillRefinerTestStatisticKind = 'one-sided-z';
+
+// @public
+export type SkillRefinerVerdict = 'accept' | 'reject';
 
 // @public
 export interface SkillSnapshot {

@@ -12,6 +12,9 @@ import type {
   RetractionReasonClass,
   RetractionV1,
   Sha256Prefixed,
+  SkillRefinerPassV1,
+  SkillRefinerTestStatisticKind,
+  SkillRefinerVerdict,
   SubjectSide,
   Uuidv7,
 } from '../dist/index.js';
@@ -142,4 +145,69 @@ expectError<DashboardRenderV1>({
   input_bundles: [],
   rendered_at: '2026-06-01T12:05:00Z',
   renderer: 'intent-eval-dashboard@0.2.0',
+});
+
+// ─── skill-refiner-pass/v1 (Class-1 ADR DR-082, staging-first) ─────────
+
+// verdict is the closed accept|reject set
+expectAssignable<SkillRefinerVerdict>('accept');
+expectAssignable<SkillRefinerVerdict>('reject');
+expectError<SkillRefinerVerdict>('incomparable'); // widening the enum is /v2
+expectError<SkillRefinerVerdict>('Accept'); // case-sensitive
+
+// test_statistic_kind is the one-sided-z const (DR-082 Q2)
+expectAssignable<SkillRefinerTestStatisticKind>('one-sided-z');
+expectError<SkillRefinerTestStatisticKind>('two-sided-t'); // changing the family is /v2
+
+const skillRefinerPass: SkillRefinerPassV1 = {
+  verdict: 'accept',
+  reason: ['behavioral-pareto-dominant'],
+  refiner_strategy_id: 'naive-in-context@1',
+  skill_version_id: 'x' as Uuidv7,
+  parent_version_id: 'y' as Uuidv7,
+  source_snapshot_hash: 'sha256:0'.repeat(8) as Sha256Prefixed,
+  eval_set_ref: {
+    hash: 'sha256:0'.repeat(8) as Sha256Prefixed,
+    version: '2026.06.01',
+    lineage_id: 'z' as Uuidv7,
+  },
+  edit_proposal_hash: 'sha256:0'.repeat(8) as Sha256Prefixed,
+  behavioral_delta: 0.12,
+  named_dimension_deltas: [{ id: 'safety', delta: 0.01, non_regressed: true }],
+  alpha: 0.05,
+  test_statistic_kind: 'one-sided-z',
+};
+expectAssignable<SkillRefinerPassV1>(skillRefinerPass);
+
+// optional descriptive fields acceptable
+expectAssignable<SkillRefinerPassV1>({
+  ...skillRefinerPass,
+  cost_record_ref: 'c' as Uuidv7,
+  replay_fidelity_level: 'RF-1',
+  signing_downgrade_reason: 'production-root-not-yet-provisioned',
+});
+
+// missing refiner_strategy_id → error (mechanism must stay traceable, DR-028)
+expectError<SkillRefinerPassV1>({
+  verdict: 'accept',
+  reason: ['x'],
+  skill_version_id: 'x' as Uuidv7,
+  parent_version_id: 'y' as Uuidv7,
+  source_snapshot_hash: 'sha256:0'.repeat(8) as Sha256Prefixed,
+  eval_set_ref: {
+    hash: 'sha256:0'.repeat(8) as Sha256Prefixed,
+    version: '2026.06.01',
+    lineage_id: 'z' as Uuidv7,
+  },
+  edit_proposal_hash: 'sha256:0'.repeat(8) as Sha256Prefixed,
+  behavioral_delta: 0.12,
+  named_dimension_deltas: [],
+  alpha: 0.05,
+  test_statistic_kind: 'one-sided-z',
+});
+
+// wrong test_statistic_kind → error
+expectError<SkillRefinerPassV1>({
+  ...skillRefinerPass,
+  test_statistic_kind: 'two-sided-t',
 });

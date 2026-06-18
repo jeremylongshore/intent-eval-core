@@ -64,6 +64,7 @@ VALID_FIXTURES = {
     iec.GateResultV1: "gate-result",
     iec.RetractionV1: "retraction",
     iec.DashboardRenderV1: "dashboard-render",
+    iec.SkillRefinerPassV1: "skill-refiner-pass",
 }
 
 
@@ -73,12 +74,13 @@ class TestPackageSurface:
         assert iec.__version__.count(".") == 2  # X.Y.Z SemVer core
 
     def test_all_canonical_models_exported(self) -> None:
-        # 13 entities + 3 predicate bodies = 16 models, all importable by name.
+        # 13 entities + 4 predicate bodies = 17 models, all importable by name.
+        # skill-refiner-pass/v1 added staging-first by Class-1 ADR DR-082.
         for name in (
             "EvalSpec EvalRun MatcherMap EvidenceBundle JudgeDecision "
             "RuntimeReceipt RegressionPack RolloutGate SkillSnapshot "
             "SessionTrace ToolInvocation CostRecord FailureTaxonomy "
-            "GateResultV1 RetractionV1 DashboardRenderV1"
+            "GateResultV1 RetractionV1 DashboardRenderV1 SkillRefinerPassV1"
         ).split():
             assert hasattr(iec, name), f"missing export: {name}"
 
@@ -132,6 +134,18 @@ class TestNegativeFixtures:
     def test_dashboard_render_empty_inputs_rejected(self) -> None:
         # minItems: 1 on input_bundles.
         assert not accepts(iec.DashboardRenderV1, load("dashboard-render.invalid-empty-inputs.json"))
+
+    def test_skill_refiner_pass_bad_test_kind_rejected(self) -> None:
+        # test_statistic_kind is a const (one-sided-z) for v1, DR-082 Q2.
+        assert not accepts(
+            iec.SkillRefinerPassV1, load("skill-refiner-pass.invalid-bad-test-kind.json")
+        )
+
+    def test_skill_refiner_pass_missing_strategy_id_rejected(self) -> None:
+        # refiner_strategy_id is required (DR-028 mechanism-traceability binding).
+        base = load("skill-refiner-pass.valid.json")
+        base.pop("refiner_strategy_id")
+        assert not accepts(iec.SkillRefinerPassV1, base)
 
 
 class TestClosedWorld:

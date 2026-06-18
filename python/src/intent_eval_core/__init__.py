@@ -38,6 +38,7 @@ from .models import (
     RolloutGate,
     RuntimeReceipt,
     SessionTrace,
+    SkillRefinerPassV1,
     SkillSnapshot,
     ToolInvocation,
 )
@@ -66,6 +67,7 @@ __all__ = [
     "GateResultV1",
     "RetractionV1",
     "DashboardRenderV1",
+    "SkillRefinerPassV1",
     # Constants
     "GATE_RESULT_V1_URI",
 ]

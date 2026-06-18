@@ -34,6 +34,14 @@
       "spec": "amber-lighthouse Epic 2.1 / Epic 2.5 (B3 binding, sequenced)",
       "signing_mode": "sigstore_staging"
     },
+    "skill-refiner-pass-v1": {
+      "path": "skill-refiner-pass.schema.json",
+      "title": "skill-refiner-pass/v1 predicate body",
+      "kind": "predicate",
+      "uri": "https://evals.intentsolutions.io/skill-refiner-pass/v1",
+      "spec": "Class-1 ADR DR-082 (intent-eval-lab 082-AT-DECR-isedc-skill-refiner-pass-v1-predicate-uri-2026-06-17.md)",
+      "signing_mode": "ln"
+    },
     "eval-spec": {
       "path": "eval-spec.schema.json",
       "title": "EvalSpec",
