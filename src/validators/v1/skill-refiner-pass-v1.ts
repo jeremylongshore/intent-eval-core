@@ -9,17 +9,20 @@
  * the PASS is unfalsifiable.
  *
  * Mirrors the wire discipline of gate-result/v1 (DR-082 Q4): this body becomes
- * the `predicate` of an in-toto Statement v1 over DSSE; the in-toto
- * `subject[].digest.sha256` MUST equal `source_snapshot_hash` (sans `sha256:`
- * prefix). That subject↔body equality is enforced at the Statement layer (as
- * gate-result's I1/I2 are in evidence-statement.ts), NOT inside this body schema
- * — the body schema validates the body alone.
+ * the `predicate` of an in-toto Statement v1 over DSSE. The intended subject↔body
+ * binding is `subject[].digest.sha256` === `result_snapshot_hash` (the POST-EDIT
+ * output snapshot, per DR-085 D4 — the result is the artifact the PASS attests).
+ * NOTE (DR-085 D4/F5): that Statement-layer binding is NOT YET implemented for this
+ * predicate — `evidence-statement.ts` currently enforces only `gate-result/v1`
+ * (I1/I2); a `SkillRefinerPassV1Statement` mirror is a tracked follow-up and must
+ * land before first production signature. This body schema validates the body
+ * alone and does NOT assert the subject↔body equality.
  *
- * Runs in `sigstore_staging` (the `ln` SigningMode) until ALL FOUR DR-082 Q3
- * production triggers hold. The `skill_version_id` / `parent_version_id` /
- * `source_snapshot_hash` triple references the SkillVersion by the kernel's
- * EXISTING id/hash primitives — it does NOT define a SkillVersion entity
- * (DR-028 one-way-door).
+ * Runs in `sigstore_staging` until ALL FOUR DR-082 Q3 production triggers hold
+ * (DR-085 D4 retired the `ln` label). The `skill_version_id` / `parent_version_id`
+ * / `source_snapshot_hash` (PRE-EDIT input) triple references the SkillVersion by
+ * the kernel's EXISTING id/hash primitives — it does NOT define a SkillVersion
+ * entity (DR-028 one-way-door).
  */
 
 import { z } from 'zod';
