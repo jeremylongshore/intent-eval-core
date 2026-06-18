@@ -166,6 +166,7 @@ const skillRefinerPass: SkillRefinerPassV1 = {
   skill_version_id: 'x' as Uuidv7,
   parent_version_id: 'y' as Uuidv7,
   source_snapshot_hash: 'sha256:0'.repeat(8) as Sha256Prefixed,
+  result_snapshot_hash: 'sha256:0'.repeat(8) as Sha256Prefixed,
   eval_set_ref: {
     hash: 'sha256:0'.repeat(8) as Sha256Prefixed,
     version: '2026.06.01',
@@ -194,6 +195,7 @@ expectError<SkillRefinerPassV1>({
   skill_version_id: 'x' as Uuidv7,
   parent_version_id: 'y' as Uuidv7,
   source_snapshot_hash: 'sha256:0'.repeat(8) as Sha256Prefixed,
+  result_snapshot_hash: 'sha256:0'.repeat(8) as Sha256Prefixed,
   eval_set_ref: {
     hash: 'sha256:0'.repeat(8) as Sha256Prefixed,
     version: '2026.06.01',
