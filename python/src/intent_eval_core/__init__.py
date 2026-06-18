@@ -40,6 +40,7 @@ from .models import (
     SessionTrace,
     SkillRefinerPassV1,
     SkillSnapshot,
+    SkillVersion,
     ToolInvocation,
 )
 
@@ -49,7 +50,7 @@ __version__ = "0.7.0"
 
 __all__ = [
     "__version__",
-    # Entities (Blueprint B § 2.1 – § 2.13)
+    # Entities (Blueprint B § 2.1 – § 2.13 + SkillVersion, the 14th per DR-028 T1)
     "EvalSpec",
     "EvalRun",
     "MatcherMap",
@@ -59,6 +60,7 @@ __all__ = [
     "RegressionPack",
     "RolloutGate",
     "SkillSnapshot",
+    "SkillVersion",
     "SessionTrace",
     "ToolInvocation",
     "CostRecord",

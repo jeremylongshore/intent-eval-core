@@ -21,6 +21,7 @@ export * from './runtime-receipt.js';
 export * from './regression-pack.js';
 export * from './rollout-gate.js';
 export * from './skill-snapshot.js';
+export * from './skill-version.js';
 export * from './session-trace.js';
 export * from './tool-invocation.js';
 export * from './cost-record.js';

@@ -87,6 +87,9 @@ from ._generated.skill_refiner_pass_schema import (
 from ._generated.skill_snapshot_schema import (
     SkillsnapshotContentAddressedPinOfASkillSSourceDepsConfigBlueprintB29 as SkillSnapshot,
 )
+from ._generated.skill_version_schema import (
+    SkillversionRefinementLineageRecordOfASkill14ThCanonicalEntityDr028T1Discriminator as SkillVersion,  # noqa: E501
+)
 from ._generated.tool_invocation_schema import (
     ToolinvocationSingleToolProviderCallRecordedUnderASessiontraceBlueprintB211 as ToolInvocation,
 )
@@ -160,7 +163,7 @@ class GateResultV1(_GateResultV1Generated):
 
 
 __all__ = [
-    # Entities (Blueprint B § 2.1 – § 2.13)
+    # Entities (Blueprint B § 2.1 – § 2.13 + SkillVersion, the 14th per DR-028 T1)
     "EvalSpec",
     "EvalRun",
     "MatcherMap",
@@ -170,6 +173,7 @@ __all__ = [
     "RegressionPack",
     "RolloutGate",
     "SkillSnapshot",
+    "SkillVersion",
     "SessionTrace",
     "ToolInvocation",
     "CostRecord",
