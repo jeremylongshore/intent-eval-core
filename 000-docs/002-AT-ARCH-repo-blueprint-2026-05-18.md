@@ -27,7 +27,7 @@ filing_standard: Document Filing Standard v4.3
 | **Type** | `kernel` |
 | **Owner** | `@jeremylongshore` (per `CODEOWNERS`) |
 | **Maturity** | `v0.x experimental` — first public release `@intentsolutions/core@0.1.0` shipped 2026-05-17 with Sigstore provenance |
-| **Ecosystem role** | Canonical contracts kernel for the Intent Eval Platform — TypeScript types, JSON Schemas, Zod runtime validators, and state machines for the 13 canonical domain entities defined in Blueprint B § 2 |
+| **Ecosystem role** | Canonical contracts kernel for the Intent Eval Platform — TypeScript types, JSON Schemas, Zod runtime validators, and state machines for the 14 canonical domain entities (the 13 defined in Blueprint B § 2 + `SkillVersion`, the 14th per DR-028 T1) |
 | **Bead prefix** | `iec-` (per Blueprint A § 2.1 taxonomy) |
 | **Plane module** | `LAB → Intent Eval Core — Kernel` (module UUID `5abf1653-c9ba-4029-8c04-76f148eb78f5`) |
 
@@ -83,7 +83,7 @@ The boundary at which this repo hands off to peer repos: the kernel **defines** 
 
 ### § 3.1 In scope
 
-- TypeScript interface definitions for all 13 canonical entities per Blueprint B § 2
+- TypeScript interface definitions for all 14 canonical entities (the 13 per Blueprint B § 2 + `SkillVersion`, the 14th per DR-028 T1)
 - The `gate-result/v1` NORMATIVE in-toto predicate body per Blueprint B § 7.4 (in-toto Statement v1 wrapping + DSSE envelope types + canonical URI constant)
 - Branded primitive types (`Uuidv7`, `Sha256`, `Sha256Prefixed`, `Rfc3339`, `SemVer`, `KebabSlug`, `MicroUsd`, `StorageKey`, `OtelSpanId`, `ActorIdentity`) — both as TS brands and as Zod runtime parsers
 - State-machine transition maps for the 10 entities that have lifecycles, plus the `canTransition` runtime helper
@@ -136,7 +136,7 @@ intent-eval-core/
 ├── src/
 │   ├── primitives.ts                 — 10 branded primitive types (TS-only, no runtime cost)
 │   ├── state-machines/types.ts       — TransitionMap<S> + canTransition helper
-│   ├── entities/                     — 13 canonical entity TS interfaces + state-machine transition maps
+│   ├── entities/                     — 14 canonical entity TS interfaces + state-machine transition maps (13 Blueprint B § 2 + SkillVersion)
 │   ├── predicates/                   — gate-result/v1 NORMATIVE in-toto predicate body types + URI constants
 │   ├── validators/v1/                — Zod runtime validators (opt-in; subpath export ./validators/v1/*)
 │   │   ├── _primitives.ts            — branded Zod schemas mirroring TS brands
@@ -260,16 +260,17 @@ Strict SemVer per Blueprint A § 4.2. MAJOR bumps to `zod` (the only runtime dep
 | `RegressionPack` | defines | § 2.7 | TS interface + JSON Schema + Zod; `MatcherOutcomeRow` (pass+fail required); `RegressionOutcomeSummary` as `Partial<Record<MmClass, ...>>` | `014 § 2.7` |
 | `RolloutGate` | defines | § 2.8 | TS interface + JSON Schema + Zod; `RolloutGateDecision` = ship\|no_ship\|advisory\|error (deliberately distinct from `GateDecision`); `Coverage` shape imported from gate-result/v1 module | `014 § 2.8` |
 | `SkillSnapshot` | defines | § 2.9 | TS interface + JSON Schema + Zod; `combined_sha` formula documented (sha256(source\|\|lock\|\|config)) with normative concatenation order | `014 § 2.9` |
+| `SkillVersion` | defines | DR-028 T1 | **14th canonical entity (added post-Blueprint-B via DR-028 T1 DISCRIMINATOR).** TS interface + JSON Schema + Zod; `SkillVersionKind` `edit\|revert\|restore` closed signable discriminator; `parent_version_id` SkillVersion→SkillVersion lineage (nullable for root); `source_snapshot_hash` is a READ-ONLY content-hash REFERENCE to `SkillSnapshot`, **NOT a relational FK**; `refiner_strategy_id` signed-manifest field. NO state machine (formalism + status/signing cross-field invariants DEFERRED to a v0.4.0 follow-up DR per DR-028 T1 lines 105/108). | `014 SkillVersion` |
 | `SessionTrace` | defines | § 2.10 | TS interface + JSON Schema + Zod; open→closed state machine; 4 summary counters | `014 § 2.10` |
 | `ToolInvocation` | defines | § 2.11 | TS interface + JSON Schema + Zod; `ToolInvocationError = {enum_class, message}`; HARD credential-leak rule documented as runtime concern | `014 § 2.11` |
 | `CostRecord` | defines | § 2.12 | TS interface + JSON Schema + Zod; `CostAttributionClass` closed 7-element enum; both FKs nullable for system rollups; `MicroUsd` brand | `014 § 2.12` |
 | `FailureTaxonomy` | defines | § 2.13 | TS interface + JSON Schema + Zod; `MmClassId` template-literal type (broader than `MmClass`); proposed→canonical→deprecated forward-only state machine | `014 § 2.13` |
 
-**Direction note**: This kernel is the **source-of-truth** for all 13 canonical entities. It does not consume entities from any peer repo — peer repos consume from here. The "defines" direction is unique to this kernel in the ecosystem.
+**Direction note**: This kernel is the **source-of-truth** for all 14 canonical entities (the 13 Blueprint B § 2 entities + `SkillVersion`, the 14th, added by DR-028 T1). It does not consume entities from any peer repo — peer repos consume from here. The "defines" direction is unique to this kernel in the ecosystem.
 
 **Predicate URIs**: gate-result/v1 (NORMATIVE per Blueprint B § 7.4) is the only fully spec-bound predicate body at v1. Four sibling URIs are exposed as string constants (`PREDICATE_URIS.VALIDATION_RESULT_V1`, `EVAL_VERDICT_V1`, `COST_ATTRIBUTION_V1`, `RUNTIME_RECEIPT_V1`) — their body normative specs are forward-deferred per DR-010 Q3 conditional approval; bodies will land in future kernel minor versions when each predicate's SPEC.md normative section is merged on `intent-eval-lab` main.
 
-**Entities NOT touched by this repo**: None. The kernel defines all 13.
+**Entities NOT touched by this repo**: None. The kernel defines all 14 (the 13 Blueprint B § 2 entities + `SkillVersion`, the 14th per DR-028 T1).
 
 ---
 
@@ -303,11 +304,11 @@ The kernel does not emit OTel events itself (no runtime). It defines the `Sessio
 
 The following surface elements are stable within minor versions (0.X.*→ 0.X+1.* additive only; 0.X+1.0 may NOT break consumers of 0.X.*):
 
-- **Entity TypeScript interface field names + types** for all 13 entities at the canonical module entry (`@intentsolutions/core`).
+- **Entity TypeScript interface field names + types** for all 14 entities (13 Blueprint B § 2 + `SkillVersion`) at the canonical module entry (`@intentsolutions/core`).
 - **`gate-result/v1` predicate body required + optional field names + types + enums** — this is the most version-sensitive surface in the kernel; the URI `https://evals.intentsolutions.io/gate-result/v1` is **immutable** per Blueprint B § 7.2 backward-compat policy.
 - **State-machine state literal unions** (`EvalSpecState`, `EvalRunState`, etc.) — adding states without breaking existing transitions is MINOR; removing/renaming is MAJOR.
 - **Branded primitive type identities** (`Uuidv7`, `Sha256`, etc.) — the brand identifier strings are stable; changing one breaks every consumer that branded a value.
-- **JSON Schema `$id` URLs** for all 13 entities + the predicate body — `$id` is the durable identifier; never repath an existing schema.
+- **JSON Schema `$id` URLs** for all 14 entities (13 Blueprint B § 2 + `SkillVersion`) + the predicate bodies — `$id` is the durable identifier; never repath an existing schema.
 - **Subpath exports** (`./schemas/v1/*.json`, `./validators/v1/*`) — adding new subpaths is MINOR; removing is MAJOR.
 - **Zod schema names** (`EvalSpecSchema`, `GateResultV1Schema`, etc.) — renaming is MAJOR.
 

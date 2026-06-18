@@ -246,7 +246,7 @@ src/__tests__/
 Annotations:
 
 - `src/` — top-level: barrel + primitives + integration test
-- `src/entities/` — per Blueprint B § 2 (13 canonical entity definitions)
+- `src/entities/` — per Blueprint B § 2 (13 canonical entity definitions) + `SkillVersion` (14th, DR-028 T1 DISCRIMINATOR)
 - `src/predicates/` — gate-result/v1 + URI constants (Blueprint B § 7)
 - `src/validators/v1/` — Zod runtime parsers (opt-in subpath)
 - `src/validators/v1/_generated/` — codegen reference output (not exported)
