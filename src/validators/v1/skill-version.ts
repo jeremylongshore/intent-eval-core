@@ -26,7 +26,7 @@ import {
   ActorIdentitySchema,
   KebabSlugSchema,
   Rfc3339Schema,
-  Sha256PrefixedSchema,
+  Sha256Schema,
   Uuidv7Schema,
 } from './_primitives.js';
 
@@ -44,10 +44,29 @@ export const SkillVersionSchema = z
     skill_id: KebabSlugSchema,
     /** Load-bearing signable discriminator. */
     version_kind: SkillVersionKindSchema,
-    /** Prior SkillVersion in the lineage; null for a root version. NOT an FK to SkillSnapshot. */
+    /**
+     * Reassignable convenience pointer to the prior SkillVersion; null for a root
+     * version. NOT an FK to SkillSnapshot. The integrity anchor is
+     * parent_content_hash (DR-085 D3).
+     */
     parent_version_id: Uuidv7Schema.nullable(),
-    /** Read-only content-hash REFERENCE to the SkillSnapshot — NOT a relational FK. */
-    source_snapshot_hash: Sha256PrefixedSchema,
+    /**
+     * DR-085 D3: this version's own post-edit content hash — the chain anchor a
+     * child cites as parent_content_hash. BARE Sha256, aligned to
+     * SkillSnapshot.combined_sha (one alphabet platform-wide).
+     */
+    content_hash: Sha256Schema,
+    /**
+     * DR-085 D3: the parent's content_hash — the tamper-evident lineage anchor.
+     * BARE Sha256. null iff parent_version_id is null (enforced in superRefine).
+     */
+    parent_content_hash: Sha256Schema.nullable(),
+    /**
+     * DR-085 D3+D4: read-only content-hash REFERENCE to the PRE-EDIT SkillSnapshot
+     * (the refinement input) — NOT a relational FK. BARE Sha256, aligned to
+     * combined_sha (the prior sha256:-prefixed form was the mismatch D3 corrects).
+     */
+    source_snapshot_hash: Sha256Schema,
     /** RefinerStrategy that produced this version (CISO mechanism-traceability binding). */
     refiner_strategy_id: z.string().min(1),
     created_at: Rfc3339Schema,
@@ -55,6 +74,39 @@ export const SkillVersionSchema = z
     /** RESERVED multi-tenancy slot (deferral-G, bd_000-projects-k0fj). */
     tenant_id: Uuidv7Schema.optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((sv, ctx) => {
+    // DR-085 D3: parent_content_hash MUST be null EXACTLY when parent_version_id
+    // is null. A root (null parent_version_id) forges no parent; a non-root MUST
+    // carry the tamper-evident parent_content_hash anchor.
+    if (sv.parent_version_id === null && sv.parent_content_hash !== null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['parent_content_hash'],
+        message:
+          'DR-085 D3: parent_content_hash MUST be null for a ROOT version (parent_version_id is null) — a root forges no parent',
+      });
+    }
+    if (sv.parent_version_id !== null && sv.parent_content_hash === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['parent_content_hash'],
+        message:
+          'DR-085 D3: parent_content_hash MUST be non-null when parent_version_id is set (the tamper-evident lineage anchor)',
+      });
+    }
+    // DR-085 D5: version_kind ∈ {revert,restore} ⇒ parent_version_id ≠ null.
+    // A revert/restore must point at the version it reverts/restores to.
+    if (
+      (sv.version_kind === 'revert' || sv.version_kind === 'restore') &&
+      sv.parent_version_id === null
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['parent_version_id'],
+        message: `DR-085 D5: version_kind "${sv.version_kind}" requires a non-null parent_version_id (a revert/restore must point at a prior version)`,
+      });
+    }
+  });
 
 export type SkillVersion = z.infer<typeof SkillVersionSchema>;

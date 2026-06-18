@@ -867,9 +867,10 @@ export interface SkillRefinerPassV1Required {
     readonly edit_proposal_hash: Sha256Prefixed;
     readonly eval_set_ref: EvalSetRef;
     readonly named_dimension_deltas: readonly NamedDimensionDelta[];
-    readonly parent_version_id: Uuidv7;
+    readonly parent_version_id: Uuidv7 | null;
     readonly reason: readonly string[];
     readonly refiner_strategy_id: string;
+    readonly result_snapshot_hash: Sha256Prefixed;
     readonly skill_version_id: Uuidv7;
     readonly source_snapshot_hash: Sha256Prefixed;
     readonly test_statistic_kind: SkillRefinerTestStatisticKind;
@@ -930,15 +931,17 @@ export const skillSnapshotTransitions: TransitionMap<SkillSnapshotState>;
 
 // @public
 export interface SkillVersion {
+    readonly content_hash: Sha256;
     // (undocumented)
     readonly created_at: Rfc3339;
     // (undocumented)
     readonly created_by: ActorIdentity;
     readonly id: Uuidv7;
+    readonly parent_content_hash: Sha256 | null;
     readonly parent_version_id: Uuidv7 | null;
     readonly refiner_strategy_id: string;
     readonly skill_id: KebabSlug;
-    readonly source_snapshot_hash: Sha256Prefixed;
+    readonly source_snapshot_hash: Sha256;
     readonly tenant_id?: Uuidv7;
     readonly version_kind: SkillVersionKind;
 }

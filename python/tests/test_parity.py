@@ -165,11 +165,97 @@ class TestNegativeFixtures:
         base.pop("refiner_strategy_id")
         assert not accepts(iec.SkillVersion, base)
 
-    def test_skill_version_bad_source_snapshot_hash_prefix_rejected(self) -> None:
-        # source_snapshot_hash is Sha256Prefixed (sha256:<64-hex>); a bare digest is rejected.
+    def test_skill_version_prefixed_source_snapshot_hash_rejected(self) -> None:
+        # DR-085 D3: entity hashes are now BARE (aligned to SkillSnapshot.combined_sha);
+        # the prior sha256:-prefixed form is rejected.
         base = load("skill-version.valid.json")
-        base["source_snapshot_hash"] = "7" * 64
+        base["source_snapshot_hash"] = "sha256:" + "7" * 64
         assert not accepts(iec.SkillVersion, base)
+
+    # ── DR-085 D3 lineage-integrity + D5 cross-field invariants ──────────────
+
+    def test_skill_version_revert_restore_validate(self) -> None:
+        # DR-085 D5: revert/restore each carry a non-null parent + parent_content_hash.
+        assert accepts(iec.SkillVersion, load("skill-version.revert.valid.json"))
+        assert accepts(iec.SkillVersion, load("skill-version.restore.valid.json"))
+
+    def test_skill_version_root_nonnull_parent_content_hash_rejected(self) -> None:
+        # DR-085 D3: a root (null parent_version_id) MUST have null parent_content_hash.
+        root = load("skill-version.root.valid.json")
+        assert not accepts(iec.SkillVersion, {**root, "parent_content_hash": "6" * 64})
+
+    def test_skill_version_nonroot_null_parent_content_hash_rejected(self) -> None:
+        # DR-085 D3: a non-root (uuid parent) MUST carry parent_content_hash.
+        child = load("skill-version.valid.json")
+        assert not accepts(iec.SkillVersion, {**child, "parent_content_hash": None})
+
+    def test_skill_version_prefixed_content_hash_rejected(self) -> None:
+        # DR-085 D3: content_hash is BARE sha256.
+        child = load("skill-version.valid.json")
+        assert not accepts(iec.SkillVersion, {**child, "content_hash": "sha256:" + "1" * 64})
+
+    def test_skill_version_revert_null_parent_rejected(self) -> None:
+        # DR-085 D5: version_kind ∈ {revert,restore} ⇒ parent_version_id ≠ null.
+        root = load("skill-version.root.valid.json")
+        assert not accepts(iec.SkillVersion, {**root, "version_kind": "revert"})
+
+    def test_skill_version_restore_null_parent_rejected(self) -> None:
+        root = load("skill-version.root.valid.json")
+        assert not accepts(iec.SkillVersion, {**root, "version_kind": "restore"})
+
+    def test_skill_version_tenant_id_explicit_null_rejected(self) -> None:
+        # DR-085 D5 optional-not-nullable parity: tenant_id is optional, not nullable.
+        child = load("skill-version.valid.json")
+        assert not accepts(iec.SkillVersion, {**child, "tenant_id": None})
+
+    def test_skill_version_missing_parent_keys_rejected(self) -> None:
+        # DR-085 D3 required-but-nullable parity: parent_version_id +
+        # parent_content_hash are in the schema `required` array (key MUST be
+        # present; value MAY be null for a root). Omitting the key must be rejected
+        # by Pydantic exactly as AJV + Zod reject it — not silently optional.
+        child = load("skill-version.valid.json")
+        for key in ("parent_version_id", "parent_content_hash"):
+            without = {k: v for k, v in child.items() if k != key}
+            assert not accepts(iec.SkillVersion, without), f"omitting {key} must be rejected"
+
+    # ── DR-085 D4 (semantic collision) + D5 (accept invariant) on the predicate ─
+
+    def test_skill_refiner_pass_reject_fixture_validates(self) -> None:
+        # DR-085 D5: a reject body has no non-regression constraint.
+        assert accepts(iec.SkillRefinerPassV1, load("skill-refiner-pass.reject.valid.json"))
+
+    def test_skill_refiner_pass_accept_regressed_rejected(self) -> None:
+        # DR-085 D5: accept ⇒ every named_dimension_deltas[].non_regressed === true.
+        assert not accepts(
+            iec.SkillRefinerPassV1, load("skill-refiner-pass.invalid-accept-regressed.json")
+        )
+
+    def test_skill_refiner_pass_null_parent_accepted(self) -> None:
+        # DR-085 D3: parent_version_id nullable (root attests without forging a parent).
+        base = load("skill-refiner-pass.valid.json")
+        assert accepts(iec.SkillRefinerPassV1, {**base, "parent_version_id": None})
+
+    def test_skill_refiner_pass_missing_result_snapshot_hash_rejected(self) -> None:
+        # DR-085 D4: result_snapshot_hash (post-edit output) is a required determinant.
+        base = load("skill-refiner-pass.valid.json")
+        base.pop("result_snapshot_hash")
+        assert not accepts(iec.SkillRefinerPassV1, base)
+
+    def test_skill_refiner_pass_optionals_not_nullable(self) -> None:
+        # DR-085 D5 wire-format parity: cost_record_ref / replay_fidelity_level /
+        # signing_downgrade_reason are optional-but-NOT-nullable (explicit null rejected).
+        base = load("skill-refiner-pass.valid.json")
+        assert not accepts(iec.SkillRefinerPassV1, {**base, "cost_record_ref": None})
+        assert not accepts(iec.SkillRefinerPassV1, {**base, "replay_fidelity_level": None})
+        assert not accepts(iec.SkillRefinerPassV1, {**base, "signing_downgrade_reason": None})
+
+    def test_skill_refiner_pass_missing_parent_version_id_rejected(self) -> None:
+        # DR-085 D3 required-but-nullable parity: parent_version_id is in the schema
+        # `required` array (key MUST be present; value MAY be null for a root). The
+        # generated `... | None = None` made the key omittable — drift vs AJV + Zod.
+        base = load("skill-refiner-pass.valid.json")
+        without = {k: v for k, v in base.items() if k != "parent_version_id"}
+        assert not accepts(iec.SkillRefinerPassV1, without)
 
 
 class TestClosedWorld:

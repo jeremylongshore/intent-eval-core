@@ -19,8 +19,9 @@
  * — MIRROR gate-result/v1 exactly, no bespoke envelope). Each row is
  * independently verifiable; there is NO top-level bundle signature (Blueprint B
  * § 7 line 754). The in-toto `subject[].digest.sha256` MUST equal
- * `source_snapshot_hash` (without the `sha256:` prefix) — the authoring-chamber
- * analogue of gate-result/v1's `input_hash` === subject digest binding.
+ * `result_snapshot_hash` (without the `sha256:` prefix) — DR-085 D4: the subject
+ * is the POST-EDIT artifact being attested; the authoring-chamber analogue of
+ * gate-result/v1's `input_hash` === subject digest binding.
  *
  * ── Staging-first (SigningMode `ln`) ──
  * Minted staging-first by Class-1 ADR DR-082 (intent-eval-lab
@@ -39,11 +40,19 @@
  * the DR-028 cross-field invariant. Do NOT wire production-Rekor signing here.
  *
  * ── SkillVersion-by-id-not-entity ──
- * The `skill_version_id` / `parent_version_id` / `source_snapshot_hash`
- * provenance triple references the SkillVersion by the kernel's EXISTING id/hash
- * primitives ({@link Uuidv7} + {@link Sha256Prefixed}). It does NOT define a
- * SkillVersion kernel entity — DR-028 T1 is a one-way door (SkillVersion stays a
- * separate entity, minted elsewhere).
+ * The `skill_version_id` / `parent_version_id` / `source_snapshot_hash` /
+ * `result_snapshot_hash` provenance set references the SkillVersion by the
+ * kernel's EXISTING id/hash primitives ({@link Uuidv7} + {@link Sha256Prefixed}).
+ * It does NOT define a SkillVersion kernel entity — DR-028 T1 is a one-way door
+ * (SkillVersion stays a separate entity, minted elsewhere). DR-085 D3:
+ * `parent_version_id` is NULLABLE so a root SkillVersion attests without forging
+ * a parent.
+ *
+ * ── DR-085 D5 accept invariant ──
+ * When `verdict === 'accept'`, EVERY `named_dimension_deltas[].non_regressed`
+ * MUST be true — machine-enforced in the Zod `.superRefine` (canonical validator
+ * src/validators/v1/skill-refiner-pass-v1.ts), the JSON-Schema if/then, and the
+ * Pydantic `model_validator`. A `reject` body has no such constraint.
  *
  * ── Immutability (DR-082 Q5, inheriting DR-064) ──
  * Net-new predicate URI, ADDITIVE per § 7.2 backward-compat — no v1 contract is
@@ -159,19 +168,33 @@ export interface SkillRefinerPassV1Required {
   readonly skill_version_id: Uuidv7;
 
   /**
-   * UUIDv7 of the parent SkillVersion the accepted version was refined from.
-   * Binds parent→child so a refiner cannot launder an unrelated skill through a
-   * forged lineage.
+   * **DR-085 D3** — NULLABLE UUIDv7 of the parent SkillVersion the accepted
+   * version was refined from. `null` for a ROOT SkillVersion (the first
+   * refinement in a lineage), so a root attests a valid pass WITHOUT forging a
+   * parent — root emission is provably zero-forgery (DevRel/CISO binding). When
+   * non-null, binds parent→child so a refiner cannot launder an unrelated skill
+   * through a forged lineage.
    */
-  readonly parent_version_id: Uuidv7;
+  readonly parent_version_id: Uuidv7 | null;
 
   /**
-   * sha256-prefixed content hash of the post-edit SkillVersion source snapshot.
-   * The in-toto `subject[].digest.sha256` for the row MUST equal this value
-   * WITHOUT the `sha256:` prefix (DR-082 Q4 wire discipline, the
-   * authoring-chamber analogue of gate-result/v1's `input_hash` binding).
+   * **DR-085 D4** — sha256-prefixed content hash of the PRE-EDIT SkillSnapshot:
+   * the INPUT to the refinement (re-defined to mean pre-edit input consistently
+   * with the SkillVersion entity's `source_snapshot_hash`; the prior "post-edit"
+   * meaning collided semantically with the entity, the collision D4 corrects).
+   * The post-edit output is now {@link SkillRefinerPassV1Required.result_snapshot_hash}.
    */
   readonly source_snapshot_hash: Sha256Prefixed;
+
+  /**
+   * **DR-085 D4** — sha256-prefixed content hash of the POST-EDIT output
+   * SkillSnapshot: the RESULT of the refinement (the artifact the pass attests).
+   * The in-toto `subject[].digest.sha256` for the row MUST equal this value
+   * WITHOUT the `sha256:` prefix (DR-082 Q4 wire discipline — the subject is the
+   * post-edit artifact being attested, so it binds to `result_snapshot_hash`,
+   * not the pre-edit `source_snapshot_hash`).
+   */
+  readonly result_snapshot_hash: Sha256Prefixed;
 
   /** Reference to the FROZEN eval-set the verdict was derived against. */
   readonly eval_set_ref: EvalSetRef;

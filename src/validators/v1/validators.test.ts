@@ -76,6 +76,16 @@ describe('Zod validators — positive fixtures parse cleanly', () => {
   it('SkillVersion (root version, parent_version_id: null)', () => {
     expect(() => SkillVersionSchema.parse(loadJson('skill-version.root.valid.json'))).not.toThrow();
   });
+  it('SkillVersion (revert, DR-085 D5: non-null parent + parent_content_hash)', () => {
+    expect(() =>
+      SkillVersionSchema.parse(loadJson('skill-version.revert.valid.json')),
+    ).not.toThrow();
+  });
+  it('SkillVersion (restore, DR-085 D5: non-null parent + parent_content_hash)', () => {
+    expect(() =>
+      SkillVersionSchema.parse(loadJson('skill-version.restore.valid.json')),
+    ).not.toThrow();
+  });
   it('SessionTrace', () => {
     expect(() => SessionTraceSchema.parse(loadJson('session-trace.valid.json'))).not.toThrow();
   });
@@ -132,15 +142,65 @@ describe('Zod validators — negative fixtures REJECT', () => {
     expect(result.success).toBe(false);
   });
 
-  it('skill-version with a bare (un-prefixed) source_snapshot_hash → REJECT (must be sha256:<hex>)', () => {
+  it('DR-085 D3: skill-version with a sha256:-PREFIXED source_snapshot_hash → REJECT (entity hashes are BARE, aligned to combined_sha)', () => {
     const fix = loadJson('skill-version.valid.json') as Record<string, unknown>;
-    const result = SkillVersionSchema.safeParse({ ...fix, source_snapshot_hash: '7'.repeat(64) });
+    const result = SkillVersionSchema.safeParse({
+      ...fix,
+      source_snapshot_hash: 'sha256:' + '7'.repeat(64),
+    });
     expect(result.success).toBe(false);
   });
 
   it('skill-version with an unknown extra field (deferred status) → REJECT (.strict())', () => {
     const fix = loadJson('skill-version.valid.json') as Record<string, unknown>;
     const result = SkillVersionSchema.safeParse({ ...fix, status: 'active' });
+    expect(result.success).toBe(false);
+  });
+
+  it('DR-085 D3: a prefixed (sha256:) content_hash → REJECT (entity hashes are BARE, aligned to combined_sha)', () => {
+    const fix = loadJson('skill-version.valid.json') as Record<string, unknown>;
+    const result = SkillVersionSchema.safeParse({
+      ...fix,
+      content_hash: 'sha256:' + '1'.repeat(64),
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('DR-085 D3: a ROOT (null parent_version_id) with non-null parent_content_hash → REJECT', () => {
+    const root = loadJson('skill-version.root.valid.json') as Record<string, unknown>;
+    const result = SkillVersionSchema.safeParse({ ...root, parent_content_hash: '6'.repeat(64) });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const paths = result.error.issues.map((i) => i.path.join('.'));
+      expect(paths).toContain('parent_content_hash');
+    }
+  });
+
+  it('DR-085 D3: a NON-root (uuid parent) with parent_content_hash: null → REJECT', () => {
+    const child = loadJson('skill-version.valid.json') as Record<string, unknown>;
+    const result = SkillVersionSchema.safeParse({ ...child, parent_content_hash: null });
+    expect(result.success).toBe(false);
+  });
+
+  it('DR-085 D5: version_kind=revert with parent_version_id: null → REJECT (must point at a prior version)', () => {
+    const root = loadJson('skill-version.root.valid.json') as Record<string, unknown>;
+    const result = SkillVersionSchema.safeParse({ ...root, version_kind: 'revert' });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const paths = result.error.issues.map((i) => i.path.join('.'));
+      expect(paths).toContain('parent_version_id');
+    }
+  });
+
+  it('DR-085 D5: version_kind=restore with parent_version_id: null → REJECT', () => {
+    const root = loadJson('skill-version.root.valid.json') as Record<string, unknown>;
+    const result = SkillVersionSchema.safeParse({ ...root, version_kind: 'restore' });
+    expect(result.success).toBe(false);
+  });
+
+  it('DR-085 D5: tenant_id is optional-NOT-nullable on SkillVersion (explicit null → REJECT)', () => {
+    const child = loadJson('skill-version.valid.json') as Record<string, unknown>;
+    const result = SkillVersionSchema.safeParse({ ...child, tenant_id: null });
     expect(result.success).toBe(false);
   });
 });
@@ -379,6 +439,50 @@ describe('Zod validators — additive: skill-refiner-pass/v1 (Class-1 ADR DR-082
     expect(() =>
       SkillRefinerPassV1Schema.parse(loadJson('skill-refiner-pass.valid.json')),
     ).not.toThrow();
+  });
+
+  it('reject fixture parses (DR-085 D5: reject body has no non-regression constraint)', () => {
+    expect(() =>
+      SkillRefinerPassV1Schema.parse(loadJson('skill-refiner-pass.reject.valid.json')),
+    ).not.toThrow();
+  });
+
+  it('DR-085 D5: accept + a regressed named dimension → REJECT (invalid fixture)', () => {
+    const result = SkillRefinerPassV1Schema.safeParse(
+      loadJson('skill-refiner-pass.invalid-accept-regressed.json'),
+    );
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const paths = result.error.issues.map((i) => i.path.join('.'));
+      expect(paths.some((p) => p.includes('non_regressed'))).toBe(true);
+    }
+  });
+
+  it('DR-085 D3: parent_version_id: null parses (root attests without forging a parent)', () => {
+    const base = loadJson('skill-refiner-pass.valid.json') as Record<string, unknown>;
+    expect(SkillRefinerPassV1Schema.safeParse({ ...base, parent_version_id: null }).success).toBe(
+      true,
+    );
+  });
+
+  it('DR-085 D4: missing result_snapshot_hash → REJECT (post-edit output is a determinant)', () => {
+    const base = loadJson('skill-refiner-pass.valid.json') as Record<string, unknown>;
+    const { result_snapshot_hash, ...without } = base;
+    void result_snapshot_hash;
+    expect(SkillRefinerPassV1Schema.safeParse(without).success).toBe(false);
+  });
+
+  it('DR-085 D5: cost_record_ref / replay_fidelity_level / signing_downgrade_reason are optional-NOT-nullable (explicit null → REJECT)', () => {
+    const base = loadJson('skill-refiner-pass.valid.json') as Record<string, unknown>;
+    expect(SkillRefinerPassV1Schema.safeParse({ ...base, cost_record_ref: null }).success).toBe(
+      false,
+    );
+    expect(
+      SkillRefinerPassV1Schema.safeParse({ ...base, replay_fidelity_level: null }).success,
+    ).toBe(false);
+    expect(
+      SkillRefinerPassV1Schema.safeParse({ ...base, signing_downgrade_reason: null }).success,
+    ).toBe(false);
   });
 
   it('test_statistic_kind != one-sided-z → REJECT (const for v1, /v2 to change)', () => {

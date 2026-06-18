@@ -1,6 +1,6 @@
 {
   "verdict": "accept",
-  "reason": ["behavioral-pareto-dominant", "all-named-dims-non-regressed"],
+  "reason": ["behavioral-pareto-dominant"],
   "refiner_strategy_id": "naive-in-context@1",
   "skill_version_id": "0192cae6-000b-7000-8000-000000000001",
   "parent_version_id": "0192cae6-000b-7000-8000-000000000000",
@@ -13,9 +13,10 @@
   },
   "edit_proposal_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "behavioral_delta": 0.12,
-  "named_dimension_deltas": [{ "id": "safety", "delta": 0.01, "non_regressed": true }],
+  "named_dimension_deltas": [
+    { "id": "safety", "delta": 0.01, "non_regressed": true },
+    { "id": "latency", "delta": -0.09, "non_regressed": false }
+  ],
   "alpha": 0.05,
-  "test_statistic_kind": "one-sided-z",
-  "cost_record_ref": "0192cae6-000b-7000-8000-0000000000cc",
-  "replay_fidelity_level": "RF-1"
+  "test_statistic_kind": "one-sided-z"
 }
