@@ -86,8 +86,19 @@ export const SkillRefinerPassV1Schema = z
     reason: z.array(z.string()).min(1),
     refiner_strategy_id: z.string().min(1),
     skill_version_id: Uuidv7Schema,
-    parent_version_id: Uuidv7Schema,
+    /**
+     * DR-085 D3: NULLABLE — null for a root SkillVersion, so a root attests
+     * without forging a parent (zero-forgery root emission).
+     */
+    parent_version_id: Uuidv7Schema.nullable(),
+    /** DR-085 D4: PRE-EDIT input snapshot (re-defined to match the entity). */
     source_snapshot_hash: Sha256PrefixedSchema,
+    /**
+     * DR-085 D4: POST-EDIT output snapshot — the artifact the pass attests; the
+     * in-toto subject digest binds to this (sans sha256: prefix), not the
+     * pre-edit source_snapshot_hash.
+     */
+    result_snapshot_hash: Sha256PrefixedSchema,
     eval_set_ref: EvalSetRefSchema,
     edit_proposal_hash: Sha256PrefixedSchema,
     behavioral_delta: z.number(),
@@ -98,7 +109,24 @@ export const SkillRefinerPassV1Schema = z
     replay_fidelity_level: SkillRefinerReplayFidelityLevelSchema.optional(),
     signing_downgrade_reason: z.string().min(1).optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((body, ctx) => {
+    // DR-085 D5: verdict === 'accept' ⇒ EVERY named_dimension_deltas[].non_regressed === true.
+    // An accept that claims a named dimension regressed is a signed falsehood with
+    // forgery cost zero (CISO binding). A reject body carries no such constraint.
+    if (body.verdict === 'accept') {
+      body.named_dimension_deltas.forEach((d, i) => {
+        if (d.non_regressed !== true) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['named_dimension_deltas', i, 'non_regressed'],
+            message:
+              'DR-085 D5: an "accept" verdict requires every named_dimension_deltas[].non_regressed === true (no regression on any named dimension)',
+          });
+        }
+      });
+    }
+  });
 
 export type SkillRefinerPassV1 = z.infer<typeof SkillRefinerPassV1Schema>;
 

@@ -2,7 +2,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/skill-version.schema.json",
   "title": "SkillVersion — refinement-lineage record of a skill (14th canonical entity, DR-028 T1 DISCRIMINATOR)",
-  "description": "The 14th canonical entity. SEPARATE from SkillSnapshot (which content-addressed-pins a skill's source state); SkillVersion captures the REFINEMENT LINEAGE produced by the Skill Refiner. DR-028 T1 DISCRIMINATOR resolution: `version_kind` is a load-bearing signable discriminator; `parent_version_id` references the prior SkillVersion (lineage internal, SkillVersion -> SkillVersion, NOT an FK to SkillSnapshot); `source_snapshot_hash` is a READ-ONLY REFERENCE (content hash) to the SkillSnapshot at the moment of refinement — explicitly NOT a relational foreign key (no enforced relational integrity; it is a content-hash reference). ADDITIVE / one-way-door: this shape ships in signed @intentsolutions/core entries, so widening or merging it post-publish is irreversible — additive only. The state-machine formalism + status/signing cross-field invariants (P0-RATIFY-2 `pending_production`/`active`, `rekor_log_index iff signing_mode='production' AND status='active'`) are DEFERRED to a follow-up v0.4.0 Decision Record per DR-028 T1 binding minority constraint (lines 105/108): \"Phase C ships entity + discriminator + parent_version_id only.\" Predicate URI: skill-refiner-pass/v1 references this entity by id/hash (already shipped); SkillVersion does NOT define that predicate.",
+  "description": "The 14th canonical entity. SEPARATE from SkillSnapshot (which content-addressed-pins a skill's source state); SkillVersion captures the REFINEMENT LINEAGE produced by the Skill Refiner. DR-028 T1 DISCRIMINATOR resolution: `version_kind` is a load-bearing signable discriminator; `parent_version_id` references the prior SkillVersion (lineage internal, SkillVersion -> SkillVersion, NOT an FK to SkillSnapshot); `source_snapshot_hash` is a READ-ONLY REFERENCE (content hash) to the PRE-EDIT SkillSnapshot at the moment of refinement — explicitly NOT a relational foreign key (no enforced relational integrity; it is a content-hash reference). DR-085 D3 lineage-integrity correction: this entity now carries a self `content_hash` (its own post-edit content) + a `parent_content_hash` (the parent's `content_hash`, the tamper-evident lineage anchor); all three hash fields use the BARE 64-hex `sha256` alphabet, ALIGNED to `SkillSnapshot.combined_sha` (one hash alphabet platform-wide — no sha256:-prefixed vs bare mismatch). `parent_content_hash` is null iff `parent_version_id` is null (a root version forges no parent). ADDITIVE / one-way-door: this shape ships in signed @intentsolutions/core entries, so widening or merging it post-publish is irreversible — additive only. The state-machine formalism + status/signing cross-field invariants (P0-RATIFY-2 `pending_production`/`active`, `rekor_log_index iff signing_mode='production' AND status='active'`) are DEFERRED to a follow-up v0.4.0 Decision Record per DR-028 T1 binding minority constraint (lines 105/108) reconciled by DR-085 D1: \"Phase C ships entity + discriminator + parent_version_id only.\" Predicate URI: skill-refiner-pass/v1 references this entity by id/hash (already shipped); SkillVersion does NOT define that predicate.",
+  "$comment": "DR-085 D5 closed/open-world posture (CTO DR-028 dissent): `version_kind` is a CLOSED enum {edit,revert,restore}. A SIGNED row carries it, so widening the enum after the first production-Rekor signature is irreversible — it mints skill-refiner-pass/v2 on its own lane (a /v2-widening trap, NOT an in-place edit). The cross-field invariant `version_kind ∈ {revert,restore} ⇒ parent_version_id ≠ null` (a revert/restore must point at the version it reverts/restores to) is machine-enforced at all three layers per DR-085 D5: this JSON-Schema if/then, the Zod .superRefine in src/validators/v1/skill-version.ts, and the Pydantic model_validator wrapper in python/.../models.py.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -10,6 +11,8 @@
     "skill_id",
     "version_kind",
     "parent_version_id",
+    "content_hash",
+    "parent_content_hash",
     "source_snapshot_hash",
     "refiner_strategy_id",
     "created_at",
@@ -31,11 +34,19 @@
     },
     "parent_version_id": {
       "oneOf": [{ "$ref": "_common.schema.json#/$defs/uuidv7" }, { "type": "null" }],
-      "description": "References the PRIOR SkillVersion in the refinement lineage (SkillVersion -> SkillVersion). Lineage is internal — this is NOT an FK to SkillSnapshot (DR-028 T1 line 91). `null` for a ROOT version (the first refinement in a lineage). No record is ever mutated; a rollback is a NEW SkillVersion citing the prior (append-only event log, AC-2 / F-MK-001)."
+      "description": "HUMAN-READABLE CONVENIENCE POINTER to the PRIOR SkillVersion in the refinement lineage (SkillVersion -> SkillVersion). Lineage is internal — this is NOT an FK to SkillSnapshot (DR-028 T1 line 91). `null` for a ROOT version (the first refinement in a lineage). No record is ever mutated; a rollback is a NEW SkillVersion citing the prior (append-only event log, AC-2 / F-MK-001). DR-085 D3: this UUID is reassignable, so it is a convenience pointer ONLY — the tamper-evident integrity anchor is `parent_content_hash` (a content hash a reviewer cannot silently re-point)."
+    },
+    "content_hash": {
+      "$ref": "_common.schema.json#/$defs/sha256",
+      "description": "DR-085 D3: this version's OWN post-edit content hash — the integrity anchor a child SkillVersion cites as its `parent_content_hash`. BARE 64-hex `sha256`, the SAME alphabet as `SkillSnapshot.combined_sha` (one hash alphabet platform-wide). Append-only content-hash chain: child.parent_content_hash == parent.content_hash makes the lineage tamper-evident — re-pointing `parent_version_id` (a reassignable UUID) cannot forge an append-only claim a verifier can falsify (DR-085 D3 CSO/CISO binding)."
+    },
+    "parent_content_hash": {
+      "oneOf": [{ "$ref": "_common.schema.json#/$defs/sha256" }, { "type": "null" }],
+      "description": "DR-085 D3: the parent SkillVersion's `content_hash` — the tamper-evident lineage integrity anchor (the real append-only proof, vs the reassignable `parent_version_id` convenience pointer). BARE 64-hex `sha256`, ALIGNED to `SkillSnapshot.combined_sha`. MUST be `null` EXACTLY when `parent_version_id` is null (a ROOT version): root emission is provably zero-forgery (null parent_version_id + null parent_content_hash) — an implementer never forges a fake parent on a root (DR-085 D3 DevRel/CISO binding). This iff is machine-enforced at all three layers (if/then below + Zod + Pydantic)."
     },
     "source_snapshot_hash": {
-      "$ref": "_common.schema.json#/$defs/sha256Prefixed",
-      "description": "READ-ONLY REFERENCE (content hash) to the SkillSnapshot at the moment of refinement (DR-028 T1 line 92). EXPLICITLY NOT A RELATIONAL FOREIGN KEY — there is no enforced relational integrity; it is a content-hash reference (the SkillSnapshot it names need not exist in any table the kernel knows about). Typed `sha256:<64-hex>` identically to the skill-refiner-pass/v1 predicate's `source_snapshot_hash`, so the predicate's reference aligns with this entity."
+      "$ref": "_common.schema.json#/$defs/sha256",
+      "description": "READ-ONLY REFERENCE (content hash) to the PRE-EDIT SkillSnapshot at the moment of refinement — the INPUT to the refinement (DR-028 T1 line 92; DR-085 D4 pre-edit-input clarification, matching the skill-refiner-pass/v1 predicate's now-pre-edit `source_snapshot_hash`). EXPLICITLY NOT A RELATIONAL FOREIGN KEY — there is no enforced relational integrity; it is a content-hash reference (the SkillSnapshot it names need not exist in any table the kernel knows about). DR-085 D3: BARE 64-hex `sha256`, ALIGNED to `SkillSnapshot.combined_sha` + `content_hash` + `parent_content_hash` (one hash alphabet platform-wide — the prior sha256:-prefixed form was the very mismatch DR-085 D3 corrects)."
     },
     "refiner_strategy_id": {
       "type": "string",
@@ -48,5 +59,37 @@
       "$ref": "_common.schema.json#/$defs/uuidv7",
       "description": "RESERVED multi-tenancy slot (deferral-G, bd_000-projects-k0fj), mirroring SkillSnapshot. OPTIONAL + additive per Blueprint B § 7.2; tenant-isolation semantics deferred to a future DR. v1 single-tenant versions omit it."
     }
-  }
+  },
+  "allOf": [
+    {
+      "$comment": "DR-085 D3: parent_content_hash MUST be null EXACTLY when parent_version_id is null. Branch 1 — a ROOT version (parent_version_id: null) MUST have parent_content_hash: null (zero-forgery root).",
+      "if": {
+        "properties": { "parent_version_id": { "type": "null" } },
+        "required": ["parent_version_id"]
+      },
+      "then": {
+        "properties": { "parent_content_hash": { "type": "null" } }
+      }
+    },
+    {
+      "$comment": "DR-085 D3: parent_content_hash MUST be null EXACTLY when parent_version_id is null. Branch 2 — a NON-root version (parent_version_id is a UUIDv7) MUST carry a non-null parent_content_hash (the tamper-evident lineage anchor).",
+      "if": {
+        "properties": { "parent_version_id": { "type": "string" } },
+        "required": ["parent_version_id"]
+      },
+      "then": {
+        "properties": { "parent_content_hash": { "$ref": "_common.schema.json#/$defs/sha256" } }
+      }
+    },
+    {
+      "$comment": "DR-085 D5: version_kind ∈ {revert,restore} ⇒ parent_version_id ≠ null. A revert/restore must point at the prior version it reverts/restores to — it cannot be a root. (`edit` MAY be a root.)",
+      "if": {
+        "properties": { "version_kind": { "enum": ["revert", "restore"] } },
+        "required": ["version_kind"]
+      },
+      "then": {
+        "properties": { "parent_version_id": { "$ref": "_common.schema.json#/$defs/uuidv7" } }
+      }
+    }
+  ]
 }

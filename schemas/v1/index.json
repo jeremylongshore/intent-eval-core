@@ -39,8 +39,8 @@
       "title": "skill-refiner-pass/v1 predicate body",
       "kind": "predicate",
       "uri": "https://evals.intentsolutions.io/skill-refiner-pass/v1",
-      "spec": "Class-1 ADR DR-082 (intent-eval-lab 082-AT-DECR-isedc-skill-refiner-pass-v1-predicate-uri-2026-06-17.md)",
-      "signing_mode": "ln"
+      "spec": "Class-1 ADR DR-082 (intent-eval-lab 082-AT-DECR-isedc-skill-refiner-pass-v1-predicate-uri-2026-06-17.md); amended in place by DR-085 (D2/D3/D4/D5)",
+      "signing_mode": "sigstore_staging"
     },
     "eval-spec": {
       "path": "eval-spec.schema.json",

@@ -33,6 +33,8 @@ from typing_extensions import Self
 
 from pydantic import model_validator
 
+from ._generated import _common_schema as _schema
+
 # ── Generated root models, re-exported under canonical names ──────────────────
 #
 # datamodel-code-generator derives class names from each schema's `title`, which
@@ -82,13 +84,16 @@ from ._generated.session_trace_schema import (
     SessiontraceOtelCompatibleExecutionTraceForAnEvalrunBlueprintB210 as SessionTrace,
 )
 from ._generated.skill_refiner_pass_schema import (
-    SkillRefinerPassV1InTotoPredicateBodyAttestingASkillversionClearedTheSkillRefinerAcceptanceGate as SkillRefinerPassV1,  # noqa: E501
+    ReplayFidelityLevel as _ReplayFidelityLevel,
+)
+from ._generated.skill_refiner_pass_schema import (
+    SkillRefinerPassV1InTotoPredicateBodyAttestingASkillversionClearedTheSkillRefinerAcceptanceGate as _SkillRefinerPassV1Generated,  # noqa: E501
 )
 from ._generated.skill_snapshot_schema import (
     SkillsnapshotContentAddressedPinOfASkillSSourceDepsConfigBlueprintB29 as SkillSnapshot,
 )
 from ._generated.skill_version_schema import (
-    SkillversionRefinementLineageRecordOfASkill14ThCanonicalEntityDr028T1Discriminator as SkillVersion,  # noqa: E501
+    SkillversionRefinementLineageRecordOfASkill14ThCanonicalEntityDr028T1Discriminator as _SkillVersionGenerated,  # noqa: E501
 )
 from ._generated.tool_invocation_schema import (
     ToolinvocationSingleToolProviderCallRecordedUnderASessiontraceBlueprintB211 as ToolInvocation,
@@ -159,6 +164,109 @@ class GateResultV1(_GateResultV1Generated):
                         "invariant)"
                     )
 
+        return self
+
+
+class SkillVersion(_SkillVersionGenerated):
+    """SkillVersion — 14th canonical entity (DR-028 T1), with the DR-085 D3/D5
+    cross-field invariants the JSON Schema expresses via ``allOf``/``if-then``
+    (which datamodel-code-generator cannot emit). Exact Python mirror of the Zod
+    ``.superRefine`` block in ``src/validators/v1/skill-version.ts``:
+
+    1. **DR-085 D3** — ``parent_content_hash`` MUST be null EXACTLY when
+       ``parent_version_id`` is null. A ROOT version (null parent) forges no
+       parent (null + null = provably zero-forgery); a non-root MUST carry the
+       tamper-evident ``parent_content_hash`` lineage anchor.
+    2. **DR-085 D5** — ``version_kind`` ∈ {``revert``, ``restore``} ⇒
+       ``parent_version_id`` ≠ null (a revert/restore must point at the version
+       it reverts/restores to).
+
+    The generated parent already enforces ``extra="forbid"`` (closed-world), the
+    ``version_kind`` enum, and the BARE ``Sha256`` patterns on ``content_hash`` /
+    ``parent_content_hash`` / ``source_snapshot_hash`` (DR-085 D3 alphabet
+    alignment to ``SkillSnapshot.combined_sha``).
+
+    **DR-085 D5 optional-not-nullable parity**: the JSON Schema + Zod treat
+    ``tenant_id`` as OPTIONAL but NOT NULLABLE (the schema ``$ref``s uuidv7 with
+    no ``null`` branch; Zod uses ``.optional()`` not ``.nullable()``).
+    datamodel-code-generator renders it ``Uuidv7 | None = None`` (nullable). The
+    override re-declares it optional-but-not-nullable so an explicit ``null`` is
+    rejected exactly as AJV and Zod reject it.
+    """
+
+    # DR-085 D5 optional-NOT-nullable parity (mirrors the schema $ref + Zod
+    # `.optional()`): absence allowed, explicit `null` rejected.
+    tenant_id: _schema.Uuidv7 = None  # type: ignore[assignment]
+
+    @model_validator(mode="after")
+    def _enforce_dr085_lineage_invariants(self) -> Self:
+        # Rule 1 (DR-085 D3): parent_content_hash null iff parent_version_id null.
+        if self.parent_version_id is None and self.parent_content_hash is not None:
+            raise ValueError(
+                "DR-085 D3: parent_content_hash MUST be null for a ROOT version "
+                "(parent_version_id is null) — a root forges no parent"
+            )
+        if self.parent_version_id is not None and self.parent_content_hash is None:
+            raise ValueError(
+                "DR-085 D3: parent_content_hash MUST be non-null when "
+                "parent_version_id is set (the tamper-evident lineage anchor)"
+            )
+
+        # Rule 2 (DR-085 D5): revert/restore ⇒ non-null parent_version_id.
+        kind = self.version_kind.value if hasattr(self.version_kind, "value") else self.version_kind
+        if kind in ("revert", "restore") and self.parent_version_id is None:
+            raise ValueError(
+                f'DR-085 D5: version_kind "{kind}" requires a non-null '
+                "parent_version_id (a revert/restore must point at a prior version)"
+            )
+
+        return self
+
+
+class SkillRefinerPassV1(_SkillRefinerPassV1Generated):
+    """skill-refiner-pass/v1 predicate body (Class-1 ADR DR-082, amended in place
+    by DR-085 D2/D3/D4/D5).
+
+    Layers the DR-085 D5 cross-field invariant the JSON Schema expresses via
+    ``if/then`` (datamodel-code-generator cannot emit it) and the DR-085 D5
+    optional-not-nullable wire-format parity overrides. Exact Python mirror of the
+    Zod ``.superRefine`` block in ``src/validators/v1/skill-refiner-pass-v1.ts``:
+
+    - **DR-085 D5** — ``verdict == "accept"`` ⇒ EVERY
+      ``named_dimension_deltas[].non_regressed`` is ``True`` (an accept that
+      claims a named dimension regressed is a signed falsehood with forgery cost
+      zero). A ``reject`` body carries no such constraint.
+
+    **DR-085 D5 optional-not-nullable parity** (wire-format fix): the JSON Schema
+    + Zod treat ``cost_record_ref`` / ``replay_fidelity_level`` /
+    ``signing_downgrade_reason`` as OPTIONAL but NOT NULLABLE (omit-or-value;
+    explicit ``null`` is rejected). datamodel-code-generator renders them
+    ``T | None = None`` (nullable). The overrides below re-declare each as
+    optional-but-not-nullable so an explicit ``null`` is rejected exactly as AJV
+    and Zod reject it — absence still defaults internally to ``None``. (The
+    ``# type: ignore`` silences the non-Optional-annotated-with-None-default
+    pattern, which is the intended idiom.)
+    """
+
+    # DR-085 D5 optional-NOT-nullable parity (mirrors Zod `.optional()`, not
+    # `.nullable()`): absence allowed, explicit `null` rejected. The annotation
+    # excludes None; the default makes the field optional.
+    cost_record_ref: _schema.Uuidv7 = None  # type: ignore[assignment]
+    replay_fidelity_level: _ReplayFidelityLevel = None  # type: ignore[assignment]
+    signing_downgrade_reason: str = None  # type: ignore[assignment]
+
+    @model_validator(mode="after")
+    def _enforce_dr085_accept_invariant(self) -> Self:
+        # DR-085 D5: accept ⇒ every named_dimension_delta.non_regressed is True.
+        verdict = self.verdict.value if hasattr(self.verdict, "value") else self.verdict
+        if verdict == "accept":
+            for i, d in enumerate(self.named_dimension_deltas):
+                if d.non_regressed is not True:
+                    raise ValueError(
+                        f'DR-085 D5: an "accept" verdict requires every '
+                        f"named_dimension_deltas[].non_regressed === true; entry "
+                        f"[{i}] (id={d.id!r}) has non_regressed={d.non_regressed!r}"
+                    )
         return self
 
 

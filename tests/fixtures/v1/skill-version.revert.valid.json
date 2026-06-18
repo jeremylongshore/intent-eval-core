@@ -1,0 +1,12 @@
+{
+  "id": "0192cae6-000b-7000-8000-000000000002",
+  "skill_id": "validate-skillmd",
+  "version_kind": "revert",
+  "parent_version_id": "0192cae6-000b-7000-8000-000000000001",
+  "content_hash": "2222222222222222222222222222222222222222222222222222222222222222",
+  "parent_content_hash": "1111111111111111111111111111111111111111111111111111111111111111",
+  "source_snapshot_hash": "7777777777777777777777777777777777777777777777777777777777777777",
+  "refiner_strategy_id": "naive-in-context@1",
+  "created_at": "2026-05-27T00:00:00Z",
+  "created_by": "refiner-worker@intentsolutions.io"
+}

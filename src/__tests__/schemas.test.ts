@@ -147,10 +147,10 @@ describe('schemas/v1 — structural integrity', () => {
     expect(predicateEntries).toHaveLength(4);
   });
 
-  it('skill-refiner-pass/v1 is registered with signing_mode "ln" (DR-082 staging-first)', () => {
+  it('skill-refiner-pass/v1 is registered with signing_mode "sigstore_staging" (DR-085 D4 canonical staging label, retires "ln")', () => {
     const idx = loadJson(join(SCHEMAS_DIR, 'index.json'));
     const schemas = idx['schemas'] as Record<string, { signing_mode?: string }>;
-    expect(schemas['skill-refiner-pass-v1']?.signing_mode).toBe('ln');
+    expect(schemas['skill-refiner-pass-v1']?.signing_mode).toBe('sigstore_staging');
   });
 });
 
@@ -400,6 +400,33 @@ describe('schemas/v1 — skill-refiner-pass/v1 additive predicate (Class-1 ADR D
     expect(ok).toBe(true);
   });
 
+  it('skill-refiner-pass.reject.valid.json validates (DR-085 D5: reject body has no non-regression constraint)', () => {
+    const ok = validateSkillRefinerPass(
+      loadJson(join(FIXTURES_DIR, 'skill-refiner-pass.reject.valid.json')),
+    );
+    expect(ok).toBe(true);
+  });
+
+  it('DR-085 D5: skill-refiner-pass.invalid-accept-regressed.json → REJECT (accept ⇒ every non_regressed === true)', () => {
+    const ok = validateSkillRefinerPass(
+      loadJson(join(FIXTURES_DIR, 'skill-refiner-pass.invalid-accept-regressed.json')),
+    );
+    expect(ok).toBe(false);
+  });
+
+  it('DR-085 D3: skill-refiner-pass with parent_version_id: null validates (root attests without forging a parent)', () => {
+    const fix = loadJson(join(FIXTURES_DIR, 'skill-refiner-pass.valid.json'));
+    const root = { ...fix, parent_version_id: null };
+    expect(validateSkillRefinerPass(root)).toBe(true);
+  });
+
+  it('DR-085 D4: skill-refiner-pass missing result_snapshot_hash → REJECT (post-edit output is a required determinant)', () => {
+    const fix = loadJson(join(FIXTURES_DIR, 'skill-refiner-pass.valid.json'));
+    const bad = JSON.parse(JSON.stringify(fix)) as Record<string, unknown>;
+    delete bad['result_snapshot_hash'];
+    expect(validateSkillRefinerPass(bad)).toBe(false);
+  });
+
   it('skill-refiner-pass with test_statistic_kind != one-sided-z → REJECT (const for v1)', () => {
     const ok = validateSkillRefinerPass(
       loadJson(join(FIXTURES_DIR, 'skill-refiner-pass.invalid-bad-test-kind.json')),
@@ -481,9 +508,11 @@ describe('schemas/v1 — SkillVersion entity (14th canonical, DR-028 T1 DISCRIMI
     expect(validateSkillVersion(bad)).toBe(false);
   });
 
-  it('skill-version with a bare (un-prefixed) source_snapshot_hash → REJECT (must be sha256:<hex>)', () => {
+  it('DR-085 D3: skill-version with a sha256:-PREFIXED source_snapshot_hash → REJECT (entity hashes are BARE, aligned to combined_sha)', () => {
+    // Pre-DR-085 this field was sha256:-prefixed; D3 aligned it to the bare
+    // SkillSnapshot.combined_sha alphabet, so the prefixed form now fails.
     const fix = loadJson(join(FIXTURES_DIR, 'skill-version.valid.json'));
-    const bad = { ...fix, source_snapshot_hash: '7'.repeat(64) };
+    const bad = { ...fix, source_snapshot_hash: 'sha256:' + '7'.repeat(64) };
     expect(validateSkillVersion(bad)).toBe(false);
   });
 
@@ -495,15 +524,63 @@ describe('schemas/v1 — SkillVersion entity (14th canonical, DR-028 T1 DISCRIMI
     expect(validateSkillVersion(bad)).toBe(false);
   });
 
-  it('skill-version source_snapshot_hash aligns with the skill-refiner-pass/v1 predicate reference', () => {
-    // The entity is referenced BY the predicate (skill_version_id /
-    // parent_version_id / source_snapshot_hash). The valid fixtures share IDs so
-    // the cross-reference is concrete: same id, same hash typing.
+  it('skill-version aligns with the skill-refiner-pass/v1 predicate reference (DR-085 D3/D4 hash semantics)', () => {
+    // The entity is referenced BY the predicate. The valid fixtures share IDs so
+    // the cross-reference is concrete. DR-085 D3: the ENTITY hashes are BARE
+    // sha256 (aligned to SkillSnapshot.combined_sha); the PREDICATE hashes are
+    // sha256-prefixed (in-toto wire discipline). They name the same content, so
+    // the prefixed predicate value === the bare entity value with `sha256:`
+    // stripped. DR-085 D4: entity.source_snapshot_hash (pre-edit input) ↔
+    // predicate.source_snapshot_hash; entity.content_hash (post-edit output) ↔
+    // predicate.result_snapshot_hash.
     const sv = loadJson(join(FIXTURES_DIR, 'skill-version.valid.json'));
     const pred = loadJson(join(FIXTURES_DIR, 'skill-refiner-pass.valid.json'));
+    const strip = (h: unknown) => (h as string).slice('sha256:'.length);
     expect(sv['id']).toBe(pred['skill_version_id']);
     expect(sv['parent_version_id']).toBe(pred['parent_version_id']);
-    expect(sv['source_snapshot_hash']).toBe(pred['source_snapshot_hash']);
+    // pre-edit input: bare entity hash === prefixed predicate hash sans prefix
+    expect(sv['source_snapshot_hash']).toBe(strip(pred['source_snapshot_hash']));
+    // post-edit output: entity.content_hash === predicate.result_snapshot_hash sans prefix
+    expect(sv['content_hash']).toBe(strip(pred['result_snapshot_hash']));
+  });
+
+  it('skill-version.revert.valid.json + skill-version.restore.valid.json validate (DR-085 D5: non-null parent)', () => {
+    expect(
+      validateSkillVersion(loadJson(join(FIXTURES_DIR, 'skill-version.revert.valid.json'))),
+    ).toBe(true);
+    expect(
+      validateSkillVersion(loadJson(join(FIXTURES_DIR, 'skill-version.restore.valid.json'))),
+    ).toBe(true);
+  });
+
+  it('DR-085 D3: a ROOT version (null parent_version_id) with a non-null parent_content_hash → REJECT', () => {
+    const root = loadJson(join(FIXTURES_DIR, 'skill-version.root.valid.json'));
+    const bad = { ...root, parent_content_hash: '6'.repeat(64) };
+    expect(validateSkillVersion(bad)).toBe(false);
+  });
+
+  it('DR-085 D3: a NON-root version (uuid parent) with parent_content_hash: null → REJECT', () => {
+    const child = loadJson(join(FIXTURES_DIR, 'skill-version.valid.json'));
+    const bad = { ...child, parent_content_hash: null };
+    expect(validateSkillVersion(bad)).toBe(false);
+  });
+
+  it('DR-085 D3: a prefixed (sha256:) content_hash → REJECT (entity hashes are BARE, aligned to combined_sha)', () => {
+    const child = loadJson(join(FIXTURES_DIR, 'skill-version.valid.json'));
+    const bad = { ...child, content_hash: 'sha256:' + '1'.repeat(64) };
+    expect(validateSkillVersion(bad)).toBe(false);
+  });
+
+  it('DR-085 D5: version_kind=revert with parent_version_id: null → REJECT (must point at a prior version)', () => {
+    const root = loadJson(join(FIXTURES_DIR, 'skill-version.root.valid.json'));
+    const bad = { ...root, version_kind: 'revert' };
+    expect(validateSkillVersion(bad)).toBe(false);
+  });
+
+  it('DR-085 D5: version_kind=restore with parent_version_id: null → REJECT', () => {
+    const root = loadJson(join(FIXTURES_DIR, 'skill-version.root.valid.json'));
+    const bad = { ...root, version_kind: 'restore' };
+    expect(validateSkillVersion(bad)).toBe(false);
   });
 });
 

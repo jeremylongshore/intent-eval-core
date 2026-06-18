@@ -5,6 +5,7 @@
   "skill_version_id": "0192cae6-000b-7000-8000-000000000001",
   "parent_version_id": "0192cae6-000b-7000-8000-000000000000",
   "source_snapshot_hash": "sha256:7777777777777777777777777777777777777777777777777777777777777777",
+  "result_snapshot_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
   "eval_set_ref": {
     "hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "version": "2026.06.01",

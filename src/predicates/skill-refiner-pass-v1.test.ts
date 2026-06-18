@@ -14,10 +14,12 @@ import { SkillRefinerPassV1Schema } from '../validators/v1/skill-refiner-pass-v1
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
-const SUBJECT_HASH = '7'.repeat(64);
-const SOURCE_SNAPSHOT_HASH = ('sha256:' + SUBJECT_HASH) as Sha256Prefixed;
+// DR-085 D4: the in-toto subject digest binds to the POST-EDIT result_snapshot_hash.
+const RESULT_HASH = '1'.repeat(64);
+const RESULT_SNAPSHOT_HASH = ('sha256:' + RESULT_HASH) as Sha256Prefixed;
+const SOURCE_SNAPSHOT_HASH = ('sha256:' + '7'.repeat(64)) as Sha256Prefixed;
 
-/** A minimal, valid accept body (required determinants only, DR-082 Q2). */
+/** A minimal, valid accept body (required determinants only, DR-082 Q2 + DR-085 D4). */
 function minimalBody(): SkillRefinerPassV1 {
   return {
     verdict: 'accept',
@@ -26,6 +28,7 @@ function minimalBody(): SkillRefinerPassV1 {
     skill_version_id: '0192cae6-000b-7000-8000-000000000001' as Uuidv7,
     parent_version_id: '0192cae6-000b-7000-8000-000000000000' as Uuidv7,
     source_snapshot_hash: SOURCE_SNAPSHOT_HASH,
+    result_snapshot_hash: RESULT_SNAPSHOT_HASH,
     eval_set_ref: {
       hash: ('sha256:' + 'a'.repeat(64)) as Sha256Prefixed,
       version: '2026.06.01',
@@ -116,6 +119,8 @@ describe('skill-refiner-pass/v1 — predicate body shape', () => {
 // ─── Determinant rejections (strip a determinant ⇒ unfalsifiable PASS) ───────
 
 describe('skill-refiner-pass/v1 — required determinants rejected when missing', () => {
+  // DR-085 D3: parent_version_id is NULLABLE but its KEY is still required;
+  // deleting it must reject. DR-085 D4 adds result_snapshot_hash as a determinant.
   const REQUIRED_DETERMINANTS = [
     'verdict',
     'reason',
@@ -123,6 +128,7 @@ describe('skill-refiner-pass/v1 — required determinants rejected when missing'
     'skill_version_id',
     'parent_version_id',
     'source_snapshot_hash',
+    'result_snapshot_hash',
     'eval_set_ref',
     'edit_proposal_hash',
     'behavioral_delta',
@@ -135,6 +141,36 @@ describe('skill-refiner-pass/v1 — required determinants rejected when missing'
     const body = { ...minimalBody() } as Record<string, unknown>;
     delete body[field];
     expect(SkillRefinerPassV1Schema.safeParse(body).success).toBe(false);
+  });
+
+  it('DR-085 D3: accepts parent_version_id: null (a root SkillVersion attests without forging a parent)', () => {
+    const body = { ...minimalBody(), parent_version_id: null };
+    expect(SkillRefinerPassV1Schema.safeParse(body).success).toBe(true);
+  });
+
+  it('DR-085 D5: rejects an accept body where a named_dimension_delta is NOT non_regressed', () => {
+    const body = {
+      ...minimalBody(),
+      named_dimension_deltas: [
+        { id: 'safety', delta: 0.01, non_regressed: true },
+        { id: 'latency', delta: -0.09, non_regressed: false },
+      ],
+    };
+    const result = SkillRefinerPassV1Schema.safeParse(body);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const paths = result.error.issues.map((i) => i.path.join('.'));
+      expect(paths.some((p) => p.includes('non_regressed'))).toBe(true);
+    }
+  });
+
+  it('DR-085 D5: a REJECT body with a regressed dimension is accepted (no non-regression constraint on reject)', () => {
+    const body = {
+      ...minimalBody(),
+      verdict: 'reject' as const,
+      named_dimension_deltas: [{ id: 'safety', delta: -0.08, non_regressed: false }],
+    };
+    expect(SkillRefinerPassV1Schema.safeParse(body).success).toBe(true);
   });
 
   it('rejects refiner_strategy_id as empty string (mechanism must stay traceable, DR-028)', () => {
@@ -202,22 +238,23 @@ describe('skill-refiner-pass/v1 — in-toto Statement (DR-082 Q4)', () => {
       .toEqualTypeOf<typeof SKILL_REFINER_PASS_V1_URI>();
   });
 
-  it('subject[].digest.sha256 equals source_snapshot_hash without the sha256: prefix', () => {
+  it('DR-085 D4: subject[].digest.sha256 equals result_snapshot_hash (post-edit) without the sha256: prefix', () => {
     const body = minimalBody();
     const statement: SkillRefinerPassV1Statement = {
       _type: 'https://in-toto.io/Statement/v1',
       subject: [
         {
           name: 'skill-refiner:ci:my-skill',
-          digest: { sha256: SUBJECT_HASH },
+          digest: { sha256: RESULT_HASH },
         },
       ],
       predicateType: SKILL_REFINER_PASS_V1_URI,
       predicate: body,
     };
     // The load-bearing tamper-evidence link (gate-result's input_hash analogue):
-    // the bare subject digest must equal the prefixed body hash minus `sha256:`.
+    // DR-085 D4 — the subject is the POST-EDIT artifact, so the bare subject
+    // digest must equal the prefixed result_snapshot_hash minus `sha256:`.
     const subjectDigest = statement.subject[0]?.digest.sha256;
-    expect(subjectDigest).toBe(statement.predicate.source_snapshot_hash.slice('sha256:'.length));
+    expect(subjectDigest).toBe(statement.predicate.result_snapshot_hash.slice('sha256:'.length));
   });
 });
