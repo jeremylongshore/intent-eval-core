@@ -11,17 +11,14 @@ name: Lint (YAML + Actions)
 #   - Actions: actionlint (built-in rule set)
 
 on:
+  # No path filter: these are branch-protection-REQUIRED checks, so they must run
+  # (and report) on every PR. A path-filtered required check that is skipped sits
+  # "pending" forever and permanently blocks the PR (e.g. a dep-bump touching only
+  # package.json). The lanes are fast (<15s), so always-run costs little.
   pull_request:
-    paths:
-      - '**/*.yml'
-      - '**/*.yaml'
-      - '.audit-harness/configs/.yamllint.yml'
-      - '.github/workflows/lint.yml'
+    branches: [main]
   push:
     branches: [main]
-    paths:
-      - '**/*.yml'
-      - '**/*.yaml'
 
 permissions:
   contents: read
