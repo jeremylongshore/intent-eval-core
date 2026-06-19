@@ -15,6 +15,5 @@ exclude_path = [
   "dist",
 ]
 
-[cache]
-enabled = true
-max_cache_age = "7d"
+# No cache: this is an --offline check, so request caching has no effect and a
+# .lycheecache artifact would trip the repo-root dotfile boundary gate.

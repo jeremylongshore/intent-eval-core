@@ -55,3 +55,6 @@ python/.venv/
 *.py[cod]
 *.egg-info/
 .pytest_cache/
+
+# lychee request cache (never committed; offline checks create none)
+.lycheecache

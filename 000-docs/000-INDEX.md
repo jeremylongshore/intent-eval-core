@@ -1,6 +1,6 @@
 # `intent-eval-core/000-docs/` — Index
 
-Document filing standard: [Document Filing Standard v4.3](~/000-projects/002-command-bible/DOCUMENT-FILING-STANDARD-v3.0.md) (despite the path name, the version is v4.3).
+Document filing standard: **Document Filing Standard v4.3** (lives outside this repo at `002-command-bible/DOCUMENT-FILING-STANDARD-v3.0.md`; despite the path name, the version is v4.3).
 
 Naming: `NNN-CC-ABCD-description-YYYY-MM-DD.md` where:
 
