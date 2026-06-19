@@ -39,13 +39,11 @@ interface ValidateFn {
 interface AjvInstance {
   compile(schema: Record<string, unknown>): ValidateFn;
 }
-const Ajv2020 = (Ajv2020Module as unknown as { default: new (opts: object) => AjvInstance }).default;
+const Ajv2020 = (Ajv2020Module as unknown as { default: new (opts: object) => AjvInstance })
+  .default;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const CATALOG_PATH = join(
-  __dirname,
-  '../../schemas/authoring/cross-schema-invariants.v1.json',
-);
+const CATALOG_PATH = join(__dirname, '../../schemas/authoring/cross-schema-invariants.v1.json');
 
 interface CatalogInvariant {
   id: string;

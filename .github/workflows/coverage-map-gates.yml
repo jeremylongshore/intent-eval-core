@@ -58,11 +58,11 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Coverage-map completeness gate (§ 14.2.3 #1)
+      - name: 'Coverage-map completeness gate (§ 14.2.3 #1)'
         run: pnpm run check:coverage-map
 
-      - name: Coverage-map prose-anchor validity gate (§ 14.2.3 #2, extends PR #37)
+      - name: 'Coverage-map prose-anchor validity gate (§ 14.2.3 #2, extends PR #37)'
         run: pnpm run check:coverage-map-prose-anchors
 
-      - name: IS-extension rationale gate (§ 14.2.3 #3)
+      - name: 'IS-extension rationale gate (§ 14.2.3 #3)'
         run: pnpm run check:is-extension-rationale

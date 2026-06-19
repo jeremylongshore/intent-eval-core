@@ -16,13 +16,7 @@
  * bumped to match.
  */
 
-import type {
-  ActorIdentity,
-  KebabSlug,
-  Rfc3339,
-  SemVer,
-  Uuidv7,
-} from '../primitives.js';
+import type { ActorIdentity, KebabSlug, Rfc3339, SemVer, Uuidv7 } from '../primitives.js';
 import type { TransitionMap } from '../state-machines/types.js';
 
 /**

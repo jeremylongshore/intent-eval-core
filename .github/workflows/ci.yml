@@ -70,6 +70,9 @@ jobs:
       - name: Lint
         run: pnpm run lint
 
+      - name: Format check (prettier — L1 deterministic gate, required)
+        run: pnpm run format:check
+
       - name: Typecheck
         run: pnpm run typecheck
 

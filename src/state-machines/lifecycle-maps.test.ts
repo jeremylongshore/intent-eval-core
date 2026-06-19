@@ -66,7 +66,9 @@ describe('retry machine (iec-E05b / h99)', () => {
   });
 
   it('dead-letters only the structural reasons, never retries them', () => {
-    expect(() => assertTransition(retryTransitions, 'pending_backoff', 'dead_lettered')).not.toThrow();
+    expect(() =>
+      assertTransition(retryTransitions, 'pending_backoff', 'dead_lettered'),
+    ).not.toThrow();
     // A terminal state has no exits.
     expect(() => assertTransition(retryTransitions, 'dead_lettered', 'retrying')).toThrow(
       IllegalTransitionError,

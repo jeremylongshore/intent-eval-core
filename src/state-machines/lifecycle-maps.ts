@@ -124,12 +124,7 @@ export function isDeadLetterReason(reason: string): reason is DeadLetterReason {
  * event (modeled here as the `executing → failed` / `verifying → failed` edges
  * — the producer pages the on-call surface, which is runtime, not kernel).
  */
-export type RollbackState =
-  | 'pending'
-  | 'executing'
-  | 'verifying'
-  | 'completed'
-  | 'failed';
+export type RollbackState = 'pending' | 'executing' | 'verifying' | 'completed' | 'failed';
 
 /**
  * Rollback transition table (Blueprint B § 3 line 355).

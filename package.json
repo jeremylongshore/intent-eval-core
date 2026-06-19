@@ -102,7 +102,7 @@
     "api:diff": "node --experimental-strip-types scripts/api-diff.ts",
     "harness:verify": "audit-harness verify",
     "harness:init": "audit-harness init",
-    "check": "pnpm run codegen:authoring:check && pnpm run check:predicate-namespace && pnpm run check:rubric-floor && pnpm run check:prose-anchors && pnpm run check:coverage-map && pnpm run check:coverage-map-prose-anchors && pnpm run check:is-extension-rationale && pnpm run check:version-lockstep && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run arch && pnpm run boundaries"
+    "check": "pnpm run codegen:authoring:check && pnpm run check:predicate-namespace && pnpm run check:rubric-floor && pnpm run check:prose-anchors && pnpm run check:coverage-map && pnpm run check:coverage-map-prose-anchors && pnpm run check:is-extension-rationale && pnpm run check:version-lockstep && pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run arch && pnpm run boundaries"
   },
   "lint-staged": {
     "*.{ts,js,cjs,mjs}": [

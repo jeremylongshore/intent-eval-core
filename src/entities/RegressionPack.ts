@@ -14,13 +14,7 @@
  *   `https://evals.intentsolutions.io/regression-pack/v1`
  */
 
-import type {
-  ActorIdentity,
-  KebabSlug,
-  Rfc3339,
-  Sha256,
-  Uuidv7,
-} from '../primitives.js';
+import type { ActorIdentity, KebabSlug, Rfc3339, Sha256, Uuidv7 } from '../primitives.js';
 import type { MmClass } from './MatcherMap.js';
 import type { TransitionMap } from '../state-machines/types.js';
 

@@ -83,9 +83,7 @@ describe('RegressionPack (Blueprint B § 2.7)', () => {
 
 describe('RolloutGate (Blueprint B § 2.8)', () => {
   it('RolloutGateDecision is ship|no_ship|advisory|error (NOT GateDecision)', () => {
-    expectTypeOf<RolloutGateDecision>().toEqualTypeOf<
-      'ship' | 'no_ship' | 'advisory' | 'error'
-    >();
+    expectTypeOf<RolloutGateDecision>().toEqualTypeOf<'ship' | 'no_ship' | 'advisory' | 'error'>();
     // Critical: RolloutGateDecision and GateDecision are DIFFERENT enums.
     // RolloutGate uses ship/no_ship (deployment language); GateDecision
     // uses pass/fail (verdict language). The mapping is policy-driven
