@@ -61,8 +61,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Run actionlint directly (not via the reviewdog wrapper): the binary's own
+      # non-zero exit on any error IS the gate, so the check-run settles to a
+      # terminal completed/failure status. reviewdog's github-pr-check reporter can
+      # leave a zero-findings run stuck at status=in_progress (conclusion=success but
+      # never "completed"), which reads as a permanently-pending required check.
+      # Pinned to a release tag (script + binary) for reproducibility.
       - name: Run actionlint
-        uses: reviewdog/action-actionlint@v1
-        with:
-          reporter: github-pr-check
-          fail_level: error
+        run: |
+          bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.12/scripts/download-actionlint.bash) 1.7.12
+          ./actionlint -color

@@ -52,6 +52,10 @@ reviews:
     - '!**/*.snap'
     - '!**/*.lock'
     - '!pnpm-lock.yaml'
+    # Tool manifests / vendored configs — not authored source (NOT the kernel's
+    # _generated/ schemas, which stay reviewable because drift hides there).
+    - '!**/.harness-hash'
+    - '!**/.audit-harness/**'
   path_instructions:
     - path: '**/{schemas,src,python}/**'
       instructions: >-

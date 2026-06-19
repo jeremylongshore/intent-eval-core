@@ -1,5 +1,5 @@
 24ee68b34e66d5b9d618675a44618a0ec88f2d4144f81289f7968f7260e6d60b  .audit-harness/configs/.yamllint.yml
 1d4f4b688e5164c3f5b794436182e5dc08449d782572cd72685bed453519ce49  .dependency-cruiser.cjs
-d211b8009f494b77ec82fd8ed903a99bc375a14e5dff01c284d8e7946ea78109  .github/workflows/lint.yml
+e83c309326ccb079f44ab923d9021fc79394576ba5563fc2887c83948ad96ec1  .github/workflows/lint.yml
 28941579d86315b76fd768bce310f79fcb93b9a715c028da4c843b2bf9eda0ff  .github/workflows/typos.yml
 b4f025f86a8d430e77d745863b81ece2c784041b502a57c0b9ca28a45acd1115  scripts/check-rubric-floor.ts
