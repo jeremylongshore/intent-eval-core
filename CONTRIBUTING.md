@@ -114,7 +114,7 @@ pnpm vitest run path/to/file.test.ts  # single file
 
 - All PRs require at least 1 maintainer approval
 - CI must pass — 9-step gate chain: lint → typecheck → test → arch → coverage → build → test:types → audit-harness verify → boundary-check
-- Gemini review fires automatically on PR open; address findings or explain why before merge
+- CodeRabbit review fires automatically on PR open; address findings or explain why before merge
 - Keep PRs focused — one entity or one validator per PR
 - Document any schema changes in the PR body — if the change requires consumer repos to bump kernel dep, **state that explicitly**
 

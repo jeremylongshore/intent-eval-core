@@ -16,10 +16,6 @@ export type TransitionMap<S extends string> = Readonly<Record<S, readonly S[]>>;
  * Returns true if `from → to` is a declared transition in the map.
  * Pure type-level check at compile time; runtime check at runtime.
  */
-export function canTransition<S extends string>(
-  map: TransitionMap<S>,
-  from: S,
-  to: S,
-): boolean {
+export function canTransition<S extends string>(map: TransitionMap<S>, from: S, to: S): boolean {
   return (map[from] as readonly S[]).includes(to);
 }

@@ -97,13 +97,7 @@ describe('ToolInvocation (Blueprint B § 2.11)', () => {
 describe('CostRecord (Blueprint B § 2.12)', () => {
   it('CostAttributionClass is the closed 7-element enum', () => {
     expectTypeOf<CostAttributionClass>().toEqualTypeOf<
-      | 'run'
-      | 'provider'
-      | 'judge'
-      | 'replay'
-      | 'cache_decision'
-      | 'optimizer_experiment'
-      | 'system'
+      'run' | 'provider' | 'judge' | 'replay' | 'cache_decision' | 'optimizer_experiment' | 'system'
     >();
   });
 
@@ -116,9 +110,7 @@ describe('CostRecord (Blueprint B § 2.12)', () => {
     // System rollups have neither; run rollups have only eval_run_id;
     // tool rows have both.
     expectTypeOf<CostRecord>().toHaveProperty('eval_run_id').toEqualTypeOf<Uuidv7 | null>();
-    expectTypeOf<CostRecord>()
-      .toHaveProperty('tool_invocation_id')
-      .toEqualTypeOf<Uuidv7 | null>();
+    expectTypeOf<CostRecord>().toHaveProperty('tool_invocation_id').toEqualTypeOf<Uuidv7 | null>();
   });
 
   it('external_api_cost_micro_usd uses MicroUsd brand for precision', () => {
@@ -144,9 +136,7 @@ describe('CostRecord (Blueprint B § 2.12)', () => {
 
 describe('FailureTaxonomy (Blueprint B § 2.13)', () => {
   it('FailureTaxonomyStatus is the closed 3-element enum', () => {
-    expectTypeOf<FailureTaxonomyStatus>().toEqualTypeOf<
-      'proposed' | 'canonical' | 'deprecated'
-    >();
+    expectTypeOf<FailureTaxonomyStatus>().toEqualTypeOf<'proposed' | 'canonical' | 'deprecated'>();
   });
 
   it('state machine: proposed→canonical→deprecated (no reverse transitions)', () => {

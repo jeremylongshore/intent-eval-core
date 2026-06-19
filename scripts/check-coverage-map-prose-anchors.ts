@@ -64,9 +64,7 @@ export function findBadSectionCitations(root: string = REPO_ROOT): {
   bad: SectionCitation[];
 } {
   const inventory = loadInventory(root);
-  const map = JSON.parse(
-    readFileSync(join(root, COVERAGE_MAP_PATH), 'utf-8'),
-  ) as CoverageMap;
+  const map = JSON.parse(readFileSync(join(root, COVERAGE_MAP_PATH), 'utf-8')) as CoverageMap;
 
   const bad: SectionCitation[] = [];
   let checked = 0;

@@ -1,34 +1,27 @@
-name: Lint (non-JS)
+name: Lint (YAML + Actions)
 
-# Standalone non-JS lint coverage for the kernel: yamllint + actionlint +
-# markdownlint. ESLint/Prettier already run inside ci.yml (`pnpm run check`);
-# this workflow covers the YAML / GitHub Actions / Markdown surfaces those
-# JS-focused gates don't touch.
+# Deterministic L1 lint for the kernel's CI-config surface: yamllint + actionlint.
+# ESLint/Prettier run inside ci.yml (`pnpm run check` + the prettier format gate);
+# markdownlint runs in doc-quality.yml (its single home — de-duplicated from here).
+# These two jobs are REQUIRED, not advisory: a green required check is signal, a
+# red advisory check is noise. yamllint runs --strict so warnings fail the gate.
 #
 # Configs are vendored so the policy travels with the repo:
-#   - YAML:     .audit-harness/configs/.yamllint.yml  (hash-pinned)
-#   - Markdown: .markdownlint-cli2.jsonc              (repo root, shared with doc-quality.yml)
-#   - Actions:  actionlint (no config — built-in rule set)
-#
-# All three jobs are advisory (continue-on-error) on first rollout, matching
-# doc-quality.yml's posture, so the gate surfaces findings without blocking the
-# PR while the YAML/Markdown surface settles.
+#   - YAML:    .audit-harness/configs/.yamllint.yml  (hash-pinned)
+#   - Actions: actionlint (built-in rule set)
 
 on:
   pull_request:
     paths:
       - '**/*.yml'
       - '**/*.yaml'
-      - '**/*.md'
       - '.audit-harness/configs/.yamllint.yml'
-      - '.markdownlint-cli2.jsonc'
       - '.github/workflows/lint.yml'
   push:
     branches: [main]
     paths:
       - '**/*.yml'
       - '**/*.yaml'
-      - '**/*.md'
 
 permissions:
   contents: read
@@ -39,9 +32,8 @@ concurrency:
 
 jobs:
   yamllint:
-    name: yamllint (advisory)
+    name: yamllint
     runs-on: ubuntu-latest
-    continue-on-error: true
     timeout-minutes: 5
     steps:
       - name: Checkout
@@ -55,21 +47,15 @@ jobs:
       - name: Install yamllint
         run: pip install --no-cache-dir "yamllint==1.35.1"
 
-      - name: Run yamllint
-        # Advisory lane: warnings surface in the log but do not flip the job
-        # to failure. `--strict` (promote warnings to a non-zero exit) is
-        # intentionally omitted so pre-existing cosmetic findings (e.g.
-        # comment-spacing in coverage-map-gates.yml) don't paint the advisory
-        # check red while the YAML surface settles.
+      - name: Run yamllint (--strict — warnings fail the gate)
         run: |
-          yamllint \
+          yamllint --strict \
             --config-file .audit-harness/configs/.yamllint.yml \
             .github/ codecov.yml schemas/
 
   actionlint:
-    name: actionlint (advisory)
+    name: actionlint
     runs-on: ubuntu-latest
-    continue-on-error: true
     timeout-minutes: 5
     steps:
       - name: Checkout
@@ -79,22 +65,4 @@ jobs:
         uses: reviewdog/action-actionlint@v1
         with:
           reporter: github-pr-check
-          fail_level: none
-
-  markdownlint:
-    name: markdownlint-cli2 (advisory)
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    timeout-minutes: 5
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Run markdownlint-cli2
-        uses: DavidAnson/markdownlint-cli2-action@v17
-        with:
-          globs: |
-            **/*.md
-            !node_modules
-            !dist
-            !.audit-harness
+          fail_level: error

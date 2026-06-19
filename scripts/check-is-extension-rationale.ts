@@ -59,9 +59,7 @@ export function findRationaleViolations(root: string = REPO_ROOT): {
   checked: number;
   violations: RationaleViolation[];
 } {
-  const map = JSON.parse(
-    readFileSync(join(root, COVERAGE_MAP_PATH), 'utf-8'),
-  ) as CoverageMap;
+  const map = JSON.parse(readFileSync(join(root, COVERAGE_MAP_PATH), 'utf-8')) as CoverageMap;
 
   const violations: RationaleViolation[] = [];
   let checked = 0;
@@ -80,9 +78,7 @@ function main(): void {
   const root = rootFlag !== -1 ? (process.argv[rootFlag + 1] ?? REPO_ROOT) : REPO_ROOT;
 
   if (!existsSync(join(root, COVERAGE_MAP_PATH))) {
-    process.stderr.write(
-      `is-extension-rationale: missing coverage map at ${COVERAGE_MAP_PATH}.\n`,
-    );
+    process.stderr.write(`is-extension-rationale: missing coverage map at ${COVERAGE_MAP_PATH}.\n`);
     process.exit(1);
   }
 

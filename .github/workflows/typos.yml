@@ -1,14 +1,13 @@
 name: Typos (spell-check)
 
-# Advisory source-spelling lane for the kernel: runs crate-ci/typos over the
-# tree on every push + PR. Config lives in .typos.toml (repo root) which holds
+# Deterministic L1 source-spelling lane for the kernel: runs crate-ci/typos over
+# the tree on every push + PR. Config lives in .typos.toml (repo root) which holds
 # the IEP domain-term ignore-list (iec/iel/iah/iar/iaj, sops, sigstore, rekor,
 # zod, …) so platform vocabulary is never flagged as a misspelling.
 #
-# ADVISORY on rollout (continue-on-error: true), matching the posture of
-# lint.yml / doc-quality.yml: typo findings surface in the log without painting
-# the check red or blocking the PR while the spelling surface settles. This is
-# intentionally NOT a required check — it complements, never gates.
+# REQUIRED, not advisory: a real typo fails the gate. The .typos.toml ignore-list
+# is the escape hatch for legitimate domain vocabulary — extend it rather than
+# suppressing the lane. A green required check is signal; a red advisory one is noise.
 
 on:
   push:
@@ -25,9 +24,8 @@ concurrency:
 
 jobs:
   typos:
-    name: typos (advisory)
+    name: typos
     runs-on: ubuntu-latest
-    continue-on-error: true
     timeout-minutes: 5
     steps:
       - name: Checkout
