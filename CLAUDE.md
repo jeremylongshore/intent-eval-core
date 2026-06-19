@@ -62,11 +62,26 @@ pnpm run format:check     # prettier --check .
 
 ## Project structure
 
+Published as **`@intentsolutions/core@0.8.0`** (sigstore provenance). The kernel is **bicameral** — a runtime tier and an authoring tier:
+
 ```text
 intent-eval-core/
 ├── src/
-│   ├── index.ts            ← public surface (currently empty by design)
-│   └── index.test.ts       ← smoke test
+│   ├── entities/           ← TS interfaces + state machines for the 14 canonical entities
+│   │                          (Blueprint B § 2's 13 + SkillVersion, the 14th per DR-028 T1):
+│   │                           EvalSpec, EvalRun, EvidenceBundle, JudgeDecision, RuntimeReceipt,
+│   │                           SessionTrace, ToolInvocation, CostRecord, FailureTaxonomy,
+│   │                           MatcherMap, RegressionPack, RolloutGate, SkillSnapshot, SkillVersion
+│   │                          (+ EvidenceBundlePayload — the wire format EvidenceBundle resolves to)
+│   ├── validators/v1/       ← Zod validators (runtime tier) + validators/v1/authoring/ (SAK tier)
+│   └── index.ts             ← public surface (re-exports stable contracts)
+├── schemas/
+│   ├── v1/                  ← runtime-tier JSON Schemas (draft 2020-12) — one per entity
+│   │                          + gate-result, retraction, dashboard-render, skill-refiner-pass
+│   └── authoring/v1/        ← Spec Authority Kernel (SAK): authoring-artifact contracts
+│                              (skill-frontmatter [PUBLISHED], plugin-manifest, agent-definition,
+│                               mcp-config, hook-config, marketplace-catalog) — each composes
+│                               upstream-base/ + 3 universal folds + is-overlay/
 ├── dist/                   ← build output (gitignored)
 ├── tsconfig.json           ← base TS config (noEmit, for editor + lint)
 ├── tsconfig.build.json     ← emit-only build config (rootDir=src)
