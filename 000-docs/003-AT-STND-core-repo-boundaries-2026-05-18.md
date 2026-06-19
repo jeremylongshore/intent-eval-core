@@ -88,7 +88,7 @@ The per-repo blueprint (`000-docs/002-AT-ARCH-repo-blueprint-2026-05-18.md`) is 
 | --- | --- |
 | § 1.2 "NOT a runtime" | Package-pattern + import-path + directory-name checks block runtime additions |
 | § 3.2 "Out of scope: runtime execution" | `FORBIDDEN.md § Package patterns` lists every runtime/orchestration npm package by name |
-| § 3.4 "Schema duplication is forbidden" | (Enforced elsewhere — by the kernel BEING the source of truth, peer repos importing) |
+| § 3.4 "Schema duplication is forbidden" | (Enforced elsewhere — by the kernel BEING the source of truth for the **14 canonical entities** (the 13 per Blueprint B § 2 + `SkillVersion`, the 14th per DR-028 T1); peer repos import, never redefine) |
 | § 3.4 "Runtime concerns stay out — enforced architecturally" | `scripts/check-boundaries.ts` + CI workflow + pre-commit hook |
 | § 3.4 "labs.intentsolutions.io reserved-don't-touch" | `FORBIDDEN.md` lists `labs.intentsolutions.io` as a forbidden URL pattern (separate axis from packages) |
 
