@@ -8,7 +8,7 @@ name = "intent-eval-core"
 # Schemas under schemas/v1/ are the shared source of truth for both
 # distributions, so the versions move together. CI gate:
 # scripts/check_version_lockstep.py.
-version = "0.7.0"
+version = "0.8.0"
 description = "Python (Pydantic v2) distribution of @intentsolutions/core — the canonical contracts kernel for the Intent Eval Platform. The same entity + predicate contracts the TypeScript package exposes as Zod validators + JSON Schemas, as Pydantic v2 models."
 readme = "README.md"
 requires-python = ">=3.10"
