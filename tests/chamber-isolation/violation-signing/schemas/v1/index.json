@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/index.json",
+  "title": "runtime chamber index — clean side of the signing violation fixture",
+  "version": "1.0.0-draft",
+  "schemas": {
+    "gate-result-v1": {
+      "path": "gate-result.schema.json",
+      "kind": "predicate",
+      "signing_mode": "rekor_production"
+    }
+  }
+}

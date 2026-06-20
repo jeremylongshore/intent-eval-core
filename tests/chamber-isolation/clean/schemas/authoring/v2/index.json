@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v2/index.json",
+  "title": "authoring chamber v2 index — CLEAN fixture (proves a future vN dir is covered)",
+  "version": "2.0.0-draft",
+  "schemas": {
+    "skill-frontmatter": {
+      "path": "skill-frontmatter.schema.json",
+      "kind": "authoring-contract"
+    }
+  }
+}

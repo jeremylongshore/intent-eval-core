@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v1/index.json",
+  "title": "authoring chamber v1 index — DELIBERATELY-FAILING fixture",
+  "$comment": "WRONGLY fuses a shared cross-chamber version lane by adding a top-level `schemaVersion` field. Each chamber must keep an INDEPENDENT $schemaVersion lane (DR-049 D-SAK-1). The chamber-isolation gate MUST catch this. Do not 'fix' this file; it proves the gate is not vacuous.",
+  "schemaVersion": "1.0.0",
+  "version": "1.0.0-draft",
+  "schemas": {}
+}
