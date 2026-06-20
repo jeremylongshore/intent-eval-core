@@ -69,9 +69,9 @@ intent-eval-core/
 ├── src/
 │   ├── entities/           ← TS interfaces + state machines for the 14 canonical entities
 │   │                          (Blueprint B § 2's 13 + SkillVersion, the 14th per DR-028 T1):
-│   │                           EvalSpec, EvalRun, EvidenceBundle, JudgeDecision, RuntimeReceipt,
-│   │                           SessionTrace, ToolInvocation, CostRecord, FailureTaxonomy,
-│   │                           MatcherMap, RegressionPack, RolloutGate, SkillSnapshot, SkillVersion
+│   │                          EvalSpec, EvalRun, EvidenceBundle, JudgeDecision, RuntimeReceipt,
+│   │                          SessionTrace, ToolInvocation, CostRecord, FailureTaxonomy,
+│   │                          MatcherMap, RegressionPack, RolloutGate, SkillSnapshot, SkillVersion
 │   │                          (+ EvidenceBundlePayload — the wire format EvidenceBundle resolves to)
 │   ├── validators/v1/       ← Zod validators (runtime tier) + validators/v1/authoring/ (SAK tier)
 │   └── index.ts             ← public surface (re-exports stable contracts)
