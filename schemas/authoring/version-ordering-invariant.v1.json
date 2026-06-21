@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/version-ordering-invariant.v1.json",
+  "$comment": "Version-ordering invariant catalog — the machine-readable register of the V ≤ C ≤ K layer-version ordering the authoring family upholds, per the continuous-spec-compliance machinery (the kernel as single source of truth; intent-eval-lab doc 045-RR-LAND, the SSoT declaration). V = VENDOR version: the upstream-base layer's version (the vendored projection of the open standard — agentskills.io / the Claude/Anthropic surfaces / the MCP spec — that the base mirrors). C = CONSUMER version: the is-overlay layer's version (the IS-authored delta the consumer adopts on top of the base). K = KERNEL version: the published composition's version (the allOf the kernel ships, the version registered at schemas/authoring/<family>/index.json#version). The invariant V ≤ C ≤ K asserts the kernel never lags the consumer and the consumer never lags the vendor: a consumer cannot adopt an overlay newer than the kernel has published (C ≤ K), and an overlay cannot encode policy against a base newer than the upstream the overlay sits on (V ≤ C). It holds structurally because the overlay is MONOTONIC-ADDITIVE over the base (DR-044 D7 — the overlay only ADDs required fields and NARROWs constraints relative to the base, so the consumer layer is never behind the vendor layer it composes) and the composition publishes the overlay verbatim (the kernel layer is never behind the consumer layer it wraps). Each authoring family below carries its real, structured layer-version triple — the values that live in schemas/authoring/<family>/index.json#version (K) and the family CHANGELOG's per-layer version rows (`upstream-base (X)` = V, `is-overlay (X)` = C, `composition (X)` = K). A test asserts (1) the comparator decides V ≤ C ≤ K correctly on the 4 corpus cases (valid ordering / C>K violation / V>C violation / V=C=K equality) and (2) every family declared here satisfies the invariant AND agrees with the live index.json#version. This catalog is a SIBLING of cross-schema-invariants.v1.json (the same non-vN-dir, non-`.schema.json` placement, so it is data-not-schema and not a changelog-watched contract file).",
+  "title": "Version-ordering invariant catalog (V ≤ C ≤ K, authoring family)",
+  "type": "object",
+  "required": ["catalogVersion", "lineage", "invariant", "families"],
+  "additionalProperties": false,
+  "properties": {
+    "catalogVersion": {
+      "type": "string",
+      "const": "1.0.0-draft",
+      "description": "Semver of this catalog. Adding/removing a family or changing the invariant statement is a catalog version event."
+    },
+    "lineage": {
+      "type": "string",
+      "const": "dr-044@d-sak-1",
+      "description": "Machine-readable lineage: the governing decision record (the SAK charter establishing the base+overlay layering the ordering is defined over) IS the upstream for this IS-authored register."
+    },
+    "spec": {
+      "type": "string",
+      "const": "intent-eval-lab/000-docs/045-RR-LAND-single-source-of-truth-and-continuous-spec-compliance-2026-06-09.md",
+      "description": "The normative source: the single-source-of-truth + continuous-spec-compliance declaration the version-ordering invariant serves."
+    },
+    "invariant": {
+      "type": "object",
+      "required": ["id", "statement", "ordering", "rationale"],
+      "additionalProperties": false,
+      "description": "The single ordering invariant this catalog registers.",
+      "properties": {
+        "id": { "type": "string", "const": "INV-VERSION-ORDERING" },
+        "statement": {
+          "type": "string",
+          "const": "∀ authoring family f, V(f) ≤ C(f) ≤ K(f)",
+          "description": "V = upstream-base (vendor) layer version; C = is-overlay (consumer) layer version; K = published composition (kernel) layer version."
+        },
+        "ordering": {
+          "type": "string",
+          "const": "semver",
+          "description": "Versions compare by SemVer 2.0.0 precedence; a `-draft` (or any) prerelease tag orders BELOW the same release core, consistently across all three layers (so a `-draft` triple at one release line compares as the equality case)."
+        },
+        "rationale": {
+          "type": "string",
+          "const": "Overlay is monotonic-additive over base (DR-044 D7) ⇒ V ≤ C; composition publishes the overlay ⇒ C ≤ K. The kernel never lags the consumer; the consumer never lags the vendor.",
+          "description": "Why the invariant holds by construction, not by coincidence."
+        }
+      }
+    },
+    "families": {
+      "type": "array",
+      "minItems": 1,
+      "description": "One entry per authoring family (the schemas/authoring/<family>/ chambers). Each carries the family's V/C/K layer-version triple.",
+      "items": { "$ref": "#/$defs/family" }
+    }
+  },
+  "$defs": {
+    "family": {
+      "type": "object",
+      "required": ["family", "indexPath", "vendor", "consumer", "kernel"],
+      "additionalProperties": false,
+      "description": "An authoring family's layer-version triple. `kernel` MUST equal the live schemas/authoring/<family>/index.json#version (the test cross-checks this).",
+      "properties": {
+        "family": {
+          "type": "string",
+          "pattern": "^v[1-9][0-9]*$",
+          "description": "The authoring family directory name (v1, v2, …)."
+        },
+        "indexPath": {
+          "type": "string",
+          "description": "The family index whose `version` is the authoritative kernel (K) value the test cross-checks against."
+        },
+        "vendor": {
+          "type": "string",
+          "description": "V — the upstream-base layer version (the family CHANGELOG `upstream-base (X)` rows)."
+        },
+        "consumer": {
+          "type": "string",
+          "description": "C — the is-overlay layer version (the family CHANGELOG `is-overlay (X)` rows)."
+        },
+        "kernel": {
+          "type": "string",
+          "description": "K — the published composition version (the family CHANGELOG `composition (X)` rows; equals index.json#version)."
+        }
+      }
+    }
+  },
+  "catalogVersion": "1.0.0-draft",
+  "lineage": "dr-044@d-sak-1",
+  "spec": "intent-eval-lab/000-docs/045-RR-LAND-single-source-of-truth-and-continuous-spec-compliance-2026-06-09.md",
+  "invariant": {
+    "id": "INV-VERSION-ORDERING",
+    "statement": "∀ authoring family f, V(f) ≤ C(f) ≤ K(f)",
+    "ordering": "semver",
+    "rationale": "Overlay is monotonic-additive over base (DR-044 D7) ⇒ V ≤ C; composition publishes the overlay ⇒ C ≤ K. The kernel never lags the consumer; the consumer never lags the vendor."
+  },
+  "families": [
+    {
+      "family": "v1",
+      "indexPath": "schemas/authoring/v1/index.json",
+      "vendor": "1.0.0-draft",
+      "consumer": "1.0.0-draft",
+      "kernel": "1.0.0-draft"
+    },
+    {
+      "family": "v2",
+      "indexPath": "schemas/authoring/v2/index.json",
+      "vendor": "2.0.0-draft",
+      "consumer": "2.0.0-draft",
+      "kernel": "2.0.0-draft"
+    }
+  ]
+}
