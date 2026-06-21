@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/index.json",
+  "title": "runtime chamber index — CLEAN fixture",
+  "version": "1.0.0-draft",
+  "schemas": {
+    "gate-result-v1": {
+      "path": "gate-result.schema.json",
+      "kind": "predicate",
+      "uri": "https://evals.intentsolutions.io/gate-result/v1",
+      "signing_mode": "rekor_production"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/index.json",
+  "title": "runtime chamber index — DELIBERATELY-FAILING fixture",
+  "$comment": "WRONGLY carries a shared `schemaVersion` field on the runtime chamber index. A kernel-wide version field on either chamber fuses the lane (DR-049 D-SAK-1). The gate catches it on the runtime side too, not just authoring.",
+  "schemaVersion": "1.0.0",
+  "version": "1.0.0-draft",
+  "schemas": {}
+}

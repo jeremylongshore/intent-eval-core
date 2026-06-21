@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Per-chamber kernel isolation gate** (`scripts/check-chamber-isolation.ts`; bd `bd_000-projects-3kye.4`; lineage: dr-049@d-sak-1) — machine-enforces DR-049 D-SAK-1 (CTO ask b+c + CSO binding): the runtime (`schemas/v1`) and authoring (`schemas/authoring`) chambers keep INDEPENDENT `$schemaVersion` lanes and a separate signing trust root. Asserts (a) no chamber `index.json` carries a shared `schemaVersion` field, (b) no authoring `index.json` carries a predicate-signing field (`signing_mode` — runtime MAY; authoring is a deterministic lint, never a signed attestation), and (c) no authoring schema `$id`/`$ref`/`$comment` resolves to a runtime predicate / signing trust root. Wired as `pnpm run check:chamber-isolation` into `pnpm run check` + CI, complementing the predicate-namespace host gate. Strictly additive — no schema bytes changed (authoring/v1 stays byte-frozen at v0.4.1).
+
 ## [0.8.0] - 2026-06-19
 
 ### Added

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/authoring/v1/index.json",
+  "title": "authoring chamber v1 index — DELIBERATELY-FAILING fixture",
+  "$comment": "WRONGLY carries a predicate-signing `signing_mode` field on an authoring catalog. Authoring conformance is a DETERMINISTIC LINT, never a signed attestation (DR-049 D-SAK-1 CISO binding). The runtime chamber MAY carry signing_mode; the authoring chamber MAY NOT. The gate MUST catch this.",
+  "version": "1.0.0-draft",
+  "signing_mode": "sigstore_staging",
+  "schemas": {}
+}

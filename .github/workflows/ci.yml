@@ -53,6 +53,15 @@ jobs:
       - name: Predicate-namespace isolation (DR-049 authoring/lint vs signed split)
         run: pnpm run check:predicate-namespace
 
+      # Per-chamber isolation (3kye.4 / DR-049 D-SAK-1, CTO ask b+c + CSO binding):
+      # the runtime (schemas/v1) and authoring (schemas/authoring) chambers must
+      # not share a $schemaVersion lane or a signing trust root. No chamber index
+      # carries a shared `schemaVersion`; no authoring index carries a
+      # predicate-signing field; no authoring schema anchor resolves to a runtime
+      # trust root. Complements the predicate-namespace host gate above.
+      - name: Per-chamber isolation (DR-049 D-SAK-1 version-lane + trust-root split)
+        run: pnpm run check:chamber-isolation
+
       # Rubric-floor self-pin (3kye.6 / DR-049): the anti-realignment guard — a
       # required field may not be removed/weakened from any contract's overlay
       # required set or the securityChecks fold without an explicit ADR marker.
