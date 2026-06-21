@@ -103,8 +103,14 @@ export interface IsolationViolation {
 
 /** Recursively collect every `.json` file under `dir`. */
 function jsonFilesUnder(dir: string): string[] {
+  let entries;
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return []; // missing/inaccessible dir (ENOENT/EACCES) — nothing to scan
+  }
   const out: string[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+  for (const entry of entries) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) {
       out.push(...jsonFilesUnder(full));
@@ -201,9 +207,10 @@ export function scanChamberIsolation(repoRoot: string): IsolationViolation[] {
     const lines = readFileSync(file, 'utf-8').split('\n');
     lines.forEach((line, index) => {
       const lower = line.toLowerCase();
-      // Only the trust-anchor-bearing keys count: $id, $ref, $comment.
-      const isAnchorLine =
-        lower.includes('"$id"') || lower.includes('"$ref"') || lower.includes('"$comment"');
+      // Only the trust-anchor-bearing keys count: $id, $ref, $comment. Require
+      // the token to be an actual JSON key (followed by a colon), not an
+      // incidental substring elsewhere in the line — avoids false positives.
+      const isAnchorLine = /"\$(id|ref|comment)"\s*:/.test(line);
       if (!isAnchorLine) return;
       for (const marker of markers) {
         if (lower.includes(marker)) {
@@ -223,7 +230,10 @@ export function scanChamberIsolation(repoRoot: string): IsolationViolation[] {
 }
 
 function rel(file: string, root: string): string {
-  return file.startsWith(root) ? relative(root, file) : file;
+  const relativePath = file.startsWith(root) ? relative(root, file) : file;
+  // Normalize Windows backslashes so findings/test assertions are
+  // cross-platform (e.g. schemas/authoring/v1/index.json on every OS).
+  return relativePath.replace(/\\/g, '/');
 }
 
 function main(): void {
