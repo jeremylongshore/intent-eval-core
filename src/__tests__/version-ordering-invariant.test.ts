@@ -149,6 +149,56 @@ describe('compareSemver / semverLte — SemVer 2.0.0 precedence', () => {
     expect(() => parseSemver('2026-11-25')).toThrow(/not a SemVer/);
     expect(() => parseSemver('not-a-version')).toThrow(/not a SemVer/);
   });
+
+  it('orders by patch when only the patch differs (§11.2 — major + minor equal)', () => {
+    // The release-core comparison must fall through major and minor and decide on
+    // patch alone — the only path that exercises the patch tie-breaker.
+    expect(compareSemver('1.2.3', '1.2.4')).toBeLessThan(0);
+    expect(compareSemver('1.2.4', '1.2.3')).toBeGreaterThan(0);
+    expect(semverLte('1.2.3', '1.2.4')).toBe(true);
+    expect(semverLte('1.2.4', '1.2.3')).toBe(false);
+  });
+});
+
+// ─── 2b. Prerelease precedence (§11.4) — the dot-separated identifier rules ───
+//
+// These drive comparePrerelease (and isNumericIdentifier) with two NON-EMPTY,
+// equal-release-core prerelease lists. Each case isolates one §11.4 sub-rule so a
+// regression in identifier comparison surfaces as a specific assertion failure,
+// not a vague coverage drop.
+
+describe('compareSemver — prerelease identifier precedence (SemVer §11.4)', () => {
+  it('§11.4.3 — a numeric identifier has LOWER precedence than an alphanumeric one', () => {
+    // 1 (numeric) < beta (alphanumeric), and the symmetric case.
+    expect(compareSemver('1.0.0-1', '1.0.0-beta')).toBeLessThan(0);
+    expect(compareSemver('1.0.0-beta', '1.0.0-1')).toBeGreaterThan(0);
+  });
+
+  it('§11.4.1 — two numeric identifiers compare NUMERICALLY, not lexically', () => {
+    // 9 < 10 numerically (lexically "10" < "9" would be wrong); a shared leading
+    // identifier (alpha) is skipped via the equality `continue`, then the numeric
+    // pair decides.
+    expect(compareSemver('1.0.0-alpha.9', '1.0.0-alpha.10')).toBeLessThan(0);
+    expect(compareSemver('1.0.0-alpha.10', '1.0.0-alpha.9')).toBeGreaterThan(0);
+  });
+
+  it('§11.4.2 — two alphanumeric identifiers compare LEXICALLY in ASCII order', () => {
+    expect(compareSemver('1.0.0-alpha', '1.0.0-beta')).toBeLessThan(0);
+    expect(compareSemver('1.0.0-beta', '1.0.0-alpha')).toBeGreaterThan(0);
+  });
+
+  it('§11.4.4 — when all preceding identifiers are equal, the LARGER set wins', () => {
+    // alpha == alpha (the equality `continue`), then the shorter list (no further
+    // identifiers) has lower precedence than the longer one.
+    expect(compareSemver('1.0.0-alpha', '1.0.0-alpha.1')).toBeLessThan(0);
+    expect(compareSemver('1.0.0-alpha.1', '1.0.0-alpha')).toBeGreaterThan(0);
+  });
+
+  it('two fully-equal multi-identifier prereleases compare as EQUAL', () => {
+    // Both identifiers match → every loop iteration takes `continue`, then the
+    // equal-length lists yield 0 (§11.4.4 with no remainder).
+    expect(compareSemver('1.0.0-alpha.1', '1.0.0-alpha.1')).toBe(0);
+  });
 });
 
 // ─── 3. The 4 corpus cases the bead requires ─────────────────────────────────
