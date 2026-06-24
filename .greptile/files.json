@@ -92,7 +92,7 @@
     },
     {
       "path": "000-docs/006-AA-AACR-v0.2.0-additive-schema-evolution-2026-06-03.md",
-      "description": "AACR for the v0.2.0 purely-additive schema evolution (EvidenceBundle.pre_registration_hash et al.). The canonical reference for the additive-only schema-evolution discipline: no v0.1 contract is changed/renamed/removed, every prior EvidenceBundle + gate-result/v1 row stays valid, and each addition is carried in lockstep across TS type + JSON Schema + Zod validator. Ground reviews of any schema change for backward-compatibility / SemVer correctness here.",
+      "description": "AACR for the v0.2.0 purely-additive schema evolution (EvidenceBundle.pre_registration_hash et al.). NOTE on its own status line: the doc's header says 'npm publish + git tag HELD pending iec-E12' — that hold is RESOLVED; v0.2.0 long since shipped and the kernel is now PUBLISHED at @intentsolutions/core@0.8.0. The doc remains the canonical reference for the additive-only schema-evolution discipline: no v0.1 contract is changed/renamed/removed, every prior EvidenceBundle + gate-result/v1 row stays valid, and each addition is carried in lockstep across TS type + JSON Schema + Zod validator. Ground reviews of any schema change for backward-compatibility / SemVer correctness here.",
       "scope": ["schemas/**", "src/entities/**", "src/validators/**"]
     },
     {
@@ -126,7 +126,7 @@
     },
     {
       "path": "schemas/authoring/v1/index.json",
-      "description": "Catalog of the Spec Authority Kernel (SAK) authoring-contract schemas (DR-044 charter). The marketplace-tier foundation exposes the THREE universal folds (deprecationRegistry, securityChecks, disclosureMarkers) every per-contract schema inherits. Each contract is three artifacts: upstream-base (the open standard) + is-overlay (IS narrowing) + the published allOf composition. skill-frontmatter is the PUBLISHED walking skeleton; the other five (plugin-manifest, agent-definition, mcp-config, hook-config, marketplace-catalog) are SHIPPED-INTERNAL, codegen-generated. Use to ground reviews of authoring-tier schema/overlay changes.",
+      "description": "Catalog of the Spec Authority Kernel (SAK) authoring-contract schemas (DR-044 charter) — the LOOSER, PUBLISHED authoring tier. It is BYTE-FROZEN at @intentsolutions/core@0.4.1 (do not tighten it in place); the STRICT successor that supersedes its skill-frontmatter contract is schemas/authoring/v2/ (copy-then-tighten, DR-049/DR-062). Both tiers are LIVE: v1 stays the looser published contract, v2 is the strict profile being promoted toward canonical — review authoring changes against BOTH. The marketplace-tier foundation exposes the THREE universal folds (deprecationRegistry, securityChecks, disclosureMarkers) every per-contract schema inherits. Each contract is three artifacts: upstream-base (the open standard) + is-overlay (IS narrowing) + the published allOf composition. skill-frontmatter is the PUBLISHED walking skeleton; the other five (plugin-manifest, agent-definition, mcp-config, hook-config, marketplace-catalog) are SHIPPED-INTERNAL, codegen-generated. Use to ground reviews of authoring-tier (v1) schema/overlay changes.",
       "scope": ["schemas/authoring/v1/**", "src/validators/v1/authoring/**"]
     },
     {
