@@ -2,22 +2,75 @@
   "files": [
     {
       "path": "CLAUDE.md",
-      "description": "Kernel role + binding doctrine: this repo is types/schemas/validators/state-machines ONLY. Anti-goals table (NOT a runtime / judge / harness / service / database), the source-of-truth hierarchy, the TypeScript strictness floor, and the 'every new contract emits Evidence Bundle compatibility' rule. Ground architectural-role and contract-triplet reviews here.",
-      "scope": ["src/**", "schemas/**", "package.json", "tsconfig.json", "tsconfig.build.json"]
+      "description": "Kernel role + binding doctrine: this repo is types/schemas/validators/state-machines ONLY. Anti-goals table (NOT a runtime / judge / harness / service / database), the source-of-truth hierarchy (bd > DR-010 > Blueprint A > Blueprint B > glossary > repo), the bicameral runtime-tier + authoring-tier split, the 14 canonical entities, the TypeScript strictness floor, and the 'every new contract emits Evidence Bundle compatibility' rule. Ground architectural-role, contract-triplet, and source-of-truth reviews here.",
+      "scope": [
+        "src/**",
+        "schemas/**",
+        "package.json",
+        "tsconfig.json",
+        "tsconfig.build.json",
+        "eslint.config.js"
+      ]
     },
     {
       "path": "FORBIDDEN.md",
-      "description": "Machine-readable boundary enumeration across 4 axes: forbidden package patterns (web frameworks, HTTP clients, DB drivers, queues, LLM adapters, observability runtime, storage, auth), forbidden src/ import paths, forbidden top-level directory names, and forbidden package categories. Also enumerates the labs.intentsolutions.io predicate-URI prohibition (CISO binding, no override). Ground kernel-only and predicate-URI reviews here.",
-      "scope": ["src/**", "schemas/**", "scripts/**", "package.json"]
+      "description": "NORMATIVE machine-readable boundary enumeration across 4 axes: (1) forbidden runtime package patterns (web frameworks, HTTP clients, DB drivers/ORMs, job queues, LLM provider adapters, optimization/RL/agent frameworks, real-time/streaming, observability runtime, storage SDKs, auth/session), (2) forbidden src/ import paths + the kernel-only src/ whitelist, (3) forbidden top-level directory names + the library-only dir whitelist, (4) forbidden npm-keyword categories (heuristic). Also enumerates the labs.intentsolutions.io predicate-URI prohibition (CISO binding, no override path). Hash-pinned. Ground kernel-only and predicate-URI reviews here.",
+      "scope": [
+        "src/**",
+        "schemas/**",
+        "scripts/**",
+        "package.json",
+        "tsconfig.json",
+        "tsconfig.build.json"
+      ]
     },
     {
       "path": "ALLOWLIST.md",
-      "description": "The permitted counterpart to FORBIDDEN.md: the runtime-dependency allowlist (hard cap 8, currently 1 = zod), the devDep waiver table, and the top-level files/dirs allowlist. Any runtime dep not in this table, or any new top-level file/dir not listed here, is a boundary violation. Ground dependency-addition reviews here.",
+      "description": "The permitted counterpart to FORBIDDEN.md: the runtime-dependency allowlist (hard cap 8, currently 1 = zod, with a Blueprint-tied rationale per entry), the devDep waiver table, and the explicit top-level files + dirs allowlist. Any runtime dep not in this table, any 9th runtime dep without a Class-2 ISEDC DR, or any new top-level file/dir not listed here is a boundary violation. Hash-pinned. Ground dependency-addition and new-top-level-file reviews here.",
       "scope": ["package.json"]
     },
     {
+      "path": "CONSUMERS.md",
+      "description": "Informative consumer note recording the ONE deliberate carve-out (INV-ENV-DISJOINT / kyh9) where the published JSON Schema and the in-process Zod validator disagree by design: a per-variable array-disjointness predicate (requires_env intersect fallback_for_env must be empty) is enforced ONLY in Zod, because vanilla JSON-Schema 2020-12 cannot express cross-array intersection. An AJV-only consumer must enforce it itself. Ground any review touching authoring-overlay invariants, the codegen, or the ajv-vs-Zod fold-agreement tests here.",
+      "scope": [
+        "schemas/authoring/**",
+        "src/validators/v1/authoring/**",
+        "scripts/codegen-authoring.ts"
+      ]
+    },
+    {
+      "path": "SECURITY.md",
+      "description": "Threat model + disclosure policy for the canonical-contracts kernel. Key invariants reviewers must protect: schema-validation-bypass and forged-Evidence-Bundle rows are Critical; branded-type forgery (e.g. constructing a Sha256 from an unhashed string) and gate-result/v1 signature-mode escalation are High; the schema-as-canon discipline (NEVER hand-edit src/validators/v1/_generated/* — regenerate via codegen; a PR that edits generated code without re-running codegen IS a High-severity vulnerability because it silently drifts the Schema from the Zod validators). Predicate-URI grammar is locked at https://evals.intentsolutions.io/<type>/v<version>. Ground security-sensitive reviews here.",
+      "scope": [
+        "src/**",
+        "schemas/**",
+        "scripts/codegen-authoring.ts",
+        "scripts/codegen_pydantic.py"
+      ]
+    },
+    {
+      "path": "tests/TESTING.md",
+      "description": "Engineer-owned, hash-pinned testing policy. Classifies the repo as a pure-type library; pins the thresholds (100% line/branch/function/statement coverage, 0 architecture violations, type-test floor 90 expectTypeOf assertions, escape-scan REFUSE-on-any) and records mutation-testing as deliberately waived for a pure-type library. Also restates the architectural boundaries (src/predicates MUST NOT import src/entities; no runtime deps in dist/). Ground test-quality, coverage-floor, and threshold-change reviews here — lowering any threshold requires a re-pin + commit-message explanation.",
+      "scope": ["src/**", "tests/**", "vitest.config.ts", ".dependency-cruiser.cjs"]
+    },
+    {
+      "path": "000-docs/000-INDEX.md",
+      "description": "Index of the repo-local docs directory + the cross-repo authority chain. Establishes that this repo's 000-docs/ is DOWNSTREAM of intent-eval-lab/000-docs/ (Blueprint A > B > C > glossary > binding DRs > this repo's per-repo blueprint > other repo docs). Use to resolve which doc is NORMATIVE vs informative and where canonical decisions actually live.",
+      "scope": ["000-docs/**"]
+    },
+    {
+      "path": "000-docs/001-AA-AACR-release-v0.1.0-2026-05-17.md",
+      "description": "After-action critical review of the v0.1.0 release (sigstore provenance; closed epics iec-E01..E04 + E09). Historical record of how the kernel first published and what the release pipeline guarantees.",
+      "scope": ["000-docs/**", ".github/workflows/**"]
+    },
+    {
+      "path": "000-docs/002-AT-ARCH-repo-blueprint-2026-05-18.md",
+      "description": "NORMATIVE per-repo blueprint (binding authority iec-E10) — this repo's application of Blueprint C, inheriting Blueprint A + B + DR-010 + DR-004. The repo-specific architecture authority (tier 6 of the source-of-truth hierarchy): stability promises, external-dependency rules (§ 4.5), release strategy (§ 11). Ground any architecture-level review against this before the more general docs.",
+      "scope": ["src/**", "schemas/**", "package.json"]
+    },
+    {
       "path": "000-docs/003-AT-STND-core-repo-boundaries-2026-05-18.md",
-      "description": "NORMATIVE boundary doctrine — the WHY and HOW behind FORBIDDEN.md/ALLOWLIST.md. Explains the 4-axis enforcement model, the override process (iec- bead + boundary-override PR line + Class-2 ISEDC for major crossings), what can NEVER be overridden (labs.* predicate URIs, customer-signal gates, unconsented partner names), and how boundaries are widened/narrowed only via Decision Record. Ground boundary-change and override reviews here.",
+      "description": "NORMATIVE boundary doctrine — the WHY and HOW behind FORBIDDEN.md/ALLOWLIST.md/scripts/check-boundaries.ts. Explains the 4-axis enforcement model, the override process (iec- bead + 'boundary-override:' PR line + Class-2 ISEDC for major crossings), and what can NEVER be overridden (labs.* predicate URIs, customer-signal gates, unconsented partner names). Ground boundary-change and override reviews here.",
       "scope": [
         "src/**",
         "schemas/**",
@@ -26,6 +79,60 @@
         "FORBIDDEN.md",
         "ALLOWLIST.md"
       ]
+    },
+    {
+      "path": "000-docs/004-AT-AAR-testing-cicd-bootstrap-2026-05-19.md",
+      "description": "AAR for the Testing SOP + CI/CD + multi-target release pipeline (iec-E12, ratify-and-close). Documents what the CI gate chain and boundary-check-as-required-status guarantee. Informational context for CI-workflow and release-pipeline reviews.",
+      "scope": [".github/workflows/**", "scripts/**", "tests/**"]
+    },
+    {
+      "path": "000-docs/005-AA-AUDT-appaudit-devops-playbook.md",
+      "description": "Operator-grade system analysis of the kernel: the three coordinated forms (TS interfaces, JSON Schema draft 2020-12, Zod validators) mirroring the same entities + the one fully-normative gate-result/v1 predicate body, the zero-runtime-dep main entry, the 9-step CI gate chain, and the named risks (consumer-side adoption inertia + JSON-Schema-vs-Zod twin-source drift). The best single prose orientation to how the package is built and what keeps the three representations aligned.",
+      "scope": ["src/**", "schemas/**", "scripts/**"]
+    },
+    {
+      "path": "000-docs/006-AA-AACR-v0.2.0-additive-schema-evolution-2026-06-03.md",
+      "description": "AACR for the v0.2.0 purely-additive schema evolution (EvidenceBundle.pre_registration_hash et al.). The canonical reference for the additive-only schema-evolution discipline: no v0.1 contract is changed/renamed/removed, every prior EvidenceBundle + gate-result/v1 row stays valid, and each addition is carried in lockstep across TS type + JSON Schema + Zod validator. Ground reviews of any schema change for backward-compatibility / SemVer correctness here.",
+      "scope": ["schemas/**", "src/entities/**", "src/validators/**"]
+    },
+    {
+      "path": "000-docs/007-DR-RFC-emit-evidence-dashboard-ingest-2026-06-07.md",
+      "description": "Accepted RFC for scripts/emit-evidence.ts + assemble-manifest.ts + the release.yml job that emit a signed report-manifest.json of this repo's OWN testing evidence, in the exact shape the dashboard ingest re-verifies. Dogfoods the unification thesis (the kernel emits its own Evidence Bundle with its own validators) and explains why this lives in scripts/ (CI-only, not the published src/ surface — boundary check stays green). Ground reviews of the emit/manifest scripts and release workflow here.",
+      "scope": ["scripts/emit-evidence.ts", "scripts/assemble-manifest.ts", ".github/workflows/**"]
+    },
+    {
+      "path": "000-docs/008-AA-EVAL-schema-policy-marketplace-tier-2026-06-09.md",
+      "description": "Schema-policy eval establishing that the authoring marketplace-tier $defs.isMarketplace rules are CORRECT against a curated 40-fixture corpus (accepts every valid skill, rejects every negative the foundation owns, does not over-reach into per-contract checks). The CI-enforced scorecard for the Spec Authority Kernel (SAK) authoring foundation. Ground reviews of schemas/authoring/** and the authoring validators here.",
+      "scope": ["schemas/authoring/**", "src/validators/v1/authoring/**", "tests/authoring/**"]
+    },
+    {
+      "path": "000-docs/009-DR-RFC-compositiondag-wire-format-2026-06-10.md",
+      "description": "Accepted RFC locking the on-the-wire serialization of CompositionDag (EvalSpec.composition) as canonical for downstream consumers. Ratifies an already-shipped wire-format choice (node types, edge enum, cycle policy, failure propagation are bound upstream by Blueprint B § 1.3 and NOT re-litigated). Ground reviews of EvalSpec composition serialization here.",
+      "scope": [
+        "src/entities/EvalSpec.ts",
+        "src/validators/v1/eval-spec.ts",
+        "schemas/v1/eval-spec.schema.json"
+      ]
+    },
+    {
+      "path": "000-docs/010-AT-STND-id-and-event-id-invariants-2026-06-13.md",
+      "description": "NORMATIVE invariant register for the kernel's ID + event-ID standard (iec-E06): the UUIDv7 recognition patterns, deterministic event-ID derivation (EVENT_ID_CONTRACT), brand-or-null helpers, lineage-chain helpers, and — critically — the kernel-vs-runtime GENERATION boundary (the kernel recognizes/validates/derives IDs; it does not mint them at runtime). Ground reviews of src/primitives.ts and any ID/event-ID handling here.",
+      "scope": ["src/primitives.ts", "src/entities/**", "src/validators/**"]
+    },
+    {
+      "path": "schemas/v1/index.json",
+      "description": "Catalog of every runtime-tier v1 JSON Schema the kernel ships: the 14 canonical entities (EvalSpec, EvalRun, MatcherMap, EvidenceBundle, JudgeDecision, RuntimeReceipt, RegressionPack, RolloutGate, SkillSnapshot, SkillVersion, SessionTrace, ToolInvocation, CostRecord, FailureTaxonomy) plus the predicate bodies (gate-result/v1 NORMATIVE, retraction/v1, dashboard-render/v1, skill-refiner-pass/v1) with their evals.intentsolutions.io URIs, Blueprint B section refs, and signing modes. Schemas correspond 1:1 to TS interfaces in src/entities/ + src/predicates/. Use to confirm a change keeps the schema, the TS type, and the Zod validator in lockstep.",
+      "scope": ["schemas/v1/**", "src/entities/**", "src/predicates/**", "src/validators/v1/**"]
+    },
+    {
+      "path": "schemas/authoring/v1/index.json",
+      "description": "Catalog of the Spec Authority Kernel (SAK) authoring-contract schemas (DR-044 charter). The marketplace-tier foundation exposes the THREE universal folds (deprecationRegistry, securityChecks, disclosureMarkers) every per-contract schema inherits. Each contract is three artifacts: upstream-base (the open standard) + is-overlay (IS narrowing) + the published allOf composition. skill-frontmatter is the PUBLISHED walking skeleton; the other five (plugin-manifest, agent-definition, mcp-config, hook-config, marketplace-catalog) are SHIPPED-INTERNAL, codegen-generated. Use to ground reviews of authoring-tier schema/overlay changes.",
+      "scope": ["schemas/authoring/v1/**", "src/validators/v1/authoring/**"]
+    },
+    {
+      "path": "schemas/authoring/v2/index.json",
+      "description": "Catalog of the STRICT v2 authoring contracts — a fresh, self-contained sibling of authoring/v1 with ZERO $ref into v1 (copy-then-tighten; v1 is BYTE-FROZEN at @intentsolutions/core@0.4.1). v2 regenerates each base from the captured upstream projections and relocates every IS narrowing/extension into the is-overlay (security tightenings: shell-substitution-widen, reserved-name-substring-hardening; disclosure tightening: description cap 1024; skill-frontmatter additionally narrows allowed-tools to scoped-Bash). Sources: DR-049 + the CCP kernel-shadow finding + DR-062. Ground reviews of any authoring/v2 schema/overlay change here.",
+      "scope": ["schemas/authoring/v2/**", "src/validators/v1/authoring/**"]
     }
   ]
 }
