@@ -52,6 +52,7 @@ Files allowed at repo root (anything not in this list triggers a BLOCK on the Ax
 .audit-harness
 .dependency-cruiser.cjs
 .gitignore
+.greptile
 .harness-hash
 .harness-hash-extra-patterns
 .npmrc
@@ -78,7 +79,6 @@ TEST_AUDIT.md
 api-extractor.json
 codecov.yml
 eslint.config.js
-greptile.json
 lefthook.yml
 lychee.toml
 package.json
@@ -91,7 +91,7 @@ vitest.config.ts
 Annotations (what each is):
 
 - `.audit-harness` — vendored audit-harness configs (the `configs/.yamllint.yml` rule set consumed by `lint.yml`); same pattern as the sibling IEP repos
-- `greptile.json` — Greptile reviewer config (semantic AI code review; non-overlapping with CodeQL security scanning and the deterministic L1 lint lanes)
+- `.greptile` — Greptile reviewer config directory (`config.json` scoped semantic-review rules encoding the kernel's architectural invariants + `files.json` grounding-doc pointers); the AI code-review layer, non-overlapping with CodeQL security scanning and the deterministic L1 lint lanes
 - `.dependency-cruiser.cjs` — dep-cruiser config (hash-pinned)
 - `.gitignore` — git ignore patterns
 - `.harness-hash` — hash-pinned policy manifest

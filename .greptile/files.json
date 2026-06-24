@@ -1,0 +1,31 @@
+{
+  "files": [
+    {
+      "path": "CLAUDE.md",
+      "description": "Kernel role + binding doctrine: this repo is types/schemas/validators/state-machines ONLY. Anti-goals table (NOT a runtime / judge / harness / service / database), the source-of-truth hierarchy, the TypeScript strictness floor, and the 'every new contract emits Evidence Bundle compatibility' rule. Ground architectural-role and contract-triplet reviews here.",
+      "scope": ["src/**", "schemas/**", "package.json", "tsconfig.json", "tsconfig.build.json"]
+    },
+    {
+      "path": "FORBIDDEN.md",
+      "description": "Machine-readable boundary enumeration across 4 axes: forbidden package patterns (web frameworks, HTTP clients, DB drivers, queues, LLM adapters, observability runtime, storage, auth), forbidden src/ import paths, forbidden top-level directory names, and forbidden package categories. Also enumerates the labs.intentsolutions.io predicate-URI prohibition (CISO binding, no override). Ground kernel-only and predicate-URI reviews here.",
+      "scope": ["src/**", "schemas/**", "scripts/**", "package.json"]
+    },
+    {
+      "path": "ALLOWLIST.md",
+      "description": "The permitted counterpart to FORBIDDEN.md: the runtime-dependency allowlist (hard cap 8, currently 1 = zod), the devDep waiver table, and the top-level files/dirs allowlist. Any runtime dep not in this table, or any new top-level file/dir not listed here, is a boundary violation. Ground dependency-addition reviews here.",
+      "scope": ["package.json"]
+    },
+    {
+      "path": "000-docs/003-AT-STND-core-repo-boundaries-2026-05-18.md",
+      "description": "NORMATIVE boundary doctrine — the WHY and HOW behind FORBIDDEN.md/ALLOWLIST.md. Explains the 4-axis enforcement model, the override process (iec- bead + boundary-override PR line + Class-2 ISEDC for major crossings), what can NEVER be overridden (labs.* predicate URIs, customer-signal gates, unconsented partner names), and how boundaries are widened/narrowed only via Decision Record. Ground boundary-change and override reviews here.",
+      "scope": [
+        "src/**",
+        "schemas/**",
+        "scripts/**",
+        "package.json",
+        "FORBIDDEN.md",
+        "ALLOWLIST.md"
+      ]
+    }
+  ]
+}

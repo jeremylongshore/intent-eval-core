@@ -1,0 +1,46 @@
+{
+  "rules": [
+    {
+      "id": "kernel-only-no-runtime",
+      "rule": "This repo is the canonical contracts kernel: types, JSON Schemas, Zod validators, and state machines ONLY. Flag any code that adds runtime execution, orchestration, agents, judges/LLM-judge logic, deterministic gate/harness logic, job queues, schedulers, provider/LLM adapters, optimization/RL engines, or runtime telemetry emission. The kernel defines OTel/Evidence-Bundle SHAPES; it must never run them. New top-level dirs like services/, workers/, runtime/, orchestrator/, or new src/ subpaths like src/runtime/, src/judges/, src/adapters/, src/server/, src/db/ are out of role (FORBIDDEN.md Axis 2/3). If a change feels like runtime, it belongs in a sibling repo (audit-harness / j-rig / intent-rollout-gate), not here.",
+      "scope": ["src/**", "scripts/**"],
+      "severity": "high"
+    },
+    {
+      "id": "no-runtime-deps",
+      "rule": "The kernel makes no network calls, persists nothing, and runs no servers. Flag any new package.json runtime dependency that is an HTTP client (axios/got/undici/node-fetch), web framework (express/fastify/hono/next), DB driver or ORM (pg/mysql/mongodb/prisma/drizzle), job queue (bullmq/bull/@temporalio), LLM provider SDK (openai/@anthropic-ai/cohere-ai/groq-sdk), observability runtime (@opentelemetry/sdk-node, dd-trace, prom-client), storage SDK (@aws-sdk/*, @google-cloud/storage), or auth/session lib (jsonwebtoken/jose/passport). Runtime deps are hard-capped at 8 and must be listed in ALLOWLIST.md with a Blueprint-tied rationale (FORBIDDEN.md Axis 1 + ALLOWLIST.md).",
+      "scope": ["package.json"],
+      "severity": "high"
+    },
+    {
+      "id": "predicate-uri-evals-only",
+      "rule": "Predicate URIs, in-toto predicate identifiers, OTel attribute namespaces, and attestation predicate hosts MUST live at evals.intentsolutions.io and MUST NEVER use labs.intentsolutions.io as a live host. This is a CISO binding (DR-004 + DR-010 section 10) with NO override path. Flag any schema $id, predicate constant, URL literal, or fixture that uses labs.intentsolutions.io as a predicate/attestation/namespace host. (Lines that merely document the prohibition are fine.)",
+      "scope": ["src/**", "schemas/**", "tests/**"],
+      "severity": "high"
+    },
+    {
+      "id": "no-schema-duplication",
+      "rule": "The kernel IS the single source of truth for the 14 canonical entities (Blueprint B's 13 + SkillVersion) and the gate-result/v1 predicate. Peer repos (audit-harness, j-rig, intent-rollout-gate) import these contracts; they never redefine them. Flag any change that locally re-declares a canonical entity type, copies a kernel JSON Schema instead of referencing it, or forks the gate-result/v1 shape. Within this repo, flag duplicate/divergent definitions of the same entity across src/entities, schemas, and validators that would let the three representations drift.",
+      "scope": ["src/**", "schemas/**"],
+      "severity": "high"
+    },
+    {
+      "id": "contract-triplet-evidence-bundle",
+      "rule": "Per the DR-010 unification thesis, every new canonical contract must ship as a coherent triplet: the JSON Schema (schemas/v1/*.schema.json, draft 2020-12), the Zod validator (src/validators/v1/), and the entity type + state machine (src/entities/, src/state-machines/) — kept in lockstep and Evidence-Bundle-compatible. Flag a new entity type added without its schema + validator, a schema added without a matching validator, or a state machine whose transition map diverges from the entity it governs. The schema, the Zod validator, and the TS type must describe the same shape.",
+      "scope": ["src/**", "schemas/**"],
+      "severity": "high"
+    },
+    {
+      "id": "ts-strict-floor",
+      "rule": "The TypeScript strictness floor is non-negotiable and may only ratchet UP. Flag any change that loosens strict mode or removes a strict flag (strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes, noImplicitOverride, noPropertyAccessFromIndexSignature, verbatimModuleSyntax) in tsconfig*.json, introduces `any` (explicit or via eslint-disable of no-explicit-any), uses a non-type import for a type-only symbol (consistent-type-imports), or drops the .js extension on a relative import under NodeNext. Loosening the floor requires an explicit ADR, never an inline edit.",
+      "scope": ["src/**", "tsconfig.json", "tsconfig.build.json", "eslint.config.js"],
+      "severity": "high"
+    },
+    {
+      "id": "stable-public-surface-only",
+      "rule": "src/index.ts re-exports only stable, promoted contracts. Flag changes that re-export work-in-progress / internal types from the public barrel before they are promoted, or that export a runtime-tier symbol from an authoring-tier path (and vice versa). Validators are an opt-in subpath (@intentsolutions/core/validators/v1) so types-only consumers pay zero zod cost — flag changes that pull zod into the main types entry.",
+      "scope": ["src/index.ts", "src/validators/**"],
+      "severity": "medium"
+    }
+  ]
+}
