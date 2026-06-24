@@ -2,10 +2,13 @@
 
 ## Supported Versions
 
+`@intentsolutions/core` is pre-1.0; per SemVer, the 0.x surface is still
+evolving and only the current minor receives security fixes.
+
 | Version | Supported |
 | --- | --- |
-| latest (v0.1.x) | Yes |
-| < latest | Best effort |
+| v0.8.x (current) | Yes |
+| < v0.8 | Best effort — upgrade to the current line |
 
 ## Reporting a Vulnerability
 
