@@ -3,7 +3,7 @@
 **Type:** After-Action Critical Review (AACR)
 **Date:** 2026-06-03
 **Release type:** MINOR (0.1.1 → 0.2.0) — purely additive schema evolution
-**Status:** Additive surface landed on PR branch; **npm publish + git tag HELD pending `iec-E12` reconciliation**
+**Status:** SHIPPED — the `iec-E12` reconciliation completed and the coordinated `v0.2.0` was tagged + published to npm with Sigstore provenance (the hold described below is resolved). The kernel has since advanced to `@intentsolutions/core@0.8.0`.
 **Repo:** [`jeremylongshore/intent-eval-core`](https://github.com/jeremylongshore/intent-eval-core)
 **Package:** [`@intentsolutions/core`](https://www.npmjs.com/package/@intentsolutions/core)
 **Bead:** `ied-schema-evolution` (amber-lighthouse Epic 2.1)
@@ -109,6 +109,8 @@ All three predicate URIs live at `evals.intentsolutions.io` and NEVER at `labs.i
 ---
 
 ## Release hold — coordination with iec-E12
+
+> **[Update: resolved]** This hold was lifted — `iec-E12` reconciled, the coordinated `v0.2.0` was tagged and published to npm with Sigstore provenance, and the kernel has since advanced to `@intentsolutions/core@0.8.0`. The paragraph below is the as-of-2026-06-03 record of why the publish was deferred at the time.
 
 The `package.json` bump to 0.2.0 + this changelog entry are committed, but **the npm publish and the `v0.2.0` git tag are intentionally NOT performed here.** `iec-E12` adds `EvidenceBundlePayload` shape + cross-field invariants to the same v0.2.0 line. Both bodies of work must ship as one coordinated v0.2.0 so consumers see a single, complete minor release rather than two partial ones. When iec-E12 reconciles: re-run the full gate, tag `v0.2.0`, push `--follow-tags`, and let `release.yml` publish with Sigstore provenance.
 
