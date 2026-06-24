@@ -9,7 +9,7 @@ Part of the **[Intent Eval Platform](https://github.com/intent-solutions-io/inte
 
 Canonical contracts kernel for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab) — TypeScript types, JSON Schemas, Zod validators, and state machines for the 14 canonical platform entities (the 13 from Blueprint B § 2 + `SkillVersion`, the 14th per DR-028 T1).
 
-> **Status — v0.1.0 (2026-05-17):** first public release. Contracts are stable at v0.1; breaking changes will bump to v0.2 per SemVer. Published with Sigstore provenance — verify via `npm audit signatures`.
+> **Status — v0.8.0:** current published release (first public release was `v0.1.0`, 2026-05-17). Contracts follow SemVer. Published with Sigstore provenance — verify via `npm audit signatures`.
 
 ## Install
 
@@ -41,12 +41,14 @@ canTransition(evalRunTransitions, 'queued', 'running'); // true
 
 ## What this is
 
-`intent-eval-core` is the **kernel** of the Intent Eval Platform:
+`intent-eval-core` is the **kernel** of the Intent Eval Platform. It is **bicameral** — it ships two schema tiers:
 
-- **TypeScript interfaces** for every entity in the 13-entity canonical domain model (Blueprint B § 4)
-- **JSON Schemas** as the language-neutral wire format
-- **Zod validators** for runtime validation at every trust boundary
-- **State machines** governing entity transitions
+- **Runtime tier** (`schemas/v1/`) — contracts for the 14 canonical platform entities (the 13 from Blueprint B § 2 + `SkillVersion`, the 14th per DR-028 T1):
+  - **TypeScript interfaces** for every entity
+  - **JSON Schemas** as the language-neutral wire format
+  - **Zod validators** for runtime validation at every trust boundary
+  - **State machines** governing entity transitions
+- **Authoring tier** (`schemas/authoring/v1/`) — the **Spec Authority Kernel (SAK)**: the single internal source of truth for authoring-artifact validity (skills, plugins, agents, MCP configs, hooks, marketplace catalogs). Each contract composes an upstream-base (the open standard) + the three universal folds + an IS overlay. `skill-frontmatter` is the published walking skeleton (DR-044 D7).
 
 It is **not**:
 
@@ -74,7 +76,7 @@ The per-repo blueprint for `intent-eval-core` itself ships under epic `iec-E10` 
 
 Apache License 2.0 — see [LICENSE](LICENSE).
 
-The kernel is permissively licensed so every downstream consumer (commercial, OSS, internal) can depend on it without friction. The platform's enforcement scripts (`audit-harness`) ship under MIT for the same reason.
+The kernel is permissively licensed so every downstream consumer (commercial, OSS, internal) can depend on it without friction. The platform's enforcement scripts (`audit-harness`) ship under Apache-2.0 for the same reason — the whole Intent Eval Platform is Apache-2.0.
 
 ## Status
 

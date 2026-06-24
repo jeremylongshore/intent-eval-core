@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/skill-conformance.schema.json",
+  "title": "authoring schema with a DELIBERATELY runtime-chamber trust anchor",
+  "$comment": "WRONGLY sites its $id inside the runtime predicate family (/schemas/v1/) — pointing an authoring trust anchor at the runtime chamber. Chambers share CODE, never a fused trust root (DR-049 D-SAK-1). The gate MUST catch this even though it never names the evals. host the predicate-namespace gate guards. Do not 'fix' this file; it proves the gate fails on a cross-chamber trust-root reference.",
+  "type": "object"
+}
