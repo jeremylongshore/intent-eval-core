@@ -207,7 +207,6 @@ When a finding touches a contract, prefer the grounding docs in `.greptile/files
 to anchor the comment in the binding rule rather than a general opinion. Richer context =
 deeper review — cite the doc and the tier it sits at.
 
-
 ## Review priorities — what to weight, what to skip
 
 Greptile is **advisory** here. The deterministic merge gate is this repo's own
