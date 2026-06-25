@@ -131,6 +131,23 @@ Use `bd-sync link/note/close` for every state change. After bulk operations, app
 5. **CI is the source of truth for "passes"** — local `pnpm run check` is necessary but not sufficient; main-branch protection requires the CI status check to pass.
 6. **PRs go through review even from the owner** — the canonical contracts kernel earns its weight from review discipline. No direct pushes to main.
 
+## AI code review (Greptile + Gemini)
+
+Two AI reviewers run on PRs here, **both advisory** — neither is a branch-protection
+required check. The deterministic merge gate is this repo's own CI (`lint + typecheck + test + build`) plus CodeQL.
+
+- **Gemini Code Assist** (`.gemini/config.yaml` + `.gemini/styleguide.md`) is the
+  **active** reviewer. Re-instated 2026-06-24 as the fallback after the Greptile
+  review quota was exhausted. Workhorse for design / logic / correctness /
+  cross-artifact consistency; CodeQL owns security.
+- **Greptile** (`.greptile/config.json` + `rules.md` + `files.json`) is configured to
+  the platform-unified schema (`strictness: 3`, `commentTypes: ["logic","syntax"]`,
+  `statusCheck: false`, a universal `no-gate-weakening` rule, plus this repo's scoped
+  invariant rules). It stays in place and resumes when the Greptile quota resets.
+
+Read either review when present; the required gate is CI. Re-installing/uninstalling
+the GitHub Apps is an admin (UI) action — the in-repo config here does not install them.
+
 ## Anti-goals (binding scope control)
 
 These are the kernel's NORMATIVE boundaries. Each is enforced architecturally — not just documented. The full boundary doctrine is at [`000-docs/003-AT-STND-core-repo-boundaries-2026-05-18.md`](000-docs/003-AT-STND-core-repo-boundaries-2026-05-18.md). The machine-readable enumeration is at [`FORBIDDEN.md`](FORBIDDEN.md). The allowlist counterpart is at [`ALLOWLIST.md`](ALLOWLIST.md). The unified checker is at [`scripts/check-boundaries.ts`](scripts/check-boundaries.ts) (`pnpm run boundaries`).

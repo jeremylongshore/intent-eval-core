@@ -51,6 +51,7 @@ Files allowed at repo root (anything not in this list triggers a BLOCK on the Ax
 ```text
 .audit-harness
 .dependency-cruiser.cjs
+.gemini
 .gitignore
 .greptile
 .harness-hash
@@ -92,6 +93,7 @@ Annotations (what each is):
 
 - `.audit-harness` — vendored audit-harness configs (the `configs/.yamllint.yml` rule set consumed by `lint.yml`); same pattern as the sibling IEP repos
 - `.greptile` — Greptile reviewer config directory (`config.json` scoped semantic-review rules encoding the kernel's architectural invariants + `files.json` grounding-doc pointers); the AI code-review layer, non-overlapping with CodeQL security scanning and the deterministic L1 lint lanes
+- `.gemini` — Gemini Code Assist reviewer config directory (`config.yaml` review settings + `styleguide.md` cross-artifact review priorities); re-instated 2026-06-24 as the active fallback reviewer while the Greptile review quota is exhausted; advisory, non-overlapping with CodeQL
 - `.dependency-cruiser.cjs` — dep-cruiser config (hash-pinned)
 - `.gitignore` — git ignore patterns
 - `.harness-hash` — hash-pinned policy manifest

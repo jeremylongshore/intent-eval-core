@@ -1,5 +1,18 @@
 {
+  "strictness": 3,
+  "commentTypes": ["logic", "syntax"],
+  "triggerOnUpdates": true,
+  "fixWithAI": true,
+  "statusCheck": false,
+  "ignorePatterns": "node_modules/\ndist/\ncoverage/\npnpm-lock.yaml\n.audit-harness/\nsrc/_generated/",
+  "confidenceScoreSection": { "included": true },
+  "sequenceDiagramSection": { "included": true },
   "rules": [
+    {
+      "id": "no-gate-weakening",
+      "rule": "Never suggest lowering a CI threshold, deleting/skipping/weakening a test, relaxing an assertion, bypassing type checks, disabling a security/policy/audit check, or reducing coverage/mutation/audit requirements — unless the same PR replaces it with a stronger equivalent.",
+      "severity": "high"
+    },
     {
       "id": "kernel-only-no-runtime",
       "rule": "This repo is the canonical contracts kernel: types, JSON Schemas, Zod validators, and state machines ONLY. Flag any code that adds runtime execution, orchestration, agents, judges/LLM-judge logic, deterministic gate/harness logic, job queues, schedulers, provider/LLM adapters, optimization/RL engines, or runtime telemetry emission. The kernel defines OTel/Evidence-Bundle SHAPES; it must never run them. New top-level dirs like services/, workers/, runtime/, orchestrator/, or new src/ subpaths like src/runtime/, src/judges/, src/adapters/, src/server/, src/db/ are out of role (FORBIDDEN.md Axis 2/3). If a change feels like runtime, it belongs in a sibling repo (audit-harness / j-rig / intent-rollout-gate), not here.",
