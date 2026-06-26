@@ -58,3 +58,6 @@ python/.venv/
 
 # lychee request cache (never committed; offline checks create none)
 .lycheecache
+
+# git-worktree isolation dirs (build-workflow artifact)
+.worktrees/
