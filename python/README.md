@@ -47,7 +47,7 @@ print(gate.gate_decision)                 # GateDecision.pass_
 
 ## What's exported
 
-13 canonical entities + 3 predicate bodies (Blueprint B § 2 / § 7):
+15 canonical entities + 3 predicate bodies (Blueprint B § 2 / § 7 + SkillVersion DR-028 T1 + UsageEvent DR-103 D1):
 
 | Entity models | Predicate-body models |
 | --- | --- |

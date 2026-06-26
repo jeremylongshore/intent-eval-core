@@ -33,6 +33,7 @@ import {
   SkillSnapshotSchema,
   SkillVersionSchema,
   ToolInvocationSchema,
+  UsageEventSchema,
 } from './index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -94,6 +95,15 @@ describe('Zod validators — positive fixtures parse cleanly', () => {
   });
   it('CostRecord', () => {
     expect(() => CostRecordSchema.parse(loadJson('cost-record.valid.json'))).not.toThrow();
+  });
+  it('UsageEvent (metered eval_run row + verified source + cost_record_ref seam)', () => {
+    expect(() => UsageEventSchema.parse(loadJson('usage-event.valid.json'))).not.toThrow();
+  });
+  it('UsageEvent (api_call — the ONLY meter exempt from the verified-source binding)', () => {
+    expect(() => UsageEventSchema.parse(loadJson('usage-event.api-call.valid.json'))).not.toThrow();
+  });
+  it('UsageEvent (a present tenant_id is an attested claim; round-trips)', () => {
+    expect(() => UsageEventSchema.parse(loadJson('usage-event.tenant.valid.json'))).not.toThrow();
   });
   it('FailureTaxonomy', () => {
     expect(() =>
@@ -201,6 +211,52 @@ describe('Zod validators — negative fixtures REJECT', () => {
   it('DR-085 D5: tenant_id is optional-NOT-nullable on SkillVersion (explicit null → REJECT)', () => {
     const child = loadJson('skill-version.valid.json') as Record<string, unknown>;
     const result = SkillVersionSchema.safeParse({ ...child, tenant_id: null });
+    expect(result.success).toBe(false);
+  });
+
+  it('DR-103 D1 B1.2: a metered UsageEvent with source_verified=false → REJECT (anti-gaming, on source_verified path)', () => {
+    const result = UsageEventSchema.safeParse(
+      loadJson('usage-event.invalid-metered-unverified.json'),
+    );
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const paths = result.error.issues.map((i) => i.path.join('.'));
+      expect(paths).toContain('source_verified');
+    }
+  });
+
+  it('DR-103 D1 B1.2: a metered UsageEvent with a null source → REJECT (anti-gaming, on both source paths)', () => {
+    const result = UsageEventSchema.safeParse(
+      loadJson('usage-event.invalid-metered-null-source.json'),
+    );
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const paths = result.error.issues.map((i) => i.path.join('.'));
+      expect(paths).toContain('source_entity_type');
+      expect(paths).toContain('source_entity_id');
+    }
+  });
+
+  it('UsageEvent with meter out of the closed enum (dashboard_render) → REJECT (a predicate body, not a meter)', () => {
+    const result = UsageEventSchema.safeParse(loadJson('usage-event.invalid-bad-meter.json'));
+    expect(result.success).toBe(false);
+  });
+
+  it('DR-103 D2: UsageEvent tenant_id is optional-NOT-nullable (explicit null → REJECT, byte-identical to precedent)', () => {
+    const fix = loadJson('usage-event.valid.json') as Record<string, unknown>;
+    const result = UsageEventSchema.safeParse({ ...fix, tenant_id: null });
+    expect(result.success).toBe(false);
+  });
+
+  it('UsageEvent with an unknown extra field → REJECT (.strict(); no rolled-total field exists by construction, C3)', () => {
+    const fix = loadJson('usage-event.valid.json') as Record<string, unknown>;
+    const result = UsageEventSchema.safeParse({ ...fix, rolled_total: 4003 });
+    expect(result.success).toBe(false);
+  });
+
+  it('DR-103 epic Rule 1: UsageEvent quantity rejects a fractional utility weight (count, not a score)', () => {
+    const fix = loadJson('usage-event.valid.json') as Record<string, unknown>;
+    const result = UsageEventSchema.safeParse({ ...fix, quantity: 0.95 });
     expect(result.success).toBe(false);
   });
 });

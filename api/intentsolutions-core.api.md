@@ -647,6 +647,9 @@ export interface MermaidOptions {
 }
 
 // @public
+export const METERED_REQUIRES_VERIFIED_SOURCE: readonly Exclude<UsageMeter, 'api_call'>[];
+
+// @public
 export type MicroUsd = Brand<number, 'MicroUsd'>;
 
 // @public
@@ -1115,6 +1118,36 @@ export interface TransitionMapDefect<S extends string> {
 
 // @public
 export function unreachableStates<S extends string>(map: TransitionMap<S>, from: S): readonly S[];
+
+// @public
+export interface UsageEvent {
+    readonly cost_record_ref: Uuidv7 | null;
+    readonly id: Uuidv7;
+    readonly meter: UsageMeter;
+    readonly quantity: number;
+    // (undocumented)
+    readonly recorded_at: Rfc3339;
+    readonly source_entity_id: Uuidv7 | null;
+    readonly source_entity_type: UsageSourceEntityType | null;
+    readonly source_verified: boolean;
+    readonly tenant_id?: Uuidv7;
+    readonly unit: UsageUnit;
+}
+
+// @public
+export type UsageEventState = 'recorded';
+
+// @public
+export const usageEventTransitions: TransitionMap<UsageEventState>;
+
+// @public
+export type UsageMeter = 'api_call' | 'eval_run' | 'skill_invocation' | 'judge_decision' | 'gate_evaluation' | 'report_render';
+
+// @public
+export type UsageSourceEntityType = 'eval_run' | 'session_trace' | 'judge_decision' | 'tool_invocation' | 'skill_version';
+
+// @public
+export type UsageUnit = 'count' | 'tokens' | 'seconds' | 'bytes';
 
 // @public
 export type Uuidv7 = Brand<string, 'Uuidv7'>;

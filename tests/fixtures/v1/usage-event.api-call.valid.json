@@ -1,0 +1,11 @@
+{
+  "id": "0192cae6-0010-7000-8000-000000000001",
+  "meter": "api_call",
+  "quantity": 1280,
+  "unit": "tokens",
+  "source_entity_type": null,
+  "source_entity_id": null,
+  "source_verified": false,
+  "cost_record_ref": null,
+  "recorded_at": "2026-06-25T00:00:06Z"
+}

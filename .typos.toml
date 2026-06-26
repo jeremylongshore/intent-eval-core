@@ -30,6 +30,10 @@ iar = "iar"
 iaj = "iaj"
 isedc = "isedc"
 
+# ISEDC executive-council seat acronyms used in DR-prose (CTO/GC/CMO/CFO/CSO/
+# CISO/DevRel). `CMO` is the one typos over-corrects (→ "COM"); allowlist it.
+cmo = "cmo"
+
 # Supply-chain / crypto / tooling vocabulary.
 sops = "sops"
 sigstore = "sigstore"
