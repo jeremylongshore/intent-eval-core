@@ -93,6 +93,43 @@ describe('UsageEvent — DR-103 D1 B1.2 anti-gaming (machine-enforced, every met
     });
     expect(r.success).toBe(true);
   });
+
+  it('a MISSING meter fails on base validation alone — the .superRefine does NOT cascade anti-gaming errors', () => {
+    // Regression for the Gemini PR-#73 "meter && meter !== api_call" guard
+    // suggestion: a missing `meter` cannot reach the .superRefine (a required
+    // enum field gates the callback), so there is no spurious anti-gaming cascade
+    // on source_entity_type / source_entity_id / source_verified. The single base
+    // error sits on `meter`.
+    const { meter: _omit, ...withoutMeter } = BASE;
+    const r = UsageEventSchema.safeParse(withoutMeter);
+    expect(r.success).toBe(false);
+    if (!r.success) {
+      const paths = r.error.issues.map((issue) => issue.path.join('.'));
+      expect(paths).toContain('meter');
+      // No anti-gaming cascade — the .superRefine never executed.
+      expect(paths).not.toContain('source_entity_type');
+      expect(paths).not.toContain('source_entity_id');
+      expect(paths).not.toContain('source_verified');
+    }
+  });
+
+  it('a MISSING source_verified fails on base validation with no duplicate custom issue', () => {
+    // Regression for the Gemini PR-#73 "source_verified === false" suggestion: a
+    // missing `source_verified` (required boolean) is caught by base validation
+    // and the .superRefine never runs, so there is exactly ONE issue on the field
+    // (the base invalid_type) — never a redundant custom anti-gaming issue. This
+    // is why `!== true` (faithful to "MUST be true") needs no `=== false` rewrite.
+    const { source_verified: _omit, ...withoutVerified } = BASE;
+    const r = UsageEventSchema.safeParse({ ...withoutVerified, meter: 'eval_run' });
+    expect(r.success).toBe(false);
+    if (!r.success) {
+      const verifiedIssues = r.error.issues.filter(
+        (issue) => issue.path.join('.') === 'source_verified',
+      );
+      expect(verifiedIssues).toHaveLength(1);
+      expect(verifiedIssues[0]?.code).toBe('invalid_type');
+    }
+  });
 });
 
 describe('UsageEvent — DR-103 C3 B6.1 structural no-rolled-score', () => {
@@ -142,6 +179,12 @@ describe('UsageEvent — DR-103 C3 B6.1 structural no-rolled-score', () => {
       source_verified: false,
       cost_record_ref: null,
     });
+    // NB: typed as `typeof BASE` (the Zod-parse inferred type), NOT the exported
+    // `UsageEvent` type. Under this repo's strict `exactOptionalPropertyTypes` +
+    // branded primitives, the parse-inferred row type and the exported entity type
+    // are NOT mutually assignable (optional `tenant_id` gains `| undefined` and the
+    // branded `Uuidv7` differs nominally), so `(u: UsageEvent)` fails typecheck.
+    // The local inferred type is the correct, minimal annotation here.
     const key = (u: typeof BASE): string => `${u.meter}:${u.unit}`;
     const byDimension = new Map<string, number>();
     for (const row of [evalRow, tokenRow]) {
