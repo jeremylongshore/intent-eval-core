@@ -22,6 +22,7 @@ export * from './regression-pack.js';
 export * from './rollout-gate.js';
 export * from './skill-snapshot.js';
 export * from './skill-version.js';
+export * from './human-review.js';
 export * from './session-trace.js';
 export * from './tool-invocation.js';
 export * from './cost-record.js';
@@ -30,6 +31,7 @@ export * from './gate-result-v1.js';
 export * from './retraction-v1.js';
 export * from './dashboard-render-v1.js';
 export * from './skill-refiner-pass-v1.js';
+export * from './human-review-v1.js';
 
 // Authoring-tier validators (Spec Authority Kernel, plan 033 § 14).
 export * from './authoring/index.js';

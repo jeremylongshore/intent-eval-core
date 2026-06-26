@@ -406,6 +406,80 @@ export interface GateResultV1Statement {
 export type GateResultV1Uri = typeof GATE_RESULT_V1_URI;
 
 // @public
+export const HUMAN_REVIEW_V1_SIGNING_MODE: "sigstore_staging";
+
+// @public
+export const HUMAN_REVIEW_V1_TRUST_CRITERION: "verified-reviewer-identity+pinned-session";
+
+// @public
+export const HUMAN_REVIEW_V1_URI: "https://evals.intentsolutions.io/human-review/v1";
+
+// @public
+export interface HumanReview {
+    readonly annotation: string | null;
+    readonly created_at: Rfc3339;
+    readonly eval_run_id: Uuidv7;
+    readonly id: Uuidv7;
+    readonly input_hash: Sha256;
+    readonly judge_decision_id: Uuidv7 | null;
+    readonly reviewer_identity: ActorIdentity;
+    readonly reviewer_is_service_account: false;
+    readonly score_text: string | null;
+    readonly session_trace_id: Uuidv7 | null;
+    readonly supersedes_id: Uuidv7 | null;
+    readonly tenant_id?: Uuidv7;
+    readonly thumbs: boolean | null;
+}
+
+// @public
+export type HumanReviewState = 'recorded';
+
+// @public
+export const humanReviewTransitions: TransitionMap<HumanReviewState>;
+
+// @public
+export type HumanReviewV1 = HumanReviewV1Required & HumanReviewV1Optional;
+
+// @public
+export interface HumanReviewV1Optional {
+    readonly supersedes_id?: Uuidv7;
+}
+
+// @public
+export interface HumanReviewV1Required {
+    readonly annotation: string | null;
+    readonly eval_run_id: Uuidv7;
+    readonly human_review_id: Uuidv7;
+    readonly input_hash: Sha256Prefixed;
+    readonly judge_decision_id: Uuidv7 | null;
+    readonly reviewed_at: Rfc3339;
+    readonly reviewer_identity: string;
+    readonly score_text: string | null;
+    readonly session_trace_id: Uuidv7 | null;
+    readonly thumbs: boolean | null;
+}
+
+// @public
+export interface HumanReviewV1Statement {
+    // (undocumented)
+    readonly predicate: HumanReviewV1;
+    // (undocumented)
+    readonly predicateType: HumanReviewV1Uri;
+    // (undocumented)
+    readonly subject: readonly {
+        readonly name: string;
+        readonly digest: {
+            readonly sha256: string;
+        };
+    }[];
+    // (undocumented)
+    readonly _type: 'https://in-toto.io/Statement/v1';
+}
+
+// @public (undocumented)
+export type HumanReviewV1Uri = typeof HUMAN_REVIEW_V1_URI;
+
+// @public
 export class IllegalTransitionError<S extends string> extends Error {
     constructor(from: S, to: S, allowed: readonly S[]);
     // (undocumented)
@@ -605,6 +679,7 @@ export const PREDICATE_URIS: {
     readonly RETRACTION_V1: "https://evals.intentsolutions.io/retraction/v1";
     readonly DASHBOARD_RENDER_V1: "https://evals.intentsolutions.io/dashboard-render/v1";
     readonly SKILL_REFINER_PASS_V1: "https://evals.intentsolutions.io/skill-refiner-pass/v1";
+    readonly HUMAN_REVIEW_V1: "https://evals.intentsolutions.io/human-review/v1";
     readonly VALIDATION_RESULT_V1: "https://evals.intentsolutions.io/validation-result/v1";
     readonly EVAL_VERDICT_V1: "https://evals.intentsolutions.io/eval-verdict/v1";
     readonly COST_ATTRIBUTION_V1: "https://evals.intentsolutions.io/cost-attribution/v1";

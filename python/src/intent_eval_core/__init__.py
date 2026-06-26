@@ -31,6 +31,7 @@ from .models import (
     EvidenceBundle,
     FailureTaxonomy,
     GateResultV1,
+    HumanReview,
     JudgeDecision,
     MatcherMap,
     RegressionPack,
@@ -46,7 +47,7 @@ from .models import (
 
 # Kept in lockstep with npm package.json#version by scripts/check_version_lockstep.py
 # (CI-gated). The JSON Schemas under schemas/v1/ are the shared source of truth.
-__version__ = "0.8.0"
+__version__ = "0.9.0"
 
 __all__ = [
     "__version__",
@@ -61,6 +62,7 @@ __all__ = [
     "RolloutGate",
     "SkillSnapshot",
     "SkillVersion",
+    "HumanReview",
     "SessionTrace",
     "ToolInvocation",
     "CostRecord",

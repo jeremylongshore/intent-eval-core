@@ -58,6 +58,7 @@ VALID_FIXTURES = {
     iec.RolloutGate: "rollout-gate",
     iec.SkillSnapshot: "skill-snapshot",
     iec.SkillVersion: "skill-version",
+    iec.HumanReview: "human-review",
     iec.SessionTrace: "session-trace",
     iec.ToolInvocation: "tool-invocation",
     iec.CostRecord: "cost-record",
@@ -75,13 +76,14 @@ class TestPackageSurface:
         assert iec.__version__.count(".") == 2  # X.Y.Z SemVer core
 
     def test_all_canonical_models_exported(self) -> None:
-        # 14 entities + 4 predicate bodies = 18 models, all importable by name.
+        # 15 entities + 4 predicate bodies = 19 models, all importable by name.
         # skill-refiner-pass/v1 added staging-first by Class-1 ADR DR-082.
-        # SkillVersion is the 14th canonical entity (DR-028 T1 DISCRIMINATOR).
+        # SkillVersion is the 14th canonical entity (DR-028 T1 DISCRIMINATOR);
+        # HumanReview is the 15th (ISEDC DR-103 D1 — open-ended human-trust signal).
         for name in (
             "EvalSpec EvalRun MatcherMap EvidenceBundle JudgeDecision "
             "RuntimeReceipt RegressionPack RolloutGate SkillSnapshot SkillVersion "
-            "SessionTrace ToolInvocation CostRecord FailureTaxonomy "
+            "HumanReview SessionTrace ToolInvocation CostRecord FailureTaxonomy "
             "GateResultV1 RetractionV1 DashboardRenderV1 SkillRefinerPassV1"
         ).split():
             assert hasattr(iec, name), f"missing export: {name}"
@@ -256,6 +258,64 @@ class TestNegativeFixtures:
         base = load("skill-refiner-pass.valid.json")
         without = {k: v for k, v in base.items() if k != "parent_version_id"}
         assert not accepts(iec.SkillRefinerPassV1, without)
+
+
+class TestHumanReviewEntity:
+    """HumanReview (15th canonical, ISEDC DR-103 D1) — anti-gaming cross-field
+    invariants. Exact Python mirror of the Zod .superRefine + the JSON-Schema
+    if/then rules; the HUMAN-ONLY rule rides the generated Literal[False] type."""
+
+    def test_root_fixture_validates(self) -> None:
+        # Thumb-only review pinned via judge_decision_id alone.
+        assert accepts(iec.HumanReview, load("human-review.root.valid.json"))
+
+    def test_no_pin_rejected(self) -> None:
+        # DR-103 D1 B1.2: both session_trace_id + judge_decision_id null → reject.
+        assert not accepts(iec.HumanReview, load("human-review.invalid-no-pin.json"))
+
+    def test_service_account_rejected(self) -> None:
+        # DR-103 D1 B1.2: reviewer_is_service_account=true → reject (HUMAN-only ledger).
+        assert not accepts(
+            iec.HumanReview, load("human-review.invalid-service-account.json")
+        )
+
+    def test_empty_signals_rejected(self) -> None:
+        # Spec Item 2: all three signal channels null → reject (no human signal).
+        assert not accepts(
+            iec.HumanReview, load("human-review.invalid-empty-signals.json")
+        )
+
+    def test_session_only_pin_accepted(self) -> None:
+        base = load("human-review.valid.json")
+        assert accepts(iec.HumanReview, {**base, "judge_decision_id": None})
+
+    def test_single_signal_accepted(self) -> None:
+        base = load("human-review.valid.json")
+        assert accepts(
+            iec.HumanReview,
+            {**base, "score_text": None, "thumbs": None, "annotation": "just a note"},
+        )
+
+    def test_tenant_id_explicit_null_rejected(self) -> None:
+        # DR-103 D2 optional-not-nullable parity: tenant_id is optional, not nullable.
+        base = load("human-review.valid.json")
+        assert not accepts(iec.HumanReview, {**base, "tenant_id": None})
+
+    def test_missing_pin_key_rejected(self) -> None:
+        # Required-but-nullable parity: the session_trace_id KEY must be present
+        # (value MAY be null). Omitting the key is rejected exactly as AJV + Zod.
+        base = load("human-review.valid.json")
+        without = {k: v for k, v in base.items() if k != "session_trace_id"}
+        assert not accepts(iec.HumanReview, without)
+
+    def test_extra_field_rejected(self) -> None:
+        base = load("human-review.valid.json")
+        assert not accepts(iec.HumanReview, {**base, "surprise": True})
+
+    def test_prefixed_input_hash_rejected(self) -> None:
+        # The entity input_hash is BARE sha256 (the wire layer adds the prefix).
+        base = load("human-review.valid.json")
+        assert not accepts(iec.HumanReview, {**base, "input_hash": "sha256:" + "3" * 64})
 
 
 class TestClosedWorld:

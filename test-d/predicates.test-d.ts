@@ -8,6 +8,7 @@ import type {
   DashboardRenderV1,
   GateDecision,
   GateResultV1,
+  HumanReviewV1,
   ReplayFidelityLevel,
   RetractionReasonClass,
   RetractionV1,
@@ -212,4 +213,33 @@ expectError<SkillRefinerPassV1>({
 expectError<SkillRefinerPassV1>({
   ...skillRefinerPass,
   test_statistic_kind: 'two-sided-t',
+});
+
+// ─── HumanReviewV1 (ISEDC DR-103 D1) — open-ended human-trust predicate body ──
+
+// Minimal pinned body — all required fields present (pinned via session_trace_id)
+const humanReviewMinimal: HumanReviewV1 = {
+  human_review_id: '0192cae6-000c-7000-8000-000000000001' as Uuidv7,
+  eval_run_id: '0192cae6-0004-7000-8000-000000000000' as Uuidv7,
+  session_trace_id: '0192cae6-0005-7000-8000-000000000000' as Uuidv7,
+  judge_decision_id: null,
+  reviewer_identity: 'jeremy@intentsolutions.io',
+  score_text: 'strong',
+  thumbs: true,
+  annotation: null,
+  input_hash: ('sha256:' + '3'.repeat(64)) as Sha256Prefixed,
+  reviewed_at: '2026-06-25T00:00:00Z' as HumanReviewV1['reviewed_at'],
+};
+expectAssignable<HumanReviewV1>(humanReviewMinimal);
+
+// the optional supersedes_id is acceptable
+expectAssignable<HumanReviewV1>({
+  ...humanReviewMinimal,
+  supersedes_id: '0192cae6-000c-7000-8000-0000000000aa' as Uuidv7,
+});
+
+// missing a required field → error
+expectError<HumanReviewV1>({
+  eval_run_id: '0192cae6-0004-7000-8000-000000000000' as Uuidv7,
+  // human_review_id missing — required
 });

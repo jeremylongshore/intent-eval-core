@@ -29,6 +29,8 @@ from __future__ import annotations
 # dependency of pydantic v2) so the 3.10 floor keeps working. The annotation
 # itself is a string at runtime via `from __future__ import annotations`; this
 # only guards the import statement.
+from typing import Literal
+
 from typing_extensions import Self
 
 from pydantic import model_validator
@@ -61,6 +63,9 @@ from ._generated.failure_taxonomy_schema import (
 )
 from ._generated.gate_result_schema import (
     GateResultV1NormativeInTotoPredicateBody as _GateResultV1Generated,
+)
+from ._generated.human_review_schema import (
+    HumanreviewOpenEndedHumanTrustSignalOnAnEvalrun15ThCanonicalEntityIsedcDr103D1 as _HumanReviewGenerated,  # noqa: E501
 )
 from ._generated.judge_decision_schema import (
     JudgedecisionSingleJudgeSVerdictOnAnEvalrunForAMatchermapBlueprintB25 as JudgeDecision,
@@ -232,6 +237,67 @@ class SkillVersion(_SkillVersionGenerated):
         return self
 
 
+class HumanReview(_HumanReviewGenerated):
+    """HumanReview — 15th canonical entity (ISEDC DR-103 D1), with the anti-gaming
+    cross-field invariants the JSON Schema expresses via ``allOf``/``if-then``
+    (which datamodel-code-generator cannot emit). Exact Python mirror of the Zod
+    ``.superRefine`` block in ``src/validators/v1/human-review.ts``:
+
+    1. **DR-103 D1 B1.2 PIN** — a review MUST pin to a verified source:
+       ``session_trace_id`` non-null OR ``judge_decision_id`` non-null. A review
+       pinned to nothing is forgery-cost-zero and is refused.
+    2. **Spec Item 2 AT-LEAST-ONE-SIGNAL** — at least one of the three orthogonal
+       channels (``score_text`` / ``thumbs`` / ``annotation``) MUST be non-null.
+
+    The HUMAN-ONLY invariant (``reviewer_is_service_account`` MUST be ``False``)
+    is enforced by the generated ``Literal[False]`` field type itself — a
+    service-account-authored row never parses (mirrors the Zod ``z.literal(false)``).
+
+    The generated parent already enforces ``extra="forbid"`` (closed-world) and the
+    branded ``Uuidv7``/``Sha256``/``Rfc3339``/``ActorIdentity`` patterns.
+
+    **Optional-not-nullable parity** (DR-103 D2 / DR-085 D5): the JSON Schema + Zod
+    treat ``tenant_id`` as OPTIONAL but NOT NULLABLE (the schema ``$ref``s uuidv7
+    with no ``null`` branch; Zod uses ``.optional()`` not ``.nullable()``).
+    datamodel-code-generator renders it ``Uuidv7 | None = None`` (nullable). The
+    override re-declares it optional-but-not-nullable so an explicit ``null`` is
+    rejected exactly as AJV and Zod reject it.
+
+    **Required-but-nullable parity**: ``session_trace_id`` / ``judge_decision_id`` /
+    ``supersedes_id`` are in the schema ``required`` array (key MUST be present) AND
+    ``oneOf[uuidv7, null]`` (value MAY be null). The generated ``... | None = None``
+    makes the KEY omittable — drift vs AJV + Zod, which require the key. Re-declare
+    without a default so the key is required, value still nullable.
+    """
+
+    # DR-103 D2 optional-NOT-nullable parity (mirrors the schema $ref + Zod
+    # `.optional()`): absence allowed, explicit `null` rejected.
+    tenant_id: _schema.Uuidv7 = None  # type: ignore[assignment]
+
+    # Required-but-nullable parity: key required, value nullable.
+    session_trace_id: _schema.Uuidv7 | None
+    judge_decision_id: _schema.Uuidv7 | None
+    supersedes_id: _schema.Uuidv7 | None
+
+    @model_validator(mode="after")
+    def _enforce_dr103_anti_gaming(self) -> Self:
+        # Rule 1 (DR-103 D1 B1.2 PIN): pin to a verified source.
+        if self.session_trace_id is None and self.judge_decision_id is None:
+            raise ValueError(
+                "DR-103 D1 B1.2: a HumanReview MUST pin to a verified source — "
+                "session_trace_id OR judge_decision_id must be non-null (a review "
+                "pinned to nothing is forgery-cost-zero)"
+            )
+        # Rule 2 (spec Item 2 AT-LEAST-ONE-SIGNAL): at least one channel non-null.
+        if self.score_text is None and self.thumbs is None and self.annotation is None:
+            raise ValueError(
+                "DR-103 D1: a HumanReview MUST carry at least one signal — "
+                "score_text, thumbs, or annotation (an empty review carries no "
+                "human signal)"
+            )
+        return self
+
+
 class SkillRefinerPassV1(_SkillRefinerPassV1Generated):
     """skill-refiner-pass/v1 predicate body (Class-1 ADR DR-082, amended in place
     by DR-085 D2/D3/D4/D5).
@@ -298,6 +364,7 @@ __all__ = [
     "RolloutGate",
     "SkillSnapshot",
     "SkillVersion",
+    "HumanReview",
     "SessionTrace",
     "ToolInvocation",
     "CostRecord",

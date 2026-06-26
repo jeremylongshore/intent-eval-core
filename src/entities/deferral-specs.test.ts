@@ -30,6 +30,7 @@ import {
   type CoverageDimensionStatus,
   type EvalRun,
   type EvalSpec,
+  type HumanReview,
   type KernelErrorClass,
   type MatcherInputPattern,
   type NamedAssertionExpression,
@@ -224,6 +225,10 @@ describe('deferral-G: tenant_id reservation (bd_000-projects-k0fj)', () => {
 
   it('SkillSnapshot reserves an optional tenant_id', () => {
     expectTypeOf<SkillSnapshot>().toHaveProperty('tenant_id').toEqualTypeOf<Uuidv7 | undefined>();
+  });
+
+  it('HumanReview reserves an optional tenant_id (DR-103 D2, byte-identical to the precedent)', () => {
+    expectTypeOf<HumanReview>().toHaveProperty('tenant_id').toEqualTypeOf<Uuidv7 | undefined>();
   });
 
   it('the slot is a UUIDv7 brand when present (single-tenant v1 omits it)', () => {
