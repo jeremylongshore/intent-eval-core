@@ -1,0 +1,11 @@
+{
+  "id": "0192cae6-0010-7000-8000-000000000004",
+  "meter": "judge_decision",
+  "quantity": 1,
+  "unit": "count",
+  "source_entity_type": null,
+  "source_entity_id": null,
+  "source_verified": true,
+  "cost_record_ref": null,
+  "recorded_at": "2026-06-25T00:00:09Z"
+}

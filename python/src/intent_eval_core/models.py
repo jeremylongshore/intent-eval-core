@@ -92,6 +92,12 @@ from ._generated.skill_refiner_pass_schema import (
 from ._generated.skill_snapshot_schema import (
     SkillsnapshotContentAddressedPinOfASkillSSourceDepsConfigBlueprintB29 as SkillSnapshot,
 )
+from ._generated.usage_event_schema import (
+    SourceEntityType,
+)
+from ._generated.usage_event_schema import (
+    UsageeventAppendOnlyProductMeteringLedgerRow15ThCanonicalEntityDr103D1 as _UsageEventGenerated,
+)
 from ._generated.skill_version_schema import (
     SkillversionRefinementLineageRecordOfASkill14ThCanonicalEntityDr028T1Discriminator as _SkillVersionGenerated,  # noqa: E501
 )
@@ -232,6 +238,74 @@ class SkillVersion(_SkillVersionGenerated):
         return self
 
 
+class UsageEvent(_UsageEventGenerated):
+    """UsageEvent — 15th canonical entity (DR-103 D1), with the anti-gaming
+    cross-field invariant the JSON Schema expresses via ``allOf``/``if-then``
+    (which datamodel-code-generator cannot emit). Exact Python mirror of the Zod
+    ``.superRefine`` block in ``src/validators/v1/usage-event.ts``:
+
+    - **DR-103 D1 B1.2** — a metered row (``meter != "api_call"``) MUST bind to a
+      VERIFIED gated source: non-null ``source_entity_type`` AND non-null
+      ``source_entity_id`` AND ``source_verified is True``. An arbitrary
+      hand-supplied ``quantity`` with no verified provenance is REFUSED. ``api_call``
+      is the only exempt meter (the leaf action has no gated parent session).
+
+    The generated parent already enforces ``extra="forbid"`` (closed-world), the
+    ``meter`` / ``unit`` / ``source_entity_type`` enums, and the ``conint(ge=0)``
+    on ``quantity`` (a count, never a fractional utility — DR-103 epic Rule 1).
+
+    **DR-103 D2 optional-not-nullable parity**: the JSON Schema + Zod treat
+    ``tenant_id`` as OPTIONAL but NOT NULLABLE (the schema ``$ref``s uuidv7 with no
+    ``null`` branch; Zod uses ``.optional()`` not ``.nullable()``).
+    datamodel-code-generator renders it ``Uuidv7 | None = None`` (nullable). The
+    override re-declares it optional-but-not-nullable so an explicit ``null`` is
+    rejected exactly as AJV and Zod reject it.
+
+    **Required-but-nullable parity**: ``source_entity_type`` / ``source_entity_id``
+    / ``cost_record_ref`` are in the schema ``required`` array (key MUST be present)
+    AND nullable (value MAY be null, e.g. for an ``api_call`` row). The generated
+    ``... | None = None`` makes the KEY omittable — drift vs AJV + Zod, which
+    require the key. Re-declare each without a default: key required, value still
+    nullable.
+    """
+
+    # DR-103 D2 optional-NOT-nullable parity (mirrors the schema $ref + Zod
+    # `.optional()`): absence allowed, explicit `null` rejected.
+    tenant_id: _schema.Uuidv7 = None  # type: ignore[assignment]
+
+    # Required-but-nullable parity: these keys MUST be present (in `required`) but
+    # MAY be null (for an api_call row). Re-declare without a default so the key is
+    # required, value still nullable — matching AJV + Zod.
+    source_entity_type: SourceEntityType | None
+    source_entity_id: _schema.Uuidv7 | None
+    cost_record_ref: _schema.Uuidv7 | None
+
+    @model_validator(mode="after")
+    def _enforce_dr103_anti_gaming(self) -> Self:
+        # DR-103 D1 B1.2: a metered (non-`api_call`) row MUST bind to a verified
+        # gated source. `api_call` is the lone exempt meter.
+        meter = self.meter.value if hasattr(self.meter, "value") else self.meter
+        if meter != "api_call":
+            if self.source_entity_type is None:
+                raise ValueError(
+                    f'DR-103 D1 B1.2: a metered "{meter}" row MUST name a non-null '
+                    "source_entity_type (anti-gaming: no metered count without a gated source)"
+                )
+            if self.source_entity_id is None:
+                raise ValueError(
+                    f'DR-103 D1 B1.2: a metered "{meter}" row MUST name a non-null '
+                    "source_entity_id (anti-gaming: no metered count without a gated source)"
+                )
+            if self.source_verified is not True:
+                raise ValueError(
+                    f'DR-103 D1 B1.2: a metered "{meter}" row MUST carry '
+                    "source_verified === true (the runtime sets it only after the source "
+                    "session clears its quality gate; a hand-supplied quantity with no "
+                    "verified provenance is refused)"
+                )
+        return self
+
+
 class SkillRefinerPassV1(_SkillRefinerPassV1Generated):
     """skill-refiner-pass/v1 predicate body (Class-1 ADR DR-082, amended in place
     by DR-085 D2/D3/D4/D5).
@@ -287,7 +361,7 @@ class SkillRefinerPassV1(_SkillRefinerPassV1Generated):
 
 
 __all__ = [
-    # Entities (Blueprint B § 2.1 – § 2.13 + SkillVersion, the 14th per DR-028 T1)
+    # Entities (Blueprint B § 2.1 – § 2.13 + SkillVersion 14th DR-028 T1 + UsageEvent 15th DR-103 D1)
     "EvalSpec",
     "EvalRun",
     "MatcherMap",
@@ -301,6 +375,7 @@ __all__ = [
     "SessionTrace",
     "ToolInvocation",
     "CostRecord",
+    "UsageEvent",
     "FailureTaxonomy",
     # Predicate bodies
     "GateResultV1",

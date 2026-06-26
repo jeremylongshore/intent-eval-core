@@ -65,25 +65,28 @@ const ENTITY_SCHEMAS = [
   'session-trace',
   'tool-invocation',
   'cost-record',
+  'usage-event',
   'failure-taxonomy',
 ] as const;
 
 describe('schemas/v1 — structural integrity', () => {
-  it('ships exactly 14 entity schemas + 4 predicates + 1 common + 1 index = 20 files', () => {
+  it('ships exactly 15 entity schemas + 4 predicates + 1 common + 1 index = 21 files', () => {
     // v0.2.0 added retraction/v1 + dashboard-render/v1 predicate schemas
     // alongside the v0.1 gate-result/v1 (16 → 18 files). Class-1 ADR DR-082
     // added skill-refiner-pass/v1 (18 → 19 files). DR-028 T1 added the
-    // skill-version entity — the 14th canonical entity (19 → 20 files).
+    // skill-version entity — the 14th canonical entity (19 → 20 files). DR-103
+    // D1 added the usage-event entity — the 15th canonical entity (20 → 21 files).
     const files = readdirSync(SCHEMAS_DIR).filter((f) => f.endsWith('.json'));
-    expect(files).toHaveLength(20);
+    expect(files).toHaveLength(21);
   });
 
   it('every entity schema is referenced in index.json', () => {
     const idx = loadJson(join(SCHEMAS_DIR, 'index.json'));
     const schemas = idx['schemas'] as Record<string, { kind: string }>;
     const entityEntries = Object.values(schemas).filter((s) => s.kind === 'entity');
-    // 13 Blueprint B § 2 entities + SkillVersion (14th, DR-028 T1 DISCRIMINATOR).
-    expect(entityEntries).toHaveLength(14);
+    // 13 Blueprint B § 2 entities + SkillVersion (14th, DR-028 T1 DISCRIMINATOR)
+    // + UsageEvent (15th, DR-103 D1 append-only product-metering ledger).
+    expect(entityEntries).toHaveLength(15);
   });
 
   it('every schema declares draft 2020-12', () => {
@@ -581,6 +584,83 @@ describe('schemas/v1 — SkillVersion entity (14th canonical, DR-028 T1 DISCRIMI
     const root = loadJson(join(FIXTURES_DIR, 'skill-version.root.valid.json'));
     const bad = { ...root, version_kind: 'restore' };
     expect(validateSkillVersion(bad)).toBe(false);
+  });
+});
+
+describe('schemas/v1 — UsageEvent entity (15th canonical, DR-103 D1 append-only product-metering ledger)', () => {
+  let ajv: AjvInstance;
+  let validateUsageEvent: (data: unknown) => boolean;
+
+  beforeAll(() => {
+    ajv = buildAjv();
+    const common = loadJson(join(SCHEMAS_DIR, '_common.schema.json'));
+    ajv.addSchema(
+      common,
+      'https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json',
+    );
+    validateUsageEvent = ajv.compile(loadJson(join(SCHEMAS_DIR, 'usage-event.schema.json')));
+  });
+
+  it('usage-event.valid.json validates (metered eval_run row + verified source + cost_record_ref seam)', () => {
+    expect(validateUsageEvent(loadJson(join(FIXTURES_DIR, 'usage-event.valid.json')))).toBe(true);
+  });
+
+  it('usage-event.api-call.valid.json validates (api_call is the ONLY meter exempt from the verified-source binding)', () => {
+    expect(
+      validateUsageEvent(loadJson(join(FIXTURES_DIR, 'usage-event.api-call.valid.json'))),
+    ).toBe(true);
+  });
+
+  it('usage-event.tenant.valid.json validates (a present tenant_id is an attested claim; round-trips)', () => {
+    expect(validateUsageEvent(loadJson(join(FIXTURES_DIR, 'usage-event.tenant.valid.json')))).toBe(
+      true,
+    );
+  });
+
+  it('DR-103 D1 B1.2 anti-gaming: a metered row with source_verified=false → REJECT (no metered count without verified provenance)', () => {
+    expect(
+      validateUsageEvent(
+        loadJson(join(FIXTURES_DIR, 'usage-event.invalid-metered-unverified.json')),
+      ),
+    ).toBe(false);
+  });
+
+  it('DR-103 D1 B1.2 anti-gaming: a metered row with null source (type + id) → REJECT (no metered count without a gated source)', () => {
+    expect(
+      validateUsageEvent(
+        loadJson(join(FIXTURES_DIR, 'usage-event.invalid-metered-null-source.json')),
+      ),
+    ).toBe(false);
+  });
+
+  it('meter out of the closed enum (dashboard_render) → REJECT (a predicate body, not a meter; DR-103 D1 B1.4)', () => {
+    expect(
+      validateUsageEvent(loadJson(join(FIXTURES_DIR, 'usage-event.invalid-bad-meter.json'))),
+    ).toBe(false);
+  });
+
+  it('DR-103 D2: tenant_id is optional-NOT-nullable (explicit null → REJECT, byte-identical to the precedent)', () => {
+    const fix = loadJson(join(FIXTURES_DIR, 'usage-event.valid.json'));
+    const bad = { ...fix, tenant_id: null };
+    expect(validateUsageEvent(bad)).toBe(false);
+  });
+
+  it('an unknown extra field → REJECT (additionalProperties: false)', () => {
+    const fix = loadJson(join(FIXTURES_DIR, 'usage-event.valid.json'));
+    const bad = { ...fix, rolled_total: 4003 };
+    expect(validateUsageEvent(bad)).toBe(false);
+  });
+
+  it('DR-103 epic Rule 1: quantity is a non-negative integer count, never a fractional utility weight → REJECT a float', () => {
+    const fix = loadJson(join(FIXTURES_DIR, 'usage-event.valid.json'));
+    const bad = { ...fix, quantity: 0.95 };
+    expect(validateUsageEvent(bad)).toBe(false);
+  });
+
+  it('cost_record_ref is the seam to a SEPARATE table: a null ref is valid (the common, unpriced case)', () => {
+    const fix = loadJson(join(FIXTURES_DIR, 'usage-event.valid.json'));
+    const unpriced = { ...fix, cost_record_ref: null };
+    expect(validateUsageEvent(unpriced)).toBe(true);
   });
 });
 

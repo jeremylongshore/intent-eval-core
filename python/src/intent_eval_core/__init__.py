@@ -42,6 +42,7 @@ from .models import (
     SkillSnapshot,
     SkillVersion,
     ToolInvocation,
+    UsageEvent,
 )
 
 # Kept in lockstep with npm package.json#version by scripts/check_version_lockstep.py
@@ -50,7 +51,7 @@ __version__ = "0.8.0"
 
 __all__ = [
     "__version__",
-    # Entities (Blueprint B § 2.1 – § 2.13 + SkillVersion, the 14th per DR-028 T1)
+    # Entities (Blueprint B § 2.1 – § 2.13 + SkillVersion 14th DR-028 T1 + UsageEvent 15th DR-103 D1)
     "EvalSpec",
     "EvalRun",
     "MatcherMap",
@@ -64,6 +65,7 @@ __all__ = [
     "SessionTrace",
     "ToolInvocation",
     "CostRecord",
+    "UsageEvent",
     "FailureTaxonomy",
     # Predicate bodies
     "GateResultV1",
