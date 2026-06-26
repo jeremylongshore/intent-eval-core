@@ -82,31 +82,31 @@ export const UsageEventSchema = z
     tenant_id: Uuidv7Schema.optional(),
   })
   .strict()
-  .superRefine((ue, ctx) => {
+  .superRefine((event, ctx) => {
     // DR-103 D1 B1.2 anti-gaming invariant — a metered (non-`api_call`) row MUST
     // bind to a VERIFIED gated source. `api_call` is the only exempt meter (the
     // leaf action has no gated parent session). Three independent failure modes,
     // each surfaced on its own field path so the violation is legible.
-    if (ue.meter !== 'api_call') {
-      if (ue.source_entity_type === null) {
+    if (event.meter !== 'api_call') {
+      if (event.source_entity_type === null) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['source_entity_type'],
-          message: `DR-103 D1 B1.2: a metered "${ue.meter}" row MUST name a non-null source_entity_type (anti-gaming: no metered count without a gated source)`,
+          message: `DR-103 D1 B1.2: a metered "${event.meter}" row MUST name a non-null source_entity_type (anti-gaming: no metered count without a gated source)`,
         });
       }
-      if (ue.source_entity_id === null) {
+      if (event.source_entity_id === null) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['source_entity_id'],
-          message: `DR-103 D1 B1.2: a metered "${ue.meter}" row MUST name a non-null source_entity_id (anti-gaming: no metered count without a gated source)`,
+          message: `DR-103 D1 B1.2: a metered "${event.meter}" row MUST name a non-null source_entity_id (anti-gaming: no metered count without a gated source)`,
         });
       }
-      if (ue.source_verified !== true) {
+      if (event.source_verified !== true) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['source_verified'],
-          message: `DR-103 D1 B1.2: a metered "${ue.meter}" row MUST carry source_verified === true (the runtime sets it only after the source session clears its quality gate; a hand-supplied quantity with no verified provenance is refused)`,
+          message: `DR-103 D1 B1.2: a metered "${event.meter}" row MUST carry source_verified === true (the runtime sets it only after the source session clears its quality gate; a hand-supplied quantity with no verified provenance is refused)`,
         });
       }
     }
