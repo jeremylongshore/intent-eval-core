@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict
 from . import _common_schema as schema
 
 
-class HumanreviewOpenEndedHumanTrustSignalOnAnEvalrun15ThCanonicalEntityIsedcDr103D1(
+class HumanreviewOpenEndedHumanTrustSignalOnAnEvalrunNetNewCanonicalEntityIsedcDr103D1(
     BaseModel
 ):
     """

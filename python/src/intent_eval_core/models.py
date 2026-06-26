@@ -65,7 +65,7 @@ from ._generated.gate_result_schema import (
     GateResultV1NormativeInTotoPredicateBody as _GateResultV1Generated,
 )
 from ._generated.human_review_schema import (
-    HumanreviewOpenEndedHumanTrustSignalOnAnEvalrun15ThCanonicalEntityIsedcDr103D1 as _HumanReviewGenerated,  # noqa: E501
+    HumanreviewOpenEndedHumanTrustSignalOnAnEvalrunNetNewCanonicalEntityIsedcDr103D1 as _HumanReviewGenerated,  # noqa: E501
 )
 from ._generated.judge_decision_schema import (
     JudgedecisionSingleJudgeSVerdictOnAnEvalrunForAMatchermapBlueprintB25 as JudgeDecision,
