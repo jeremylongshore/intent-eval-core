@@ -264,10 +264,13 @@ class HumanReview(_HumanReviewGenerated):
     rejected exactly as AJV and Zod reject it.
 
     **Required-but-nullable parity**: ``session_trace_id`` / ``judge_decision_id`` /
-    ``supersedes_id`` are in the schema ``required`` array (key MUST be present) AND
-    ``oneOf[uuidv7, null]`` (value MAY be null). The generated ``... | None = None``
-    makes the KEY omittable — drift vs AJV + Zod, which require the key. Re-declare
-    without a default so the key is required, value still nullable.
+    ``supersedes_id`` AND the three orthogonal signal channels ``score_text`` /
+    ``thumbs`` / ``annotation`` are ALL in the schema ``required`` array (key MUST be
+    present) AND ``oneOf[<value>, null]`` (value MAY be null). The generated
+    ``... | None = None`` makes the KEY omittable — drift vs AJV + Zod, which require
+    the key. Re-declare each without a default so the key is required, value still
+    nullable. (The at-least-one-signal invariant in ``_enforce_dr103_anti_gaming``
+    constrains the VALUES; this constrains the KEYS — both are needed for parity.)
     """
 
     # DR-103 D2 optional-NOT-nullable parity (mirrors the schema $ref + Zod
@@ -278,6 +281,13 @@ class HumanReview(_HumanReviewGenerated):
     session_trace_id: _schema.Uuidv7 | None
     judge_decision_id: _schema.Uuidv7 | None
     supersedes_id: _schema.Uuidv7 | None
+    # Required-but-nullable parity for the three signal channels (schema `required`
+    # array + oneOf[<value>, null]; Zod `.nullable()` not `.optional()`). Without
+    # this, a body omitting `score_text`/`thumbs`/`annotation` is wrongly accepted
+    # by Python while AJV + Zod reject the missing key (three-way drift).
+    score_text: str | None
+    thumbs: bool | None
+    annotation: str | None
 
     @model_validator(mode="after")
     def _enforce_dr103_anti_gaming(self) -> Self:

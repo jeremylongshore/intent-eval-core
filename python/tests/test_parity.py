@@ -313,6 +313,29 @@ class TestHumanReviewEntity:
         without = {k: v for k, v in base.items() if k != "session_trace_id"}
         assert not accepts(iec.HumanReview, without)
 
+    @pytest.mark.parametrize("signal_key", ["score_text", "thumbs", "annotation"])
+    def test_missing_signal_key_rejected(self, signal_key: str) -> None:
+        # Required-but-nullable parity for the three orthogonal signal channels:
+        # score_text / thumbs / annotation are in the schema `required` array (key
+        # MUST be present) and oneOf[<value>, null] (value MAY be null). Omitting
+        # the KEY is rejected exactly as AJV + Zod reject it — the at-least-one-
+        # signal model_validator constrains VALUES, this constrains KEYS. Regression
+        # for the three-way drift where the generated `... | None = None` made these
+        # keys silently omittable in Python (Gemini DR-103 PR #74 HIGH).
+        base = load("human-review.valid.json")
+        without = {k: v for k, v in base.items() if k != signal_key}
+        assert not accepts(iec.HumanReview, without)
+
+    def test_present_signal_key_null_value_accepted(self) -> None:
+        # The companion to the above: with the KEY present, a null VALUE is still
+        # accepted as long as at least one of the three channels is non-null —
+        # required-but-nullable, not required-and-non-null.
+        base = load("human-review.valid.json")
+        assert accepts(
+            iec.HumanReview,
+            {**base, "score_text": None, "thumbs": None},  # annotation stays non-null
+        )
+
     def test_extra_field_rejected(self) -> None:
         base = load("human-review.valid.json")
         assert not accepts(iec.HumanReview, {**base, "surprise": True})
