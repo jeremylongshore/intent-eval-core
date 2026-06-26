@@ -209,8 +209,19 @@ class TestNegativeFixtures:
         root = load("skill-version.root.valid.json")
         assert not accepts(iec.SkillVersion, {**root, "version_kind": "restore"})
 
+    def test_skill_version_tenant_id_omitted_accepted(self) -> None:
+        # DR-085 D5 optional-not-nullable parity, OMIT half: tenant_id is OPTIONAL.
+        # Pydantic does not validate the `= None` default (validate_default unset),
+        # so an omitting body is accepted exactly as AJV + Zod (.optional()) accept
+        # it. This is the byte-identical precedent HumanReview mirrors per DR-103;
+        # pinning it here keeps the precedent honest against the same omit-vs-null
+        # confusion raised on PR #74.
+        child = load("skill-version.valid.json")
+        assert "tenant_id" not in child, "fixture must omit tenant_id for this test"
+        assert accepts(iec.SkillVersion, child)
+
     def test_skill_version_tenant_id_explicit_null_rejected(self) -> None:
-        # DR-085 D5 optional-not-nullable parity: tenant_id is optional, not nullable.
+        # DR-085 D5 optional-not-nullable parity, NULL half: optional, not nullable.
         child = load("skill-version.valid.json")
         assert not accepts(iec.SkillVersion, {**child, "tenant_id": None})
 
@@ -301,8 +312,24 @@ class TestHumanReviewEntity:
             {**base, "score_text": None, "thumbs": None, "annotation": "just a note"},
         )
 
+    def test_tenant_id_omitted_accepted(self) -> None:
+        # DR-103 D2 optional-not-nullable parity, OMIT half: tenant_id is OPTIONAL
+        # (absence allowed). Pydantic does NOT validate the `= None` default unless
+        # validate_default=True (not set; model_config is extra="forbid" only), so
+        # the `tenant_id: Uuidv7 = None` override accepts an omitting body exactly
+        # as AJV + Zod (.optional()) accept it. Regression for the Gemini DR-103
+        # PR #74 HIGH FALSE POSITIVE, which claimed the default `None` would fail
+        # validation when tenant_id is omitted. Byte-identical to the SkillVersion
+        # precedent (DR-103 / DR-085 D5 mandate); see the SkillVersion companion.
+        base = load("human-review.valid.json")
+        assert "tenant_id" not in base, "fixture must omit tenant_id for this test"
+        assert accepts(iec.HumanReview, base)
+
     def test_tenant_id_explicit_null_rejected(self) -> None:
-        # DR-103 D2 optional-not-nullable parity: tenant_id is optional, not nullable.
+        # DR-103 D2 optional-not-nullable parity, NULL half: tenant_id is optional,
+        # not nullable — an explicit `null` is rejected exactly as AJV + Zod reject
+        # it. Companion to test_tenant_id_omitted_accepted: together they pin the
+        # full optional-NOT-nullable contract (omit OK, explicit null REJECTED).
         base = load("human-review.valid.json")
         assert not accepts(iec.HumanReview, {**base, "tenant_id": None})
 
