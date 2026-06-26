@@ -1,0 +1,11 @@
+{
+  "id": "0192cae6-0010-7000-8000-000000000000",
+  "meter": "eval_run",
+  "quantity": 1,
+  "unit": "count",
+  "source_entity_type": "eval_run",
+  "source_entity_id": "0192cae6-0004-7000-8000-000000000000",
+  "source_verified": true,
+  "cost_record_ref": "0192cae6-0009-7000-8000-000000000000",
+  "recorded_at": "2026-06-25T00:00:05Z"
+}

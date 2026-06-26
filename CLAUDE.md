@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`@intentsolutions/core` — the canonical contracts kernel for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab). TypeScript types, JSON Schemas, Zod validators, and state machines for the 14 canonical platform entities (the 13 from Blueprint B § 2 + `SkillVersion`, the 14th per DR-028 T1). **Every** validator in the platform (`audit-harness`, `j-rig`, `intent-rollout-gate`) depends on this package for canonical contract definitions.
+`@intentsolutions/core` — the canonical contracts kernel for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab). TypeScript types, JSON Schemas, Zod validators, and state machines for the 15 canonical platform entities (the 13 from Blueprint B § 2 + `SkillVersion`, the 14th per DR-028 T1, + `UsageEvent`, the 15th per DR-103 D1). **Every** validator in the platform (`audit-harness`, `j-rig`, `intent-rollout-gate`) depends on this package for canonical contract definitions.
 
 This repo is **kernel-only**:
 
@@ -67,11 +67,12 @@ Published as **`@intentsolutions/core@0.8.0`** (sigstore provenance). The kernel
 ```text
 intent-eval-core/
 ├── src/
-│   ├── entities/           ← TS interfaces + state machines for the 14 canonical entities
-│   │                          (Blueprint B § 2's 13 + SkillVersion, the 14th per DR-028 T1):
+│   ├── entities/           ← TS interfaces + state machines for the 15 canonical entities
+│   │                          (Blueprint B § 2's 13 + SkillVersion 14th DR-028 T1 + UsageEvent 15th DR-103 D1):
 │   │                          EvalSpec, EvalRun, EvidenceBundle, JudgeDecision, RuntimeReceipt,
 │   │                          SessionTrace, ToolInvocation, CostRecord, FailureTaxonomy,
-│   │                          MatcherMap, RegressionPack, RolloutGate, SkillSnapshot, SkillVersion
+│   │                          MatcherMap, RegressionPack, RolloutGate, SkillSnapshot, SkillVersion,
+│   │                          UsageEvent
 │   │                          (+ EvidenceBundlePayload — the wire format EvidenceBundle resolves to)
 │   ├── validators/v1/       ← Zod validators (runtime tier) + validators/v1/authoring/ (SAK tier)
 │   └── index.ts             ← public surface (re-exports stable contracts)

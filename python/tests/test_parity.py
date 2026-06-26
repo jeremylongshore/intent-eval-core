@@ -61,6 +61,7 @@ VALID_FIXTURES = {
     iec.SessionTrace: "session-trace",
     iec.ToolInvocation: "tool-invocation",
     iec.CostRecord: "cost-record",
+    iec.UsageEvent: "usage-event",
     iec.FailureTaxonomy: "failure-taxonomy",
     iec.GateResultV1: "gate-result",
     iec.RetractionV1: "retraction",
@@ -75,13 +76,14 @@ class TestPackageSurface:
         assert iec.__version__.count(".") == 2  # X.Y.Z SemVer core
 
     def test_all_canonical_models_exported(self) -> None:
-        # 14 entities + 4 predicate bodies = 18 models, all importable by name.
+        # 15 entities + 4 predicate bodies = 19 models, all importable by name.
         # skill-refiner-pass/v1 added staging-first by Class-1 ADR DR-082.
         # SkillVersion is the 14th canonical entity (DR-028 T1 DISCRIMINATOR).
+        # UsageEvent is the 15th canonical entity (DR-103 D1 product-metering ledger).
         for name in (
             "EvalSpec EvalRun MatcherMap EvidenceBundle JudgeDecision "
             "RuntimeReceipt RegressionPack RolloutGate SkillSnapshot SkillVersion "
-            "SessionTrace ToolInvocation CostRecord FailureTaxonomy "
+            "SessionTrace ToolInvocation CostRecord UsageEvent FailureTaxonomy "
             "GateResultV1 RetractionV1 DashboardRenderV1 SkillRefinerPassV1"
         ).split():
             assert hasattr(iec, name), f"missing export: {name}"
@@ -217,6 +219,56 @@ class TestNegativeFixtures:
         for key in ("parent_version_id", "parent_content_hash"):
             without = {k: v for k, v in child.items() if k != key}
             assert not accepts(iec.SkillVersion, without), f"omitting {key} must be rejected"
+
+    # ── DR-103 D1 anti-gaming + D2 tenant + C3 on UsageEvent (15th canonical) ────
+
+    def test_usage_event_api_call_exempt_accepted(self) -> None:
+        # api_call is the lone meter exempt from the verified-source binding.
+        assert accepts(iec.UsageEvent, load("usage-event.api-call.valid.json"))
+
+    def test_usage_event_tenant_present_accepted(self) -> None:
+        # A present tenant_id is an attested claim; round-trips.
+        assert accepts(iec.UsageEvent, load("usage-event.tenant.valid.json"))
+
+    def test_usage_event_metered_unverified_rejected(self) -> None:
+        # DR-103 D1 B1.2: a metered row with source_verified=false is refused.
+        assert not accepts(
+            iec.UsageEvent, load("usage-event.invalid-metered-unverified.json")
+        )
+
+    def test_usage_event_metered_null_source_rejected(self) -> None:
+        # DR-103 D1 B1.2: a metered row with a null source is refused.
+        assert not accepts(
+            iec.UsageEvent, load("usage-event.invalid-metered-null-source.json")
+        )
+
+    def test_usage_event_bad_meter_rejected(self) -> None:
+        # dashboard_render is a predicate body, not a meter (DR-103 D1 B1.4).
+        assert not accepts(iec.UsageEvent, load("usage-event.invalid-bad-meter.json"))
+
+    def test_usage_event_tenant_id_explicit_null_rejected(self) -> None:
+        # DR-103 D2 optional-not-nullable parity: tenant_id is optional, not nullable.
+        fix = load("usage-event.valid.json")
+        assert not accepts(iec.UsageEvent, {**fix, "tenant_id": None})
+
+    def test_usage_event_extra_field_rejected(self) -> None:
+        # extra="forbid": no rolled-total field can be smuggled in (C3).
+        fix = load("usage-event.valid.json")
+        assert not accepts(iec.UsageEvent, {**fix, "rolled_total": 4003})
+
+    def test_usage_event_fractional_quantity_rejected(self) -> None:
+        # DR-103 epic Rule 1: quantity is a non-negative integer count, not a score.
+        fix = load("usage-event.valid.json")
+        assert not accepts(iec.UsageEvent, {**fix, "quantity": 0.95})
+
+    def test_usage_event_missing_nullable_source_keys_rejected(self) -> None:
+        # Required-but-nullable parity: source_entity_type / source_entity_id /
+        # cost_record_ref are in `required` (key MUST be present; value MAY be null).
+        # Omitting the key must be rejected, matching AJV + Zod.
+        fix = load("usage-event.valid.json")
+        for key in ("source_entity_type", "source_entity_id", "cost_record_ref"):
+            without = {k: v for k, v in fix.items() if k != key}
+            assert not accepts(iec.UsageEvent, without), f"omitting {key} must be rejected"
 
     # ── DR-085 D4 (semantic collision) + D5 (accept invariant) on the predicate ─
 

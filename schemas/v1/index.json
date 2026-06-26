@@ -120,6 +120,12 @@
       "kind": "entity",
       "spec": "Blueprint B § 2.12"
     },
+    "usage-event": {
+      "path": "usage-event.schema.json",
+      "title": "UsageEvent",
+      "kind": "entity",
+      "spec": "DR-103 D1 (intent-eval-lab 103-AT-DECR-isedc-skill-scoring-kernel-contracts-2026-06-25.md) — 15th canonical entity (append-only product-metering ledger, distinct from CostRecord)"
+    },
     "failure-taxonomy": {
       "path": "failure-taxonomy.schema.json",
       "title": "FailureTaxonomy",

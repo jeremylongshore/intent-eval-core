@@ -1,0 +1,12 @@
+{
+  "id": "0192cae6-0010-7000-8000-000000000002",
+  "meter": "skill_invocation",
+  "quantity": 1,
+  "unit": "count",
+  "source_entity_type": "session_trace",
+  "source_entity_id": "0192cae6-0005-7000-8000-000000000000",
+  "source_verified": true,
+  "cost_record_ref": null,
+  "recorded_at": "2026-06-25T00:00:07Z",
+  "tenant_id": "0192cae6-9999-7000-8000-000000000000"
+}

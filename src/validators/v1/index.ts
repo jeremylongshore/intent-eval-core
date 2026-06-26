@@ -25,6 +25,7 @@ export * from './skill-version.js';
 export * from './session-trace.js';
 export * from './tool-invocation.js';
 export * from './cost-record.js';
+export * from './usage-event.js';
 export * from './failure-taxonomy.js';
 export * from './gate-result-v1.js';
 export * from './retraction-v1.js';
