@@ -15,6 +15,13 @@
  *   production triggers hold (SPEC.md normative section · DNSSEC/CAA green ·
  *   SEPARATE authoring signing root live · ≥1 real SkillVersion clears the gate
  *   on a frozen signed eval-set).
+ * - `human-review/v1` — ADDITIVE; net-new HUMAN-trust predicate minted by Class-2
+ *   ISEDC DR-103 (D1 + D3). Body shape ships here; it is PERMANENTLY
+ *   `sigstore_staging` BY DESIGN (DR-103 D3 B3.2 — a human's open-ended TEXT
+ *   assessment is non-reproducible, so it can never meet `rekor_production`'s
+ *   reproduce-the-hash bar; the permanence is bound in the DR, not a flippable
+ *   constant). It rides a PARALLEL `HumanReviewStatement`, NOT the gate-pinned
+ *   `EvidenceStatement`.
  *
  * Every other predicate URI is exposed only as a string constant (URI) in
  * `PREDICATE_URIS`, with its body normative spec deferred to a per-predicate
@@ -25,3 +32,4 @@ export * from './gate-result-v1.js';
 export * from './retraction-v1.js';
 export * from './dashboard-render-v1.js';
 export * from './skill-refiner-pass-v1.js';
+export * from './human-review-v1.js';

@@ -58,6 +58,7 @@ VALID_FIXTURES = {
     iec.RolloutGate: "rollout-gate",
     iec.SkillSnapshot: "skill-snapshot",
     iec.SkillVersion: "skill-version",
+    iec.HumanReview: "human-review",
     iec.SessionTrace: "session-trace",
     iec.ToolInvocation: "tool-invocation",
     iec.CostRecord: "cost-record",
@@ -76,14 +77,17 @@ class TestPackageSurface:
         assert iec.__version__.count(".") == 2  # X.Y.Z SemVer core
 
     def test_all_canonical_models_exported(self) -> None:
-        # 15 entities + 4 predicate bodies = 19 models, all importable by name.
+        # 16 entities + 4 predicate bodies = 20 models, all importable by name.
         # skill-refiner-pass/v1 added staging-first by Class-1 ADR DR-082.
-        # SkillVersion is the 14th canonical entity (DR-028 T1 DISCRIMINATOR).
-        # UsageEvent is the 15th canonical entity (DR-103 D1 product-metering ledger).
+        # SkillVersion is a canonical entity (DR-028 T1 DISCRIMINATOR). UsageEvent
+        # (DR-103 D1 append-only product-metering ledger) and HumanReview (ISEDC
+        # DR-103 D1 — open-ended human-trust signal) both landed off the same main
+        # (parallel PRs #73 + #74); the set settles at 16 entities / 20 models with
+        # both present — no fixed ordinal is claimed for HumanReview per DR-103 D1 B1.5.
         for name in (
             "EvalSpec EvalRun MatcherMap EvidenceBundle JudgeDecision "
             "RuntimeReceipt RegressionPack RolloutGate SkillSnapshot SkillVersion "
-            "SessionTrace ToolInvocation CostRecord UsageEvent FailureTaxonomy "
+            "HumanReview SessionTrace ToolInvocation CostRecord UsageEvent FailureTaxonomy "
             "GateResultV1 RetractionV1 DashboardRenderV1 SkillRefinerPassV1"
         ).split():
             assert hasattr(iec, name), f"missing export: {name}"
@@ -205,8 +209,19 @@ class TestNegativeFixtures:
         root = load("skill-version.root.valid.json")
         assert not accepts(iec.SkillVersion, {**root, "version_kind": "restore"})
 
+    def test_skill_version_tenant_id_omitted_accepted(self) -> None:
+        # DR-085 D5 optional-not-nullable parity, OMIT half: tenant_id is OPTIONAL.
+        # Pydantic does not validate the `= None` default (validate_default unset),
+        # so an omitting body is accepted exactly as AJV + Zod (.optional()) accept
+        # it. This is the byte-identical precedent HumanReview mirrors per DR-103;
+        # pinning it here keeps the precedent honest against the same omit-vs-null
+        # confusion raised on PR #74.
+        child = load("skill-version.valid.json")
+        assert "tenant_id" not in child, "fixture must omit tenant_id for this test"
+        assert accepts(iec.SkillVersion, child)
+
     def test_skill_version_tenant_id_explicit_null_rejected(self) -> None:
-        # DR-085 D5 optional-not-nullable parity: tenant_id is optional, not nullable.
+        # DR-085 D5 optional-not-nullable parity, NULL half: optional, not nullable.
         child = load("skill-version.valid.json")
         assert not accepts(iec.SkillVersion, {**child, "tenant_id": None})
 
@@ -308,6 +323,104 @@ class TestNegativeFixtures:
         base = load("skill-refiner-pass.valid.json")
         without = {k: v for k, v in base.items() if k != "parent_version_id"}
         assert not accepts(iec.SkillRefinerPassV1, without)
+
+
+class TestHumanReviewEntity:
+    """HumanReview (net-new canonical entity, ISEDC DR-103 D1) — anti-gaming
+    cross-field invariants. Exact Python mirror of the Zod .superRefine + the
+    JSON-Schema if/then rules; the HUMAN-ONLY rule rides the generated
+    Literal[False] type."""
+
+    def test_root_fixture_validates(self) -> None:
+        # Thumb-only review pinned via judge_decision_id alone.
+        assert accepts(iec.HumanReview, load("human-review.root.valid.json"))
+
+    def test_no_pin_rejected(self) -> None:
+        # DR-103 D1 B1.2: both session_trace_id + judge_decision_id null → reject.
+        assert not accepts(iec.HumanReview, load("human-review.invalid-no-pin.json"))
+
+    def test_service_account_rejected(self) -> None:
+        # DR-103 D1 B1.2: reviewer_is_service_account=true → reject (HUMAN-only ledger).
+        assert not accepts(
+            iec.HumanReview, load("human-review.invalid-service-account.json")
+        )
+
+    def test_empty_signals_rejected(self) -> None:
+        # Spec Item 2: all three signal channels null → reject (no human signal).
+        assert not accepts(
+            iec.HumanReview, load("human-review.invalid-empty-signals.json")
+        )
+
+    def test_session_only_pin_accepted(self) -> None:
+        base = load("human-review.valid.json")
+        assert accepts(iec.HumanReview, {**base, "judge_decision_id": None})
+
+    def test_single_signal_accepted(self) -> None:
+        base = load("human-review.valid.json")
+        assert accepts(
+            iec.HumanReview,
+            {**base, "score_text": None, "thumbs": None, "annotation": "just a note"},
+        )
+
+    def test_tenant_id_omitted_accepted(self) -> None:
+        # DR-103 D2 optional-not-nullable parity, OMIT half: tenant_id is OPTIONAL
+        # (absence allowed). Pydantic does NOT validate the `= None` default unless
+        # validate_default=True (not set; model_config is extra="forbid" only), so
+        # the `tenant_id: Uuidv7 = None` override accepts an omitting body exactly
+        # as AJV + Zod (.optional()) accept it. Regression for the Gemini DR-103
+        # PR #74 HIGH FALSE POSITIVE, which claimed the default `None` would fail
+        # validation when tenant_id is omitted. Byte-identical to the SkillVersion
+        # precedent (DR-103 / DR-085 D5 mandate); see the SkillVersion companion.
+        base = load("human-review.valid.json")
+        assert "tenant_id" not in base, "fixture must omit tenant_id for this test"
+        assert accepts(iec.HumanReview, base)
+
+    def test_tenant_id_explicit_null_rejected(self) -> None:
+        # DR-103 D2 optional-not-nullable parity, NULL half: tenant_id is optional,
+        # not nullable — an explicit `null` is rejected exactly as AJV + Zod reject
+        # it. Companion to test_tenant_id_omitted_accepted: together they pin the
+        # full optional-NOT-nullable contract (omit OK, explicit null REJECTED).
+        base = load("human-review.valid.json")
+        assert not accepts(iec.HumanReview, {**base, "tenant_id": None})
+
+    def test_missing_pin_key_rejected(self) -> None:
+        # Required-but-nullable parity: the session_trace_id KEY must be present
+        # (value MAY be null). Omitting the key is rejected exactly as AJV + Zod.
+        base = load("human-review.valid.json")
+        without = {k: v for k, v in base.items() if k != "session_trace_id"}
+        assert not accepts(iec.HumanReview, without)
+
+    @pytest.mark.parametrize("signal_key", ["score_text", "thumbs", "annotation"])
+    def test_missing_signal_key_rejected(self, signal_key: str) -> None:
+        # Required-but-nullable parity for the three orthogonal signal channels:
+        # score_text / thumbs / annotation are in the schema `required` array (key
+        # MUST be present) and oneOf[<value>, null] (value MAY be null). Omitting
+        # the KEY is rejected exactly as AJV + Zod reject it — the at-least-one-
+        # signal model_validator constrains VALUES, this constrains KEYS. Regression
+        # for the three-way drift where the generated `... | None = None` made these
+        # keys silently omittable in Python (Gemini DR-103 PR #74 HIGH).
+        base = load("human-review.valid.json")
+        without = {k: v for k, v in base.items() if k != signal_key}
+        assert not accepts(iec.HumanReview, without)
+
+    def test_present_signal_key_null_value_accepted(self) -> None:
+        # The companion to the above: with the KEY present, a null VALUE is still
+        # accepted as long as at least one of the three channels is non-null —
+        # required-but-nullable, not required-and-non-null.
+        base = load("human-review.valid.json")
+        assert accepts(
+            iec.HumanReview,
+            {**base, "score_text": None, "thumbs": None},  # annotation stays non-null
+        )
+
+    def test_extra_field_rejected(self) -> None:
+        base = load("human-review.valid.json")
+        assert not accepts(iec.HumanReview, {**base, "surprise": True})
+
+    def test_prefixed_input_hash_rejected(self) -> None:
+        # The entity input_hash is BARE sha256 (the wire layer adds the prefix).
+        base = load("human-review.valid.json")
+        assert not accepts(iec.HumanReview, {**base, "input_hash": "sha256:" + "3" * 64})
 
 
 class TestClosedWorld:

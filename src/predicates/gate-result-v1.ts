@@ -19,6 +19,7 @@
 
 import type { Rfc3339, Sha256Prefixed, Uuidv7 } from '../primitives.js';
 import { DASHBOARD_RENDER_V1_URI } from './dashboard-render-v1.js';
+import { HUMAN_REVIEW_V1_URI } from './human-review-v1.js';
 import { RETRACTION_V1_URI } from './retraction-v1.js';
 import { SKILL_REFINER_PASS_V1_URI } from './skill-refiner-pass-v1.js';
 
@@ -336,6 +337,11 @@ export const PREDICATE_URIS = {
   // ADDITIVE — minted staging-first by Class-1 ADR DR-082; body ships in
   // src/predicates/skill-refiner-pass-v1.ts, runs in sigstore_staging (`ln`).
   SKILL_REFINER_PASS_V1: SKILL_REFINER_PASS_V1_URI,
+  // ADDITIVE — net-new human-trust predicate URI minted by Class-2 ISEDC DR-103
+  // (D1 + D3). Body ships in src/predicates/human-review-v1.ts. PERMANENTLY
+  // sigstore_staging by design (DR-103 D3 B3.2 — a human's open-ended TEXT
+  // assessment is non-reproducible, so it can never meet rekor_production's bar).
+  HUMAN_REVIEW_V1: HUMAN_REVIEW_V1_URI,
   VALIDATION_RESULT_V1: 'https://evals.intentsolutions.io/validation-result/v1',
   EVAL_VERDICT_V1: 'https://evals.intentsolutions.io/eval-verdict/v1',
   COST_ATTRIBUTION_V1: 'https://evals.intentsolutions.io/cost-attribution/v1',

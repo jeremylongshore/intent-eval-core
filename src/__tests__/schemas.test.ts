@@ -62,6 +62,7 @@ const ENTITY_SCHEMAS = [
   'rollout-gate',
   'skill-snapshot',
   'skill-version',
+  'human-review',
   'session-trace',
   'tool-invocation',
   'cost-record',
@@ -70,23 +71,32 @@ const ENTITY_SCHEMAS = [
 ] as const;
 
 describe('schemas/v1 — structural integrity', () => {
-  it('ships exactly 15 entity schemas + 4 predicates + 1 common + 1 index = 21 files', () => {
+  it('ships exactly 16 entity schemas + 4 predicates + 1 common + 1 index = 22 files', () => {
     // v0.2.0 added retraction/v1 + dashboard-render/v1 predicate schemas
     // alongside the v0.1 gate-result/v1 (16 → 18 files). Class-1 ADR DR-082
     // added skill-refiner-pass/v1 (18 → 19 files). DR-028 T1 added the
     // skill-version entity — the 14th canonical entity (19 → 20 files). DR-103
-    // D1 added the usage-event entity — the 15th canonical entity (20 → 21 files).
+    // D1 added the usage-event entity (20 → 21 files) and the human-review entity
+    // (21 → 22 files); both landed off the same main (parallel PRs #73 + #74), so
+    // the on-disk count settles at 22 files / 16 entities with both present. Per
+    // DR-103 D1 B1.5 no fixed ordinal is claimed for human-review. The
+    // human-review/v1 predicate body ships as hand-authored TS+Zod (a PARALLEL
+    // statement, mirroring EvidenceStatement) with NO separate predicate JSON
+    // schema, so the predicate-schema count stays 4.
     const files = readdirSync(SCHEMAS_DIR).filter((f) => f.endsWith('.json'));
-    expect(files).toHaveLength(21);
+    expect(files).toHaveLength(22);
   });
 
   it('every entity schema is referenced in index.json', () => {
     const idx = loadJson(join(SCHEMAS_DIR, 'index.json'));
     const schemas = idx['schemas'] as Record<string, { kind: string }>;
     const entityEntries = Object.values(schemas).filter((s) => s.kind === 'entity');
-    // 13 Blueprint B § 2 entities + SkillVersion (14th, DR-028 T1 DISCRIMINATOR)
-    // + UsageEvent (15th, DR-103 D1 append-only product-metering ledger).
-    expect(entityEntries).toHaveLength(15);
+    // 13 Blueprint B § 2 entities + SkillVersion (DR-028 T1 DISCRIMINATOR)
+    // + UsageEvent (DR-103 D1 append-only product-metering ledger)
+    // + HumanReview (ISEDC DR-103 D1 — open-ended human-trust signal).
+    // 16 with both PR #73 + #74 landed (no fixed ordinal claimed for
+    // human-review per DR-103 D1 B1.5).
+    expect(entityEntries).toHaveLength(16);
   });
 
   it('every schema declares draft 2020-12', () => {
@@ -587,7 +597,74 @@ describe('schemas/v1 — SkillVersion entity (14th canonical, DR-028 T1 DISCRIMI
   });
 });
 
-describe('schemas/v1 — UsageEvent entity (15th canonical, DR-103 D1 append-only product-metering ledger)', () => {
+describe('schemas/v1 — HumanReview entity (net-new canonical, ISEDC DR-103 D1)', () => {
+  let ajv: AjvInstance;
+  let validateHumanReview: (data: unknown) => boolean;
+
+  beforeAll(() => {
+    ajv = buildAjv();
+    const common = loadJson(join(SCHEMAS_DIR, '_common.schema.json'));
+    ajv.addSchema(
+      common,
+      'https://github.com/jeremylongshore/intent-eval-core/schemas/v1/_common.schema.json',
+    );
+    validateHumanReview = ajv.compile(loadJson(join(SCHEMAS_DIR, 'human-review.schema.json')));
+  });
+
+  it('human-review.valid.json validates (full review, three channels, pinned)', () => {
+    expect(validateHumanReview(loadJson(join(FIXTURES_DIR, 'human-review.valid.json')))).toBe(true);
+  });
+
+  it('human-review.root.valid.json validates (thumb-only, judge-pinned)', () => {
+    expect(validateHumanReview(loadJson(join(FIXTURES_DIR, 'human-review.root.valid.json')))).toBe(
+      true,
+    );
+  });
+
+  it('DR-103 D1 B1.2: a review pinned to nothing (both session + judge null) → REJECT', () => {
+    expect(
+      validateHumanReview(loadJson(join(FIXTURES_DIR, 'human-review.invalid-no-pin.json'))),
+    ).toBe(false);
+  });
+
+  it('DR-103 D1 B1.2: a service-account-authored review (reviewer_is_service_account=true) → REJECT', () => {
+    expect(
+      validateHumanReview(
+        loadJson(join(FIXTURES_DIR, 'human-review.invalid-service-account.json')),
+      ),
+    ).toBe(false);
+  });
+
+  it('a review with all three signal channels null → REJECT (at-least-one-signal)', () => {
+    expect(
+      validateHumanReview(loadJson(join(FIXTURES_DIR, 'human-review.invalid-empty-signals.json'))),
+    ).toBe(false);
+  });
+
+  it('DR-103 D2: tenant_id is optional-NOT-nullable (explicit null → REJECT)', () => {
+    const base = loadJson(join(FIXTURES_DIR, 'human-review.valid.json'));
+    expect(validateHumanReview({ ...base, tenant_id: null })).toBe(false);
+  });
+
+  it('an unknown extra field → REJECT (additionalProperties: false)', () => {
+    const base = loadJson(join(FIXTURES_DIR, 'human-review.valid.json'));
+    expect(validateHumanReview({ ...base, surprise: true })).toBe(false);
+  });
+
+  it('a prefixed (sha256:) input_hash → REJECT (entity hash is BARE)', () => {
+    const base = loadJson(join(FIXTURES_DIR, 'human-review.valid.json'));
+    expect(validateHumanReview({ ...base, input_hash: 'sha256:' + '3'.repeat(64) })).toBe(false);
+  });
+
+  it('a missing required pin KEY (session_trace_id omitted) → REJECT', () => {
+    const base = loadJson(join(FIXTURES_DIR, 'human-review.valid.json'));
+    const bad = { ...base };
+    delete bad['session_trace_id'];
+    expect(validateHumanReview(bad)).toBe(false);
+  });
+});
+
+describe('schemas/v1 — UsageEvent entity (DR-103 D1 append-only product-metering ledger)', () => {
   let ajv: AjvInstance;
   let validateUsageEvent: (data: unknown) => boolean;
 
