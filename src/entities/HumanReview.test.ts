@@ -1,6 +1,6 @@
 /**
  * HumanReview entity — Zod validator + state-machine + fixture-parity tests
- * (15th canonical entity, ISEDC DR-103 D1). Exercises every anti-gaming branch
+ * (net-new canonical entity, ISEDC DR-103 D1). Exercises every anti-gaming branch
  * (verified-pin, human-only, at-least-one-signal), the optional-not-nullable
  * tenant, the required-key-but-nullable pins, and the single terminal state.
  */

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`@intentsolutions/core` — the canonical contracts kernel for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab). TypeScript types, JSON Schemas, Zod validators, and state machines for the 15 canonical platform entities (the 13 from Blueprint B § 2 + `SkillVersion`, the 14th per DR-028 T1, + `HumanReview`, the 15th per ISEDC DR-103 D1). **Every** validator in the platform (`audit-harness`, `j-rig`, `intent-rollout-gate`) depends on this package for canonical contract definitions.
+`@intentsolutions/core` — the canonical contracts kernel for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab). TypeScript types, JSON Schemas, Zod validators, and state machines for the canonical platform entities (the 13 from Blueprint B § 2 + `SkillVersion` per DR-028 T1 + `HumanReview` per ISEDC DR-103 D1 — 15 on this branch; DR-103 D1 also adds `UsageEvent` via parallel PR #73, so the set settles at 16 once both land; per DR-103 D1 B1.5 no fixed ordinal is claimed). **Every** validator in the platform (`audit-harness`, `j-rig`, `intent-rollout-gate`) depends on this package for canonical contract definitions.
 
 This repo is **kernel-only**:
 
@@ -67,9 +67,10 @@ Published as **`@intentsolutions/core@0.8.0`** (sigstore provenance). The kernel
 ```text
 intent-eval-core/
 ├── src/
-│   ├── entities/           ← TS interfaces + state machines for the 15 canonical entities
-│   │                          (Blueprint B § 2's 13 + SkillVersion the 14th per DR-028 T1
-│   │                          + HumanReview the 15th per ISEDC DR-103 D1):
+│   ├── entities/           ← TS interfaces + state machines for the canonical entities
+│   │                          (Blueprint B § 2's 13 + SkillVersion per DR-028 T1
+│   │                          + HumanReview per ISEDC DR-103 D1 — 15 on this branch;
+│   │                          + UsageEvent per DR-103 D1 / parallel PR #73 → 16 once both land):
 │   │                          EvalSpec, EvalRun, EvidenceBundle, JudgeDecision, RuntimeReceipt,
 │   │                          SessionTrace, ToolInvocation, CostRecord, FailureTaxonomy,
 │   │                          MatcherMap, RegressionPack, RolloutGate, SkillSnapshot, SkillVersion,

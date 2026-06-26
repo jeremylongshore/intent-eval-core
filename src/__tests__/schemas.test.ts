@@ -70,15 +70,19 @@ const ENTITY_SCHEMAS = [
 ] as const;
 
 describe('schemas/v1 — structural integrity', () => {
-  it('ships exactly 15 entity schemas + 4 predicates + 1 common + 1 index = 21 files', () => {
+  it('ships exactly 15 entity schemas + 4 predicates + 1 common + 1 index = 21 files (this branch)', () => {
     // v0.2.0 added retraction/v1 + dashboard-render/v1 predicate schemas
     // alongside the v0.1 gate-result/v1 (16 → 18 files). Class-1 ADR DR-082
     // added skill-refiner-pass/v1 (18 → 19 files). DR-028 T1 added the
     // skill-version entity — the 14th canonical entity (19 → 20 files). ISEDC
-    // DR-103 D1 added the human-review entity — the 15th canonical entity
-    // (20 → 21 files). The human-review/v1 predicate body ships as hand-authored
-    // TS+Zod (a PARALLEL statement, mirroring EvidenceStatement) with NO separate
-    // predicate JSON schema, so the predicate-schema count stays 4.
+    // DR-103 D1 added the human-review entity (20 → 21 files on THIS branch).
+    // DR-103 D1 ALSO ratified usage_events (parallel PR #73 off the same main,
+    // also a 20 → 21 bump in isolation); the on-disk count settles at 22 files /
+    // 16 entities once BOTH land. Per DR-103 D1 B1.5 no fixed ordinal is claimed
+    // for human-review; whichever PR merges second resolves this assertion to 22.
+    // The human-review/v1 predicate body ships as hand-authored TS+Zod (a
+    // PARALLEL statement, mirroring EvidenceStatement) with NO separate predicate
+    // JSON schema, so the predicate-schema count stays 4.
     const files = readdirSync(SCHEMAS_DIR).filter((f) => f.endsWith('.json'));
     expect(files).toHaveLength(21);
   });
@@ -88,7 +92,9 @@ describe('schemas/v1 — structural integrity', () => {
     const schemas = idx['schemas'] as Record<string, { kind: string }>;
     const entityEntries = Object.values(schemas).filter((s) => s.kind === 'entity');
     // 13 Blueprint B § 2 entities + SkillVersion (14th, DR-028 T1 DISCRIMINATOR)
-    // + HumanReview (15th, ISEDC DR-103 D1 — open-ended human-trust signal).
+    // + HumanReview (net-new, ISEDC DR-103 D1 — open-ended human-trust signal).
+    // 15 on this branch; settles at 16 once the parallel usage_events PR #73
+    // lands (no fixed ordinal claimed for human-review per DR-103 D1 B1.5).
     expect(entityEntries).toHaveLength(15);
   });
 
@@ -590,7 +596,7 @@ describe('schemas/v1 — SkillVersion entity (14th canonical, DR-028 T1 DISCRIMI
   });
 });
 
-describe('schemas/v1 — HumanReview entity (15th canonical, ISEDC DR-103 D1)', () => {
+describe('schemas/v1 — HumanReview entity (net-new canonical, ISEDC DR-103 D1)', () => {
   let ajv: AjvInstance;
   let validateHumanReview: (data: unknown) => boolean;
 

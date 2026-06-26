@@ -76,10 +76,14 @@ class TestPackageSurface:
         assert iec.__version__.count(".") == 2  # X.Y.Z SemVer core
 
     def test_all_canonical_models_exported(self) -> None:
-        # 15 entities + 4 predicate bodies = 19 models, all importable by name.
-        # skill-refiner-pass/v1 added staging-first by Class-1 ADR DR-082.
-        # SkillVersion is the 14th canonical entity (DR-028 T1 DISCRIMINATOR);
-        # HumanReview is the 15th (ISEDC DR-103 D1 — open-ended human-trust signal).
+        # 15 entities + 4 predicate bodies = 19 models on THIS branch, all
+        # importable by name. skill-refiner-pass/v1 added staging-first by
+        # Class-1 ADR DR-082. SkillVersion is the 14th canonical entity (DR-028
+        # T1 DISCRIMINATOR); HumanReview is the net-new entity this branch adds
+        # (ISEDC DR-103 D1 — open-ended human-trust signal). DR-103 D1 also adds
+        # UsageEvent (parallel PR #73 off the same main); the set settles at 16
+        # entities / 20 models once both land — no fixed ordinal is claimed for
+        # HumanReview per DR-103 D1 B1.5, and the second merge resolves this count.
         for name in (
             "EvalSpec EvalRun MatcherMap EvidenceBundle JudgeDecision "
             "RuntimeReceipt RegressionPack RolloutGate SkillSnapshot SkillVersion "
@@ -261,9 +265,10 @@ class TestNegativeFixtures:
 
 
 class TestHumanReviewEntity:
-    """HumanReview (15th canonical, ISEDC DR-103 D1) — anti-gaming cross-field
-    invariants. Exact Python mirror of the Zod .superRefine + the JSON-Schema
-    if/then rules; the HUMAN-ONLY rule rides the generated Literal[False] type."""
+    """HumanReview (net-new canonical entity, ISEDC DR-103 D1) — anti-gaming
+    cross-field invariants. Exact Python mirror of the Zod .superRefine + the
+    JSON-Schema if/then rules; the HUMAN-ONLY rule rides the generated
+    Literal[False] type."""
 
     def test_root_fixture_validates(self) -> None:
         # Thumb-only review pinned via judge_decision_id alone.

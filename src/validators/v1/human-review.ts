@@ -1,5 +1,5 @@
 /**
- * HumanReview runtime validator — 15th canonical entity (ISEDC DR-103 D1).
+ * HumanReview runtime validator — net-new canonical entity (ISEDC DR-103 D1).
  *
  * The human counterpart to JudgeDecision: a single human's open-ended assessment
  * of an EvalRun. Three ORTHOGONAL nullable channels (`score_text` open-ended

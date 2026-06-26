@@ -106,7 +106,7 @@
       "path": "human-review.schema.json",
       "title": "HumanReview",
       "kind": "entity",
-      "spec": "ISEDC DR-103 D1 (intent-eval-lab 103-AT-DECR-isedc-skill-scoring-kernel-contracts-2026-06-25.md) — 15th canonical entity (open-ended human-trust signal)"
+      "spec": "ISEDC DR-103 D1 (intent-eval-lab 103-AT-DECR-isedc-skill-scoring-kernel-contracts-2026-06-25.md) — net-new canonical entity (open-ended human-trust signal); DR-103 D1 also adds UsageEvent (parallel PR #73), set settles at 16, no fixed ordinal claimed per B1.5"
     },
     "session-trace": {
       "path": "session-trace.schema.json",

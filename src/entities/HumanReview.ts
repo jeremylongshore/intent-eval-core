@@ -1,5 +1,5 @@
 /**
- * HumanReview — open-ended human-trust signal on an EvalRun (15th canonical entity).
+ * HumanReview — open-ended human-trust signal on an EvalRun (net-new canonical entity, ISEDC DR-103 D1).
  *
  * ISEDC DR-103 D1 (intent-eval-lab `103-AT-DECR-isedc-skill-scoring-kernel-
  * contracts-2026-06-25.md`). The human counterpart to {@link JudgeDecision}: a

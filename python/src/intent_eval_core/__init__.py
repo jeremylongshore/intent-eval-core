@@ -51,7 +51,8 @@ __version__ = "0.9.0"
 
 __all__ = [
     "__version__",
-    # Entities (Blueprint B § 2.1 – § 2.13 + SkillVersion, the 14th per DR-028 T1)
+    # Entities (Blueprint B § 2.1 – § 2.13 + SkillVersion per DR-028 T1
+    # + HumanReview per ISEDC DR-103 D1; UsageEvent follows via parallel PR #73)
     "EvalSpec",
     "EvalRun",
     "MatcherMap",

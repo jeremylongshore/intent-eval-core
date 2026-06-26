@@ -238,7 +238,7 @@ class SkillVersion(_SkillVersionGenerated):
 
 
 class HumanReview(_HumanReviewGenerated):
-    """HumanReview — 15th canonical entity (ISEDC DR-103 D1), with the anti-gaming
+    """HumanReview — net-new canonical entity (ISEDC DR-103 D1), with the anti-gaming
     cross-field invariants the JSON Schema expresses via ``allOf``/``if-then``
     (which datamodel-code-generator cannot emit). Exact Python mirror of the Zod
     ``.superRefine`` block in ``src/validators/v1/human-review.ts``:

@@ -34,8 +34,8 @@
  *
  * ── HumanReview-by-id-not-entity ──
  * The `human_review_id` / `eval_run_id` / `session_trace_id` / `judge_decision_id`
- * provenance set references the {@link HumanReview} entity (15th canonical, DR-103
- * D1) by the kernel's EXISTING `Uuidv7` + `Sha256Prefixed` primitives. `subject[]
+ * provenance set references the {@link HumanReview} entity (net-new canonical,
+ * DR-103 D1) by the kernel's EXISTING `Uuidv7` + `Sha256Prefixed` primitives. `subject[]
  * .digest.sha256` MUST equal `input_hash` WITHOUT the `sha256:` prefix — the
  * forgery-cost pin (DR-103 D1 B1.3 + D3 B3.4).
  *
