@@ -9,7 +9,7 @@ Part of the **[Intent Eval Platform](https://github.com/intent-solutions-io/inte
 
 Canonical contracts kernel for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab) — TypeScript types, JSON Schemas, Zod validators, and state machines for the 15 canonical platform entities (the 13 from Blueprint B § 2 + `SkillVersion`, the 14th per DR-028 T1, + `UsageEvent`, the 15th per DR-103 D1).
 
-> **Status — v0.8.0:** current published release (first public release was `v0.1.0`, 2026-05-17). Contracts follow SemVer. Published with Sigstore provenance — verify via `npm audit signatures`.
+> **Status — v0.9.0:** current published release (first public release was `v0.1.0`, 2026-05-17). Contracts follow SemVer. Published with Sigstore provenance — verify via `npm audit signatures`.
 
 ## Install
 
