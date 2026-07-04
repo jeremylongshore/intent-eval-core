@@ -56,13 +56,26 @@ pnpm run lint:fix         # eslint . --fix
 pnpm run typecheck        # tsc --noEmit
 pnpm run format           # prettier --write .
 pnpm run format:check     # prettier --check .
+pnpm run boundaries       # kernel anti-goal boundary checker (FORBIDDEN.md/ALLOWLIST.md)
+pnpm run arch             # audit-harness architecture rules (Blueprint A anti-goals)
+pnpm run harness:verify   # hash-pinned policy verification (audit-harness verify)
+pnpm run codegen:validators  # regen src/validators/v1/_generated/ Zod from schemas/v1/*.json
+pnpm run codegen:authoring   # regen authoring-tier codegen (:check for stale-gate)
+pnpm run codegen:pydantic    # regen Python Pydantic mirror (:check for drift)
+pnpm run api:check        # api-extractor SemVer surface regression gate (iec-E07)
+pnpm run test:coverage    # vitest --coverage, 100% floor (NOT 80%)
 ```
 
-`pnpm run check` is the **canonical pre-commit gate**. CI runs the same chain plus build + dist-artifact verification.
+`pnpm run check` is the **canonical pre-commit gate** — a 15-step chain, NOT just lint+typecheck+test:
+codegen:authoring:check → check:{predicate-namespace,chamber-isolation,rubric-floor,prose-anchors,
+coverage-map,coverage-map-prose-anchors,is-extension-rationale} → check:version-lockstep →
+format:check → lint → typecheck → test → arch → boundaries. CI (`.github/workflows/ci.yml`,
+job "lint + typecheck + test + build") additionally runs build + test:coverage (100% floor) +
+test:types (tsd) + harness:verify + api:check/api:diff + Codecov upload.
 
 ## Project structure
 
-Published as **`@intentsolutions/core@0.8.0`** (sigstore provenance). The kernel is **bicameral** — a runtime tier and an authoring tier:
+Published as **`@intentsolutions/core@0.9.0`** (sigstore provenance). The kernel is **bicameral** — a runtime tier and an authoring tier:
 
 ```text
 intent-eval-core/
@@ -80,15 +93,19 @@ intent-eval-core/
 ├── schemas/
 │   ├── v1/                  ← runtime-tier JSON Schemas (draft 2020-12) — one per entity
 │   │                          + gate-result, retraction, dashboard-render, skill-refiner-pass
-│   └── authoring/v1/        ← Spec Authority Kernel (SAK): authoring-artifact contracts
-│                              (skill-frontmatter [PUBLISHED], plugin-manifest, agent-definition,
-│                               mcp-config, hook-config, marketplace-catalog) — each composes
-│                               upstream-base/ + 3 universal folds + is-overlay/
+│   ├── authoring/v1/        ← Spec Authority Kernel (SAK): authoring-artifact contracts
+│   │                          (skill-frontmatter [PUBLISHED], plugin-manifest, agent-definition,
+│   │                           mcp-config, hook-config, marketplace-catalog) — each composes
+│   │                           upstream-base/ + 3 universal folds + is-overlay/
+│   └── authoring/v2/        ← STRICT IS-marketplace profile (DR-062/DR-049); all 6 contracts
+│                              forked; SHIPPED-INTERNAL, not yet canonical (zero $ref into v1)
+├── python/                ← Pydantic mirror of the kernel entities (codegen:pydantic);
+│                              AJV/Zod/Pydantic three-way parity tests; CI: .github/workflows/python.yml
 ├── dist/                   ← build output (gitignored)
 ├── tsconfig.json           ← base TS config (noEmit, for editor + lint)
 ├── tsconfig.build.json     ← emit-only build config (rootDir=src)
 ├── eslint.config.js        ← flat-config ESLint, typed lint enabled
-├── vitest.config.ts        ← vitest with 80% coverage thresholds
+├── vitest.config.ts        ← vitest with 100% coverage floor enforced (CI test:coverage step)
 ├── package.json            ← @intentsolutions/core, ESM, Node 20+, pnpm 9+
 ├── .nvmrc                  ← Node 22
 └── .github/workflows/ci.yml ← lint+typecheck+test+build on PR + push to main
@@ -115,7 +132,7 @@ Three-layer mirror (per umbrella `CLAUDE.md`):
 | GitHub issue | <https://github.com/jeremylongshore/intent-eval-core/issues> — one per epic (label `epic`); sub-beads share the parent issue |
 | Plane | **Intent Eval Core — Kernel** sub-module under LAB project |
 
-Use `bd-sync link/note/close` for every state change. After bulk operations, apply the JSONL workaround from umbrella CLAUDE.md (tracked at `bd_000-projects-ufc`; upstream issues #3848 + #3970).
+Use `bd-sync link/note/close` for every state change. After bulk operations, JSONL stays fresh via `export.interval=1s` in the umbrella `.beads/config.yaml` (the earlier "auto-flush drops writes" framing was closed as mischaracterized — the real cause was bd's 60s throttle window).
 
 ## Branch + PR conventions
 
