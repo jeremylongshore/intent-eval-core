@@ -1,6 +1,6 @@
 # `@intentsolutions/core`
 
-Part of the **[Intent Eval Platform](https://github.com/intent-solutions-io/intent-eval-platform)** — the umbrella mapping the six repos that converge via a shared Evidence Bundle schema.
+Part of the **[Intent Eval Platform](https://github.com/intent-solutions-io/intent-eval-platform)** — the umbrella grouping the platform's six repos: five converge via a shared Evidence Bundle schema (`intent-eval-core`, `intent-eval-lab`, `audit-harness`, `j-rig-skill-binary-eval`, `intent-rollout-gate`), plus `intent-eval-dashboard` as a satellite consumer (not part of the convergence taxonomy).
 
 [![npm](https://img.shields.io/npm/v/@intentsolutions/core?color=cb3837&logo=npm)](https://www.npmjs.com/package/@intentsolutions/core)
 [![CI](https://github.com/jeremylongshore/intent-eval-core/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jeremylongshore/intent-eval-core/actions/workflows/ci.yml)

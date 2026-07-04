@@ -6,7 +6,7 @@
     "provenance": true,
     "registry": "https://registry.npmjs.org/"
   },
-  "description": "Canonical contracts kernel for the Intent Eval Platform — TypeScript types, JSON Schemas, Zod validators, and state machines for the 13 canonical entities.",
+  "description": "Canonical contracts kernel for the Intent Eval Platform — TypeScript types, JSON Schemas, Zod validators, and state machines for the 16 canonical entities.",
   "keywords": [
     "intent-eval",
     "contracts",
