@@ -66,7 +66,7 @@ pnpm run api:check        # api-extractor SemVer surface regression gate (iec-E0
 pnpm run test:coverage    # vitest --coverage, 100% floor (NOT 80%)
 ```
 
-`pnpm run check` is the **canonical pre-commit gate** — a 14-step chain, NOT just lint+typecheck+test:
+`pnpm run check` is the **canonical pre-commit gate** — a 15-step chain, NOT just lint+typecheck+test:
 codegen:authoring:check → check:{predicate-namespace,chamber-isolation,rubric-floor,prose-anchors,
 coverage-map,coverage-map-prose-anchors,is-extension-rationale} → check:version-lockstep →
 format:check → lint → typecheck → test → arch → boundaries. CI (`.github/workflows/ci.yml`,
