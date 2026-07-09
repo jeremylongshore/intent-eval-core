@@ -8,11 +8,11 @@
  *
  * `source_snapshot_hash` is a READ-ONLY REFERENCE (content hash) to the
  * SkillSnapshot at refinement time — EXPLICITLY NOT a relational FK (DR-028 T1
- * line 92). It is typed `Sha256Prefixed` identically to the
- * skill-refiner-pass/v1 predicate body's `source_snapshot_hash`, and
- * `id`/`parent_version_id` are typed `Uuidv7` identically to the predicate's
- * `skill_version_id`/`parent_version_id`, so the predicate's references align
- * with this entity.
+ * line 92). It is typed bare `Sha256` (the 64-hex alphabet, no `sha256:`
+ * prefix — DR-085 D3, aligned platform-wide to `SkillSnapshot.combined_sha`),
+ * and `id`/`parent_version_id` are typed `Uuidv7` identically to the predicate
+ * body's `skill_version_id`/`parent_version_id`, so the predicate's references
+ * align with this entity.
  *
  * SIGNING STATE MACHINE (AT-DECR 011, the DR-028 T1 / DR-085 D1 deferred work):
  * the six OPTIONAL signing fields (`status` / `signing_mode` / `rekor_log_index` /

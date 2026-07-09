@@ -117,9 +117,12 @@ export type SkillVersionState = SkillVersionSigningStatus;
  * structural-soundness gate (self-loops are a `validateTransitionMap` defect) and
  * the `retryTransitions` precedent (a re-queue walks through a distinct state).
  *
- * `sigstore_staging` MAY also be a terminal resting state (a row that never
- * requests production signing simply stays staging). Enforced at runtime by the
- * reconciler via {@link canTransition}; the kernel exports only the legal map.
+ * `sigstore_staging` MAY also be a terminal resting state OPERATIONALLY (a row
+ * that never requests production signing simply stays staging) — but it is NOT
+ * in the formal terminal set: `terminalStates()` reports only
+ * `{ active, signing_failed }` because `sigstore_staging` retains outgoing
+ * edges. Enforced at runtime by the reconciler via {@link canTransition}; the
+ * kernel exports only the legal map.
  */
 export const skillVersionSigningTransitions: TransitionMap<SkillVersionState> = {
   sigstore_staging: ['pending_production', 'active'],
