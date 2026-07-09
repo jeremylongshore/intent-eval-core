@@ -29,6 +29,7 @@ Naming: `NNN-CC-ABCD-description-YYYY-MM-DD.md` where:
 | 008 | [Schema-policy eval — marketplace-tier foundation](008-AA-EVAL-schema-policy-marketplace-tier-2026-06-09.md) | 2026-06-09 | AA-EVAL | closes audit C2 (foundation sound; coverage boundary measured) |
 | 009 | [CompositionDag wire format normative spec](009-DR-RFC-compositiondag-wire-format-2026-06-10.md) | 2026-06-10 | DR-RFC | accepted (iec-deferral-F; locks CompositionDag serialization) |
 | 010 | [ID + event-ID invariants](010-AT-STND-id-and-event-id-invariants-2026-06-13.md) | 2026-06-13 | AT-STND | NORMATIVE (iec-E06 invariant register; kernel-vs-runtime generation boundary) |
+| 011 | [SkillVersion signing state machine (DR-028 T1 / DR-085 D1 deferred)](011-AT-DECR-skillversion-signing-state-machine-2026-07-09.md) | 2026-07-09 | AT-DECR | RATIFIED (acting-CTO, aon3.4; additive six OPTIONAL fields + staging-first state machine + both-directions cross-field invariant; kernel 0.10.0) |
 
 ## Cross-repo authority chain
 

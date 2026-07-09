@@ -235,6 +235,56 @@ class TestNegativeFixtures:
             without = {k: v for k, v in child.items() if k != key}
             assert not accepts(iec.SkillVersion, without), f"omitting {key} must be rejected"
 
+    # ── AT-DECR 011 signing state machine (additive, staging-first) ──────────
+
+    def test_skill_version_legacy_no_signing_fields_accepted(self) -> None:
+        # Additive proof: the pre-existing fixture (no signing fields) stays valid.
+        assert accepts(iec.SkillVersion, load("skill-version.valid.json"))
+
+    def test_skill_version_signing_states_validate(self) -> None:
+        # staging / pending_production / active+rekor / signing_failed all validate.
+        for stem in (
+            "skill-version.signing-staging.valid.json",
+            "skill-version.signing-pending-production.valid.json",
+            "skill-version.signing-active.valid.json",
+            "skill-version.signing-failed.valid.json",
+        ):
+            assert accepts(iec.SkillVersion, load(stem)), stem
+
+    def test_skill_version_rekor_index_without_active_production_rejected(self) -> None:
+        # AT-DECR 011 § D3 direction B: a rekor index on a non-active/non-production
+        # row is forged provenance.
+        assert not accepts(
+            iec.SkillVersion,
+            load("skill-version.invalid-rekor-index-without-active-production.json"),
+        )
+
+    def test_skill_version_active_production_without_rekor_index_rejected(self) -> None:
+        # AT-DECR 011 § D3 direction A: an active+production row without a rekor
+        # index is an unverifiable production claim.
+        assert not accepts(
+            iec.SkillVersion,
+            load("skill-version.invalid-active-production-without-rekor-index.json"),
+        )
+
+    def test_skill_version_active_staging_mode_rekor_index_rejected(self) -> None:
+        # A rekor index requires signing_mode='rekor_production', not sigstore_staging.
+        active = load("skill-version.signing-active.valid.json")
+        assert not accepts(
+            iec.SkillVersion, {**active, "signing_mode": "sigstore_staging"}
+        )
+
+    def test_skill_version_bad_status_rejected(self) -> None:
+        # status is a CLOSED enum (AT-DECR 011); widening is a /v2 trigger.
+        staging = load("skill-version.signing-staging.valid.json")
+        assert not accepts(iec.SkillVersion, {**staging, "status": "archived_forever"})
+
+    def test_skill_version_status_explicit_null_rejected(self) -> None:
+        # AT-DECR 011 optional-NOT-nullable parity: absent ≡ staging default;
+        # explicit null rejected exactly as AJV + Zod reject it.
+        staging = load("skill-version.signing-staging.valid.json")
+        assert not accepts(iec.SkillVersion, {**staging, "status": None})
+
     # ── DR-103 D1 anti-gaming + D2 tenant + C3 on UsageEvent (15th canonical) ────
 
     def test_usage_event_api_call_exempt_accepted(self) -> None:
@@ -435,8 +485,10 @@ class TestClosedWorld:
         assert not accepts(iec.EvalSpec, {**base, "surprise": True})
 
     def test_skill_version_extra_unknown_key_rejected(self) -> None:
+        # `status` is now a KNOWN field (AT-DECR 011 signing state machine); use a
+        # genuinely-unknown key to prove the closed-world (extra="forbid") posture.
         base = load("skill-version.valid.json")
-        assert not accepts(iec.SkillVersion, {**base, "status": "active"})
+        assert not accepts(iec.SkillVersion, {**base, "not_a_real_field": True})
 
     def test_eval_spec_scoring_extra_key_accepted(self) -> None:
         # scoring is the OPEN object (additionalProperties default) — a

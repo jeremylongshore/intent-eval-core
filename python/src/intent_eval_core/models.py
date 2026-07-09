@@ -33,7 +33,7 @@ from typing import Literal
 
 from typing_extensions import Self
 
-from pydantic import model_validator
+from pydantic import conint, model_validator
 
 from ._generated import _common_schema as _schema
 
@@ -105,6 +105,12 @@ from ._generated.usage_event_schema import (
 )
 from ._generated.skill_version_schema import (
     SkillversionRefinementLineageRecordOfASkill14ThCanonicalEntityDr028T1Discriminator as _SkillVersionGenerated,  # noqa: E501
+)
+from ._generated.skill_version_schema import (
+    SigningMode as _SkillVersionSigningMode,
+)
+from ._generated.skill_version_schema import (
+    Status as _SkillVersionStatus,
 )
 from ._generated.tool_invocation_schema import (
     ToolinvocationSingleToolProviderCallRecordedUnderASessiontraceBlueprintB211 as ToolInvocation,
@@ -191,6 +197,12 @@ class SkillVersion(_SkillVersionGenerated):
     2. **DR-085 D5** — ``version_kind`` ∈ {``revert``, ``restore``} ⇒
        ``parent_version_id`` ≠ null (a revert/restore must point at the version
        it reverts/restores to).
+    3. **AT-DECR 011 § D3 signing cross-field invariant (both directions)** —
+       ``rekor_log_index`` is non-null IFF (``signing_mode == 'rekor_production'``
+       AND ``status == 'active'``). An active + production row without a rekor
+       index is an unverifiable production claim; a rekor index on a
+       non-active/non-production row is forged provenance — both REFUSED. An
+       absent/null ``rekor_log_index`` is unconstrained (every staging row).
 
     The generated parent already enforces ``extra="forbid"`` (closed-world), the
     ``version_kind`` enum, and the BARE ``Sha256`` patterns on ``content_hash`` /
@@ -218,6 +230,24 @@ class SkillVersion(_SkillVersionGenerated):
     parent_version_id: _schema.Uuidv7 | None
     parent_content_hash: _schema.Sha256 | None
 
+    # AT-DECR 011 OPTIONAL-NOT-NULLABLE parity for the five staging signing
+    # fields. In the JSON Schema + Zod these are OPTIONAL but NOT NULLABLE
+    # (`status`/`signing_mode` are bare enums; `retry_after` $refs rfc3339;
+    # `retry_count` is a bare integer; `signing_downgrade_reason` a bare string —
+    # none carries a `null` branch, and Zod uses `.optional()` not `.nullable()`).
+    # datamodel-code-generator renders each `... | None = None` (nullable), which
+    # would WRONGLY accept an explicit `null`. Re-declare each with an annotation
+    # that EXCLUDES None (absence allowed via the `= None` default; explicit
+    # `null` rejected) — the `models.py`-wrapper idiom, never edit `_generated/`.
+    status: _SkillVersionStatus = None  # type: ignore[assignment]
+    signing_mode: _SkillVersionSigningMode = None  # type: ignore[assignment]
+    retry_after: _schema.Rfc3339 = None  # type: ignore[assignment]
+    retry_count: conint(ge=0) = None  # type: ignore[assignment,valid-type]  # keep the generated ge=0 bound; strip only nullability
+    signing_downgrade_reason: str = None  # type: ignore[assignment]
+    # `rekor_log_index` is genuinely OPTIONAL-AND-NULLABLE (schema
+    # `oneOf[integer,null]`, Zod `.nullable().optional()`) — the generated
+    # `conint(ge=0) | None = None` is already correct, so it is NOT overridden.
+
     @model_validator(mode="after")
     def _enforce_dr085_lineage_invariants(self) -> Self:
         # Rule 1 (DR-085 D3): parent_content_hash null iff parent_version_id null.
@@ -238,6 +268,27 @@ class SkillVersion(_SkillVersionGenerated):
             raise ValueError(
                 f'DR-085 D5: version_kind "{kind}" requires a non-null '
                 "parent_version_id (a revert/restore must point at a prior version)"
+            )
+
+        # Rule 3 (AT-DECR 011 § D3): rekor_log_index non-null IFF
+        # (signing_mode='rekor_production' AND status='active') — both directions.
+        status = self.status.value if hasattr(self.status, "value") else self.status
+        signing_mode = (
+            self.signing_mode.value if hasattr(self.signing_mode, "value") else self.signing_mode
+        )
+        rekor_present = self.rekor_log_index is not None
+        is_active_production = signing_mode == "rekor_production" and status == "active"
+        if is_active_production and not rekor_present:
+            raise ValueError(
+                "AT-DECR 011 § D3: an active + rekor_production SkillVersion MUST "
+                "carry a non-null rekor_log_index (an active production row without "
+                "a transparency-log index is an unverifiable production claim)"
+            )
+        if rekor_present and not is_active_production:
+            raise ValueError(
+                "AT-DECR 011 § D3: rekor_log_index may be non-null ONLY when "
+                "signing_mode='rekor_production' AND status='active' (a rekor index "
+                "on a non-active/non-production row is forged provenance)"
             )
 
         return self

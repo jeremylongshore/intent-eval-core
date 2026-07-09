@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict, constr
+from pydantic import BaseModel, ConfigDict, conint, constr
 
 from . import _common_schema as schema
 
@@ -20,11 +20,32 @@ class VersionKind(Enum):
     restore = "restore"
 
 
+class Status(Enum):
+    """
+    AT-DECR 011 (DR-028 T1 / DR-085 D1 DEFERRED signing state machine). OPTIONAL + ADDITIVE — an absent `status` is the staging-first `sigstore_staging` default, so every previously-signed row stays valid. CLOSED enum (widening after a signed publish is a /v2 trigger, mirroring version_kind). Signing lifecycle: `sigstore_staging` (staging-first default; local creation ALWAYS lands here, never blocks on Rekor per P0-RATIFY-2/Kleppmann F-MK-2 CISO hard-line) → `pending_production` (production signing requested but Rekor unreachable; reconciler retries with `retry_after`; the bead's `pending_production` is resolved HERE as a status value, not a redundant boolean flag) → `active` (production signature landed; `rekor_log_index` non-null) | `signing_failed` (bounded retry exhausted at max_retries=5, CISO binding; surfaces to human review). STAGING-FIRST — this activates nothing; production signing stays AND-gated on DR-082 Q3 triggers in the audit-harness reconciler, NOT this kernel.
+    """
+
+    sigstore_staging = "sigstore_staging"
+    pending_production = "pending_production"
+    active = "active"
+    signing_failed = "signing_failed"
+
+
+class SigningMode(Enum):
+    """
+    AT-DECR 011. OPTIONAL + ADDITIVE — absent ≡ the staging-first `sigstore_staging` default. SAME enum as EvidenceBundle.signing_mode / RolloutGate.signing_mode (the bead's `'production'` wording maps to the kernel enum value `rekor_production`). Cross-field invariant with `rekor_log_index` + `status` (allOf below).
+    """
+
+    sigstore_staging = "sigstore_staging"
+    rekor_production = "rekor_production"
+    unsigned_experimental = "unsigned_experimental"
+
+
 class SkillversionRefinementLineageRecordOfASkill14ThCanonicalEntityDr028T1Discriminator(
     BaseModel
 ):
     """
-    The 14th canonical entity. SEPARATE from SkillSnapshot (which content-addressed-pins a skill's source state); SkillVersion captures the REFINEMENT LINEAGE produced by the Skill Refiner. DR-028 T1 DISCRIMINATOR resolution: `version_kind` is a load-bearing signable discriminator; `parent_version_id` references the prior SkillVersion (lineage internal, SkillVersion -> SkillVersion, NOT an FK to SkillSnapshot); `source_snapshot_hash` is a READ-ONLY REFERENCE (content hash) to the PRE-EDIT SkillSnapshot at the moment of refinement — explicitly NOT a relational foreign key (no enforced relational integrity; it is a content-hash reference). DR-085 D3 lineage-integrity correction: this entity now carries a self `content_hash` (its own post-edit content) + a `parent_content_hash` (the parent's `content_hash`, the tamper-evident lineage anchor); all three hash fields use the BARE 64-hex `sha256` alphabet, ALIGNED to `SkillSnapshot.combined_sha` (one hash alphabet platform-wide — no sha256:-prefixed vs bare mismatch). `parent_content_hash` is null iff `parent_version_id` is null (a root version forges no parent). ADDITIVE / one-way-door: this shape ships in signed @intentsolutions/core entries, so widening or merging it post-publish is irreversible — additive only. The state-machine formalism + status/signing cross-field invariants (P0-RATIFY-2 `pending_production`/`active`, `rekor_log_index iff signing_mode='production' AND status='active'`) are DEFERRED to a follow-up v0.4.0 Decision Record per DR-028 T1 binding minority constraint (lines 105/108) reconciled by DR-085 D1: "Phase C ships entity + discriminator + parent_version_id only." Predicate URI: skill-refiner-pass/v1 references this entity by id/hash (already shipped); SkillVersion does NOT define that predicate.
+    The 14th canonical entity. SEPARATE from SkillSnapshot (which content-addressed-pins a skill's source state); SkillVersion captures the REFINEMENT LINEAGE produced by the Skill Refiner. DR-028 T1 DISCRIMINATOR resolution: `version_kind` is a load-bearing signable discriminator; `parent_version_id` references the prior SkillVersion (lineage internal, SkillVersion -> SkillVersion, NOT an FK to SkillSnapshot); `source_snapshot_hash` is a READ-ONLY REFERENCE (content hash) to the PRE-EDIT SkillSnapshot at the moment of refinement — explicitly NOT a relational foreign key (no enforced relational integrity; it is a content-hash reference). DR-085 D3 lineage-integrity correction: this entity now carries a self `content_hash` (its own post-edit content) + a `parent_content_hash` (the parent's `content_hash`, the tamper-evident lineage anchor); all three hash fields use the BARE 64-hex `sha256` alphabet, ALIGNED to `SkillSnapshot.combined_sha` (one hash alphabet platform-wide — no sha256:-prefixed vs bare mismatch). `parent_content_hash` is null iff `parent_version_id` is null (a root version forges no parent). ADDITIVE / one-way-door: this shape ships in signed @intentsolutions/core entries, so widening or merging it post-publish is irreversible — additive only. SIGNING STATE MACHINE (AT-DECR 011, the DR-028 T1 / DR-085 D1 DEFERRED work, landed ADDITIVELY): the six OPTIONAL fields `status` / `signing_mode` / `rekor_log_index` / `retry_after` / `retry_count` / `signing_downgrade_reason` fold in the P0-RATIFY-2 signing lifecycle — NONE joins `required`, so every previously-signed row stays valid (absent `status` ≡ the staging-first `sigstore_staging` default). STAGING-FIRST: this ACTIVATES NOTHING — local creation never blocks on Rekor (Kleppmann F-MK-2 CISO hard-line), production signing stays AND-gated on DR-082 Q3 triggers in the audit-harness reconciler runtime (the append-only Rekor OUTBOX + bounded-retry reconciler that DRIVES these transitions, AC-2, is a SEPARATE follow-on in audit-harness, NOT this kernel). Cross-field invariant (both directions, all-three-layer enforced): `rekor_log_index` non-null IFF (`signing_mode='rekor_production'` AND `status='active'`). The bead's `pending_production` is resolved as a `status` enum value, not a redundant boolean flag. Predicate URI: skill-refiner-pass/v1 references this entity by id/hash (already shipped); SkillVersion does NOT define that predicate.
     """
 
     model_config = ConfigDict(
@@ -67,4 +88,28 @@ class SkillversionRefinementLineageRecordOfASkill14ThCanonicalEntityDr028T1Discr
     tenant_id: schema.Uuidv7 | None = None
     """
     RESERVED multi-tenancy slot (deferral-G, bd_000-projects-k0fj), mirroring SkillSnapshot. OPTIONAL + additive per Blueprint B § 7.2; tenant-isolation semantics deferred to a future DR. v1 single-tenant versions omit it.
+    """
+    status: Status | None = None
+    """
+    AT-DECR 011 (DR-028 T1 / DR-085 D1 DEFERRED signing state machine). OPTIONAL + ADDITIVE — an absent `status` is the staging-first `sigstore_staging` default, so every previously-signed row stays valid. CLOSED enum (widening after a signed publish is a /v2 trigger, mirroring version_kind). Signing lifecycle: `sigstore_staging` (staging-first default; local creation ALWAYS lands here, never blocks on Rekor per P0-RATIFY-2/Kleppmann F-MK-2 CISO hard-line) → `pending_production` (production signing requested but Rekor unreachable; reconciler retries with `retry_after`; the bead's `pending_production` is resolved HERE as a status value, not a redundant boolean flag) → `active` (production signature landed; `rekor_log_index` non-null) | `signing_failed` (bounded retry exhausted at max_retries=5, CISO binding; surfaces to human review). STAGING-FIRST — this activates nothing; production signing stays AND-gated on DR-082 Q3 triggers in the audit-harness reconciler, NOT this kernel.
+    """
+    signing_mode: SigningMode | None = None
+    """
+    AT-DECR 011. OPTIONAL + ADDITIVE — absent ≡ the staging-first `sigstore_staging` default. SAME enum as EvidenceBundle.signing_mode / RolloutGate.signing_mode (the bead's `'production'` wording maps to the kernel enum value `rekor_production`). Cross-field invariant with `rekor_log_index` + `status` (allOf below).
+    """
+    rekor_log_index: conint(ge=0) | None = None
+    """
+    AT-DECR 011 § D3. OPTIONAL + ADDITIVE — absent/null for every staging row. Rekor transparency-log index, populated ONLY on a production-signed active row. CROSS-FIELD INVARIANT (both directions, machine-enforced at all three layers): `rekor_log_index` is non-null IFF (`signing_mode='rekor_production'` AND `status='active'`). A rekor index without active+production is forged provenance → REFUSED; an active+production row without a rekor index is an unverifiable production claim → REFUSED.
+    """
+    retry_after: schema.Rfc3339 | None = None
+    """
+    AT-DECR 011. OPTIONAL + ADDITIVE. RFC 3339 UTC timestamp the reconciler MUST NOT retry a `pending_production` row before (exponential-backoff floor — the reconciler computes it, the kernel only types it). Set only while `status='pending_production'`.
+    """
+    retry_count: conint(ge=0) | None = None
+    """
+    AT-DECR 011. OPTIONAL + ADDITIVE — absent ≡ 0 (no attempt yet). Count of production-signing attempts; the reconciler increments it, and once it reaches SKILL_VERSION_MAX_SIGNING_RETRIES (=5, CISO bounded-retry binding) the next failure drives `pending_production → signing_failed`. The retry LOOP is runtime (audit-harness); the kernel owns only the BOUND.
+    """
+    signing_downgrade_reason: str | None = None
+    """
+    AT-DECR 011. OPTIONAL + ADDITIVE. Structured reason recorded ONLY when this row's signing posture was DOWNGRADED (requested `rekor_production` fell back to `sigstore_staging`, or retries exhausted). Absent on a normally-signed or plain staging row. Mirrors the skill-refiner-pass/v1 predicate's `signing_downgrade_reason` intent.
     """

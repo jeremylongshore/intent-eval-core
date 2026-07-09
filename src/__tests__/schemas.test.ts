@@ -529,11 +529,12 @@ describe('schemas/v1 — SkillVersion entity (14th canonical, DR-028 T1 DISCRIMI
     expect(validateSkillVersion(bad)).toBe(false);
   });
 
-  it('skill-version with an unknown extra field → REJECT (additionalProperties: false; e.g. deferred status field)', () => {
-    // status / signing_mode / rekor_log_index are DEFERRED to the v0.4.0
-    // state-machine DR (DR-028 T1 lines 105/108) — NOT part of this shape yet.
+  it('skill-version with an unknown extra field → REJECT (additionalProperties: false)', () => {
+    // `status`/`signing_mode`/`rekor_log_index`/`retry_after`/`retry_count`/
+    // `signing_downgrade_reason` are now KNOWN fields (AT-DECR 011 signing state
+    // machine). Use a genuinely-unknown key to prove the closed-world posture.
     const fix = loadJson(join(FIXTURES_DIR, 'skill-version.valid.json'));
-    const bad = { ...fix, status: 'active' };
+    const bad = { ...fix, not_a_real_field: true };
     expect(validateSkillVersion(bad)).toBe(false);
   });
 
@@ -593,6 +594,59 @@ describe('schemas/v1 — SkillVersion entity (14th canonical, DR-028 T1 DISCRIMI
   it('DR-085 D5: version_kind=restore with parent_version_id: null → REJECT', () => {
     const root = loadJson(join(FIXTURES_DIR, 'skill-version.root.valid.json'));
     const bad = { ...root, version_kind: 'restore' };
+    expect(validateSkillVersion(bad)).toBe(false);
+  });
+
+  // ── AT-DECR 011 signing state machine (additive, staging-first) ──
+  it('AT-DECR 011: a legacy SkillVersion with NO signing fields validates (additive proof)', () => {
+    expect(validateSkillVersion(loadJson(join(FIXTURES_DIR, 'skill-version.valid.json')))).toBe(
+      true,
+    );
+  });
+  it('AT-DECR 011: sigstore_staging / pending_production / active / signing_failed rows validate', () => {
+    expect(
+      validateSkillVersion(
+        loadJson(join(FIXTURES_DIR, 'skill-version.signing-staging.valid.json')),
+      ),
+    ).toBe(true);
+    expect(
+      validateSkillVersion(
+        loadJson(join(FIXTURES_DIR, 'skill-version.signing-pending-production.valid.json')),
+      ),
+    ).toBe(true);
+    expect(
+      validateSkillVersion(loadJson(join(FIXTURES_DIR, 'skill-version.signing-active.valid.json'))),
+    ).toBe(true);
+    expect(
+      validateSkillVersion(loadJson(join(FIXTURES_DIR, 'skill-version.signing-failed.valid.json'))),
+    ).toBe(true);
+  });
+  it('AT-DECR 011 § D3 (direction B): rekor_log_index without active+production → REJECT', () => {
+    expect(
+      validateSkillVersion(
+        loadJson(
+          join(FIXTURES_DIR, 'skill-version.invalid-rekor-index-without-active-production.json'),
+        ),
+      ),
+    ).toBe(false);
+  });
+  it('AT-DECR 011 § D3 (direction A): active+production WITHOUT rekor_log_index → REJECT', () => {
+    expect(
+      validateSkillVersion(
+        loadJson(
+          join(FIXTURES_DIR, 'skill-version.invalid-active-production-without-rekor-index.json'),
+        ),
+      ),
+    ).toBe(false);
+  });
+  it('AT-DECR 011: status out of the closed enum → REJECT (widening is /v2)', () => {
+    const staging = loadJson(join(FIXTURES_DIR, 'skill-version.signing-staging.valid.json'));
+    const bad = { ...staging, status: 'archived_forever' };
+    expect(validateSkillVersion(bad)).toBe(false);
+  });
+  it('AT-DECR 011: status is optional-NOT-nullable (explicit null → REJECT)', () => {
+    const staging = loadJson(join(FIXTURES_DIR, 'skill-version.signing-staging.valid.json'));
+    const bad = { ...staging, status: null };
     expect(validateSkillVersion(bad)).toBe(false);
   });
 });
