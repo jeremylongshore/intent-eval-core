@@ -161,9 +161,11 @@ describe('Zod validators — negative fixtures REJECT', () => {
     expect(result.success).toBe(false);
   });
 
-  it('skill-version with an unknown extra field (deferred status) → REJECT (.strict())', () => {
+  it('skill-version with an unknown extra field → REJECT (.strict())', () => {
+    // `status` is now a KNOWN field (AT-DECR 011 signing state machine); use a
+    // genuinely-unknown key to prove the closed-world posture still holds.
     const fix = loadJson('skill-version.valid.json') as Record<string, unknown>;
-    const result = SkillVersionSchema.safeParse({ ...fix, status: 'active' });
+    const result = SkillVersionSchema.safeParse({ ...fix, not_a_real_field: true });
     expect(result.success).toBe(false);
   });
 
@@ -211,6 +213,69 @@ describe('Zod validators — negative fixtures REJECT', () => {
   it('DR-085 D5: tenant_id is optional-NOT-nullable on SkillVersion (explicit null → REJECT)', () => {
     const child = loadJson('skill-version.valid.json') as Record<string, unknown>;
     const result = SkillVersionSchema.safeParse({ ...child, tenant_id: null });
+    expect(result.success).toBe(false);
+  });
+
+  // ── AT-DECR 011 signing state machine (additive, staging-first) ──
+  it('AT-DECR 011: a legacy SkillVersion with NO signing fields validates (staging-first default)', () => {
+    // The additive proof: the pre-existing valid fixture (no status/signing_mode)
+    // stays valid — adding the six fields broke nothing.
+    expect(() => SkillVersionSchema.parse(loadJson('skill-version.valid.json'))).not.toThrow();
+  });
+  it('AT-DECR 011: sigstore_staging row validates (staging default)', () => {
+    expect(() =>
+      SkillVersionSchema.parse(loadJson('skill-version.signing-staging.valid.json')),
+    ).not.toThrow();
+  });
+  it('AT-DECR 011: pending_production row (retry_after + retry_count) validates', () => {
+    expect(() =>
+      SkillVersionSchema.parse(loadJson('skill-version.signing-pending-production.valid.json')),
+    ).not.toThrow();
+  });
+  it('AT-DECR 011: active + rekor_production + rekor_log_index row validates', () => {
+    expect(() =>
+      SkillVersionSchema.parse(loadJson('skill-version.signing-active.valid.json')),
+    ).not.toThrow();
+  });
+  it('AT-DECR 011: signing_failed row (downgrade_reason, retry_count=5) validates', () => {
+    expect(() =>
+      SkillVersionSchema.parse(loadJson('skill-version.signing-failed.valid.json')),
+    ).not.toThrow();
+  });
+  it('AT-DECR 011 § D3 (direction B): rekor_log_index without active+production → REJECT (forged provenance)', () => {
+    const result = SkillVersionSchema.safeParse(
+      loadJson('skill-version.invalid-rekor-index-without-active-production.json'),
+    );
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const paths = result.error.issues.map((i) => i.path.join('.'));
+      expect(paths).toContain('rekor_log_index');
+    }
+  });
+  it('AT-DECR 011 § D3 (direction A): active+production WITHOUT rekor_log_index → REJECT (unverifiable claim)', () => {
+    const result = SkillVersionSchema.safeParse(
+      loadJson('skill-version.invalid-active-production-without-rekor-index.json'),
+    );
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const paths = result.error.issues.map((i) => i.path.join('.'));
+      expect(paths).toContain('rekor_log_index');
+    }
+  });
+  it('AT-DECR 011 § D3: a rekor index on an active but sigstore_staging row → REJECT (production-mode required)', () => {
+    const active = loadJson('skill-version.signing-active.valid.json') as Record<string, unknown>;
+    const result = SkillVersionSchema.safeParse({ ...active, signing_mode: 'sigstore_staging' });
+    expect(result.success).toBe(false);
+  });
+  it('AT-DECR 011: status out of the closed enum → REJECT (widening is /v2)', () => {
+    const staging = loadJson('skill-version.signing-staging.valid.json') as Record<string, unknown>;
+    const result = SkillVersionSchema.safeParse({ ...staging, status: 'archived_forever' });
+    expect(result.success).toBe(false);
+  });
+  it('AT-DECR 011: status is optional-NOT-nullable (explicit null → REJECT)', () => {
+    const staging = loadJson('skill-version.signing-staging.valid.json') as Record<string, unknown>;
+    const { status: _drop, ...rest } = staging;
+    const result = SkillVersionSchema.safeParse({ ...rest, status: null });
     expect(result.success).toBe(false);
   });
 

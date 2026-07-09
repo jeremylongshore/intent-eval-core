@@ -14,11 +14,16 @@
  * `skill_version_id`/`parent_version_id`, so the predicate's references align
  * with this entity.
  *
- * Scope is the DR-028 T1 binding minority constraint (lines 105/108): "Phase C
- * ships entity + discriminator + parent_version_id only." The state machine +
- * status/signing cross-field invariants (P0-RATIFY-2) are DEFERRED to a v0.4.0
- * follow-up DR — not modeled here. Additive-only / one-way door: the shape ships
- * in signed @intentsolutions/core entries.
+ * SIGNING STATE MACHINE (AT-DECR 011, the DR-028 T1 / DR-085 D1 deferred work):
+ * the six OPTIONAL signing fields (`status` / `signing_mode` / `rekor_log_index` /
+ * `retry_after` / `retry_count` / `signing_downgrade_reason`) fold in ADDITIVELY —
+ * none is required, so every previously-signed row stays valid (absent `status` ≡
+ * the staging-first `sigstore_staging` default). STAGING-FIRST: adding them
+ * activates nothing; production signing stays AND-gated in the audit-harness
+ * reconciler. The cross-field invariant `rekor_log_index` non-null IFF
+ * (`signing_mode='rekor_production'` AND `status='active'`) is enforced BOTH
+ * directions in the `.superRefine` below, mirroring the JSON-Schema `allOf`/`if-then`
+ * and the Pydantic `model_validator`.
  */
 
 import { z } from 'zod';
@@ -29,6 +34,7 @@ import {
   Sha256Schema,
   Uuidv7Schema,
 } from './_primitives.js';
+import { SigningModeSchema } from './evidence-bundle.js';
 
 /**
  * version_kind — CLOSED enum (DR-028 T1 line 90, P0-RATIFY-2 line 233). Widening
@@ -37,6 +43,19 @@ import {
  * re-instate an archived version.
  */
 export const SkillVersionKindSchema = z.enum(['edit', 'revert', 'restore']);
+
+/**
+ * SkillVersion signing-lifecycle status — CLOSED enum (AT-DECR 011). Widening
+ * after a signed publish is a /v2 trigger. The bead's `pending_production` is a
+ * VALUE here, not a separate boolean flag. Legal transitions:
+ * {@link skillVersionSigningTransitions} (src/entities/SkillVersion.ts).
+ */
+export const SkillVersionSigningStatusSchema = z.enum([
+  'sigstore_staging',
+  'pending_production',
+  'active',
+  'signing_failed',
+]);
 
 export const SkillVersionSchema = z
   .object({
@@ -73,6 +92,19 @@ export const SkillVersionSchema = z
     created_by: ActorIdentitySchema,
     /** RESERVED multi-tenancy slot (deferral-G, bd_000-projects-k0fj). */
     tenant_id: Uuidv7Schema.optional(),
+    // ── Signing state machine (AT-DECR 011). All six OPTIONAL + additive. ──
+    /** Signing-lifecycle position; absent ≡ staging-first `sigstore_staging`. */
+    status: SkillVersionSigningStatusSchema.optional(),
+    /** Signing posture — same enum as EvidenceBundle.signing_mode; absent ≡ staging. */
+    signing_mode: SigningModeSchema.optional(),
+    /** Rekor log index — cross-field invariant enforced in superRefine below. */
+    rekor_log_index: z.number().int().min(0).nullable().optional(),
+    /** Backoff floor the reconciler must not retry a pending row before. */
+    retry_after: Rfc3339Schema.optional(),
+    /** Attempts so far; absent ≡ 0. Bounded by SKILL_VERSION_MAX_SIGNING_RETRIES. */
+    retry_count: z.number().int().min(0).optional(),
+    /** Structured reason recorded only on a signing downgrade. */
+    signing_downgrade_reason: z.string().optional(),
   })
   .strict()
   .superRefine((sv, ctx) => {
@@ -105,6 +137,31 @@ export const SkillVersionSchema = z
         code: z.ZodIssueCode.custom,
         path: ['parent_version_id'],
         message: `DR-085 D5: version_kind "${sv.version_kind}" requires a non-null parent_version_id (a revert/restore must point at a prior version)`,
+      });
+    }
+
+    // AT-DECR 011 § D3 signing cross-field invariant (BOTH directions):
+    // rekor_log_index is non-null IFF (signing_mode='rekor_production' AND
+    // status='active'). An absent/null rekor_log_index is unconstrained (staging).
+    const rekorPresent = sv.rekor_log_index !== undefined && sv.rekor_log_index !== null;
+    const isActiveProduction = sv.signing_mode === 'rekor_production' && sv.status === 'active';
+
+    // Direction A: active+production ⇒ rekor_log_index present + non-null.
+    if (isActiveProduction && !rekorPresent) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['rekor_log_index'],
+        message:
+          'AT-DECR 011 § D3: an active + rekor_production SkillVersion MUST carry a non-null rekor_log_index (an active production row without a transparency-log index is an unverifiable production claim)',
+      });
+    }
+    // Direction B: rekor_log_index present + non-null ⇒ active+production.
+    if (rekorPresent && !isActiveProduction) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['rekor_log_index'],
+        message:
+          "AT-DECR 011 § D3: rekor_log_index may be non-null ONLY when signing_mode='rekor_production' AND status='active' (a rekor index on a non-active/non-production row is forged provenance)",
       });
     }
   });

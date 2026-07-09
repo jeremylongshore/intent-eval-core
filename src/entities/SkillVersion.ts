@@ -28,15 +28,27 @@
  * cross-field invariant `version_kind ∈ {revert,restore} ⇒ parent_version_id ≠
  * null`, machine-enforced at all three layers.
  *
- * SCOPE — DR-028 T1 binding minority constraint (lines 105 / 108): "Phase C
- * ships entity + discriminator + `parent_version_id` only. State-machine
- * formalism deferred ... authored as a SECOND DR in v0.4.0 — not now." So this
- * entity ships WITHOUT a lifecycle `TransitionMap` (unlike entities that have
- * one), and WITHOUT the P0-RATIFY-2 status/signing cross-field fields
- * (`status`, `signing_mode`, `rekor_log_index`, `pending_production`,
- * `retry_after`, `signing_downgrade_reason`) — those land with the deferred
- * state-machine DR. Adding them later is additive; they are intentionally NOT
- * pre-committed into a signed shape now (one-way door discipline).
+ * SIGNING STATE MACHINE — the DR-028 T1 / DR-085 D1 DEFERRED work, landed here
+ * (AT-DECR 011, acting-CTO authorization 2026-07-09). The P0-RATIFY-2 + Kleppmann
+ * F-MK-2 signing lifecycle the entity originally shipped WITHOUT is now folded in
+ * ADDITIVELY: the six new fields (`status`, `signing_mode`, `rekor_log_index`,
+ * `retry_after`, `retry_count`, `signing_downgrade_reason`) are ALL OPTIONAL —
+ * NONE joins the `required` set, so every previously-signed SkillVersion row stays
+ * valid (absent ≡ the staging-first default). The bead's `pending_production` is
+ * resolved as a STATUS ENUM VALUE (not a redundant boolean flag) per the acting-CTO
+ * disambiguation, so there is one source of truth for lifecycle position.
+ *
+ * STAGING-FIRST — this ACTIVATES NOTHING. Local SkillVersion creation NEVER blocks
+ * on Rekor (P0-RATIFY-2 / F-MK-2 CISO hard-line): a row is created at
+ * `signing_mode='sigstore_staging'` and succeeds regardless of Rekor reachability.
+ * Adding these fields does NOT turn on production signing — that stays AND-gated on
+ * the DR-082 Q3 triggers elsewhere (in the audit-harness reconciler runtime, NOT
+ * this kernel). This is the SAFE SHAPE the reconciler CONSUMES, not the activation.
+ *
+ * The bounded-retry reconciler + the append-only Rekor OUTBOX (AC-2) that DRIVES
+ * these transitions is a SEPARATE follow-on that lives in audit-harness (a runtime;
+ * FORBIDDEN here). The kernel owns only the SHAPE + the legal transitions + the
+ * cross-field invariant — never the clock read, the Rekor call, or the retry loop.
  *
  * The signed skill-refiner-pass/v1 predicate body (src/predicates/) references
  * this entity by id/hash (`skill_version_id` / `parent_version_id` as Uuidv7,
@@ -46,12 +58,85 @@
  */
 
 import type { ActorIdentity, KebabSlug, Rfc3339, Sha256, Uuidv7 } from '../primitives.js';
+import type { SigningMode } from './EvidenceBundle.js';
+import type { TransitionMap } from '../state-machines/types.js';
 
 /**
  * version_kind — the load-bearing signable discriminator (DR-028 T1 line 90).
  * CLOSED set. Widening it after a signed publish is a /v2 trigger.
  */
 export type SkillVersionKind = 'edit' | 'revert' | 'restore';
+
+/**
+ * SkillVersion SIGNING lifecycle state — the DR-028 T1 / DR-085 D1 deferred
+ * state machine (AT-DECR 011). CLOSED enum. Widening it after a signed publish is
+ * a /v2 trigger (one-way door), mirroring `version_kind`.
+ *
+ *   - `sigstore_staging`   — STAGING-FIRST default. Local creation ALWAYS lands
+ *     here (never blocks on Rekor per P0-RATIFY-2 / Kleppmann F-MK-2 CISO
+ *     hard-line). Absent `status` ≡ this value (the additive-default posture).
+ *   - `pending_production` — production signing was REQUESTED but Rekor was
+ *     unreachable; the reconciler will retry (`retry_after` set). The bead's
+ *     `pending_production` field is resolved HERE as a status value, not a
+ *     redundant boolean flag (acting-CTO disambiguation, AT-DECR 011 § D2).
+ *   - `active`            — production signature landed on the Rekor transparency
+ *     log; `rekor_log_index` is now non-null (the cross-field invariant below).
+ *   - `signing_failed`    — bounded retry exhausted (`retry_count` reached
+ *     `SKILL_VERSION_MAX_SIGNING_RETRIES`, CISO binding); surfaces to HUMAN review.
+ *
+ * These are SIGNING states, orthogonal to `version_kind` (which is lineage). A row
+ * with no `status` is a valid staging-first row — the whole enum is additive.
+ */
+export type SkillVersionSigningStatus =
+  | 'sigstore_staging'
+  | 'pending_production'
+  | 'active'
+  | 'signing_failed';
+
+/**
+ * Alias for state-machine callers (mirrors the `FailureTaxonomyState` idiom).
+ */
+export type SkillVersionState = SkillVersionSigningStatus;
+
+/**
+ * Legal signing-lifecycle transitions (AT-DECR 011, P0-RATIFY-2 flow).
+ *
+ *   sigstore_staging → pending_production   (production signing requested; Rekor unreachable → queued)
+ *   sigstore_staging → active               (production signature landed on first attempt)
+ *   pending_production → active             (reconciler retry succeeded)
+ *   pending_production → signing_failed      (bounded retry exhausted, max_retries=5)
+ *   active → (terminal)                      (a signed row is immutable; a re-sign is a NEW SkillVersion)
+ *   signing_failed → (terminal)              (surfaces to human review; recovery is a NEW row, append-only)
+ *
+ * A `pending_production` retry that FAILS-but-has-budget is NOT a status
+ * transition — the row STAYS in `pending_production` while the reconciler
+ * increments `retry_count` and pushes out `retry_after` (an in-place field update,
+ * not a state change). Only exhaustion (`retry_count` reaches
+ * {@link SKILL_VERSION_MAX_SIGNING_RETRIES}) drives `pending_production →
+ * signing_failed`. This keeps the map self-loop-free, matching the kernel's
+ * structural-soundness gate (self-loops are a `validateTransitionMap` defect) and
+ * the `retryTransitions` precedent (a re-queue walks through a distinct state).
+ *
+ * `sigstore_staging` MAY also be a terminal resting state (a row that never
+ * requests production signing simply stays staging). Enforced at runtime by the
+ * reconciler via {@link canTransition}; the kernel exports only the legal map.
+ */
+export const skillVersionSigningTransitions: TransitionMap<SkillVersionState> = {
+  sigstore_staging: ['pending_production', 'active'],
+  pending_production: ['active', 'signing_failed'],
+  active: [],
+  signing_failed: [],
+} as const;
+
+/**
+ * CISO P0-RATIFY-2 bounded-retry ceiling: a `pending_production` row is retried
+ * AT MOST this many times before the reconciler drives it to `signing_failed` and
+ * surfaces it to human review. Pinned in the kernel so producer + reconciler agree
+ * by construction (the kernel owns the BOUND; the retry LOOP is runtime,
+ * audit-harness). CISO binding — never unbounded (a stuck row must eventually
+ * escalate to a human, not spin forever).
+ */
+export const SKILL_VERSION_MAX_SIGNING_RETRIES = 5 as const;
 
 /**
  * SkillVersion — one node in a skill's refinement lineage.
@@ -142,4 +227,66 @@ export interface SkillVersion {
    * versions omit it.
    */
   readonly tenant_id?: Uuidv7;
+
+  // ─── Signing state machine (AT-DECR 011 — DR-028 T1 / DR-085 D1 deferred) ───
+  //
+  // ALL SIX FIELDS BELOW ARE OPTIONAL + ADDITIVE. None joins the `required` set,
+  // so every previously-signed SkillVersion row stays valid (absent `status` ≡
+  // the staging-first `sigstore_staging` default). STAGING-FIRST — adding these
+  // ACTIVATES NOTHING; production signing stays AND-gated on the DR-082 Q3
+  // triggers in the audit-harness reconciler, never here.
+
+  /**
+   * Signing-lifecycle position (AT-DECR 011 § D2). OPTIONAL — an absent `status`
+   * is the staging-first `sigstore_staging` default. The bead's
+   * `pending_production` is resolved as a value of THIS enum (not a separate
+   * boolean flag) so there is one source of truth for lifecycle position. Legal
+   * transitions are in {@link skillVersionSigningTransitions}.
+   */
+  readonly status?: SkillVersionSigningStatus;
+
+  /**
+   * Signing posture — the SAME `SigningMode` enum as `EvidenceBundle.signing_mode`
+   * / `RolloutGate.signing_mode` (`sigstore_staging` | `rekor_production` |
+   * `unsigned_experimental`). OPTIONAL — an absent value is the staging-first
+   * `sigstore_staging` default. Reconciled to the kernel enum value
+   * `rekor_production` (the bead's `'production'` wording maps to this literal).
+   * Cross-field invariant with `rekor_log_index` + `status` below.
+   */
+  readonly signing_mode?: SigningMode;
+
+  /**
+   * Rekor transparency-log index, populated ONLY when the row is signed to the
+   * production log. **Cross-field invariant (AT-DECR 011 § D3, enforced at all
+   * three layers):** `rekor_log_index` is non-null IFF
+   * (`signing_mode === 'rekor_production'` AND `status === 'active'`). A row with
+   * a rekor index but not active+production is a forged-provenance claim and is
+   * REFUSED; an active+production row WITHOUT a rekor index is an unverifiable
+   * production claim and is REFUSED. OPTIONAL/absent for every staging row.
+   */
+  readonly rekor_log_index?: number | null;
+
+  /**
+   * RFC 3339 UTC timestamp the reconciler MUST NOT retry a `pending_production`
+   * row before (exponential-backoff floor; the reconciler computes the value, the
+   * kernel only types it). OPTIONAL — set only while `status === 'pending_production'`.
+   */
+  readonly retry_after?: Rfc3339;
+
+  /**
+   * Number of production-signing attempts made so far for this row. The reconciler
+   * increments it; once it reaches {@link SKILL_VERSION_MAX_SIGNING_RETRIES} the
+   * next failure drives `pending_production → signing_failed` (CISO bounded-retry
+   * binding). OPTIONAL — absent ≡ 0 (no attempt yet). Integer ≥ 0.
+   */
+  readonly retry_count?: number;
+
+  /**
+   * Structured reason recorded ONLY when this row's signing posture was
+   * DOWNGRADED (e.g. a requested `rekor_production` fell back to
+   * `sigstore_staging`, or retries were exhausted). Absent on a normally-signed or
+   * plain staging row. Mirrors the `skill-refiner-pass/v1` predicate's
+   * `signing_downgrade_reason` intent. OPTIONAL free text.
+   */
+  readonly signing_downgrade_reason?: string;
 }

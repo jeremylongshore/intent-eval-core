@@ -929,6 +929,9 @@ export type SigningMode = 'sigstore_staging' | 'rekor_production' | 'unsigned_ex
 export const SKILL_REFINER_PASS_V1_URI: "https://evals.intentsolutions.io/skill-refiner-pass/v1";
 
 // @public
+export const SKILL_VERSION_MAX_SIGNING_RETRIES: 5;
+
+// @public
 export type SkillRefinerPassV1 = SkillRefinerPassV1Required & SkillRefinerPassV1Optional;
 
 // @public
@@ -1018,14 +1021,29 @@ export interface SkillVersion {
     readonly parent_content_hash: Sha256 | null;
     readonly parent_version_id: Uuidv7 | null;
     readonly refiner_strategy_id: string;
+    readonly rekor_log_index?: number | null;
+    readonly retry_after?: Rfc3339;
+    readonly retry_count?: number;
+    readonly signing_downgrade_reason?: string;
+    readonly signing_mode?: SigningMode;
     readonly skill_id: KebabSlug;
     readonly source_snapshot_hash: Sha256;
+    readonly status?: SkillVersionSigningStatus;
     readonly tenant_id?: Uuidv7;
     readonly version_kind: SkillVersionKind;
 }
 
 // @public
 export type SkillVersionKind = 'edit' | 'revert' | 'restore';
+
+// @public
+export type SkillVersionSigningStatus = 'sigstore_staging' | 'pending_production' | 'active' | 'signing_failed';
+
+// @public
+export const skillVersionSigningTransitions: TransitionMap<SkillVersionState>;
+
+// @public
+export type SkillVersionState = SkillVersionSigningStatus;
 
 // @public
 export type StorageKey = Brand<string, 'StorageKey'>;
