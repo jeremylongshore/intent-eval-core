@@ -33,7 +33,7 @@ from typing import Literal
 
 from typing_extensions import Self
 
-from pydantic import model_validator
+from pydantic import conint, model_validator
 
 from ._generated import _common_schema as _schema
 
@@ -242,7 +242,7 @@ class SkillVersion(_SkillVersionGenerated):
     status: _SkillVersionStatus = None  # type: ignore[assignment]
     signing_mode: _SkillVersionSigningMode = None  # type: ignore[assignment]
     retry_after: _schema.Rfc3339 = None  # type: ignore[assignment]
-    retry_count: int = None  # type: ignore[assignment]
+    retry_count: conint(ge=0) = None  # type: ignore[assignment,valid-type]  # keep the generated ge=0 bound; strip only nullability
     signing_downgrade_reason: str = None  # type: ignore[assignment]
     # `rekor_log_index` is genuinely OPTIONAL-AND-NULLABLE (schema
     # `oneOf[integer,null]`, Zod `.nullable().optional()`) — the generated
