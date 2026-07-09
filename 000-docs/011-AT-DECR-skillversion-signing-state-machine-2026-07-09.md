@@ -89,7 +89,7 @@ The lifecycle `TransitionMap` (`skillVersionSigningTransitions`) plus the pinned
 `SKILL_VERSION_MAX_SIGNING_RETRIES = 5` const (CISO P0-RATIFY-2 bounded-retry
 binding):
 
-```
+```text
 sigstore_staging → { pending_production, active }
 pending_production → { active, signing_failed }
 active            → (terminal)
