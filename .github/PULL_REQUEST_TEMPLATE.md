@@ -18,6 +18,7 @@
 ## Checklist
 
 - [ ] Gates pass locally (`pnpm run check`)
+- [ ] Schema edits: ran codegen + parity so the JSON Schema, Zod validators, and Python Pydantic models stay in lock-step (no three-way drift — Style Guide Rule 2)
 - [ ] Schema changes carry a matching `CHANGELOG.md` entry with a `lineage:` token (if applicable)
 - [ ] No secrets or credentials committed
 - [ ] Commits follow conventional commit format
