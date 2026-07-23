@@ -19,13 +19,13 @@ The role separation is **binding** (Blueprint A § anti-goals). Adding execution
 
 Phase A foundation is on `main` of [`intent-eval-lab`](https://github.com/jeremylongshore/intent-eval-lab). Every decision in this repo must be consistent with:
 
-| Source | Path on intent-eval-lab | Role |
-| --- | --- | --- |
-| **DR-010** | `000-docs/010-AT-DECR-isedc-council-session-4-widened-scope-2026-05-13.md` | Governance lock; TS-primary signing surfaces; unification thesis (every validator emits Evidence Bundle) |
-| **Blueprint A** | `000-docs/011-AT-ARCH-ecosystem-master-blueprint.md` | 12 binding principles, 5-repo taxonomy, anti-goals |
-| **Blueprint B** | `000-docs/012-AT-ARCH-platform-runtime-blueprint.md` | 13-entity canonical domain model; **NORMATIVE** `gate-result/v1` predicate spec (§ 7) |
-| **Blueprint C** | `000-docs/013-AT-SPEC-repo-blueprint-template.md` | Template this repo's blueprint applies (epic `iec-E10`) |
-| **Canonical Glossary** | `000-docs/014-DR-GLOS-canonical-glossary.md` | Single source of truth for terminology |
+| Source                 | Path on intent-eval-lab                                                    | Role                                                                                                     |
+| ---------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **DR-010**             | `000-docs/010-AT-DECR-isedc-council-session-4-widened-scope-2026-05-13.md` | Governance lock; TS-primary signing surfaces; unification thesis (every validator emits Evidence Bundle) |
+| **Blueprint A**        | `000-docs/011-AT-ARCH-ecosystem-master-blueprint.md`                       | 12 binding principles, 5-repo taxonomy, anti-goals                                                       |
+| **Blueprint B**        | `000-docs/012-AT-ARCH-platform-runtime-blueprint.md`                       | 13-entity canonical domain model; **NORMATIVE** `gate-result/v1` predicate spec (§ 7)                    |
+| **Blueprint C**        | `000-docs/013-AT-SPEC-repo-blueprint-template.md`                          | Template this repo's blueprint applies (epic `iec-E10`)                                                  |
+| **Canonical Glossary** | `000-docs/014-DR-GLOS-canonical-glossary.md`                               | Single source of truth for terminology                                                                   |
 
 If a change in this repo would require a change in any of the above, **stop** — coordinate via `intent-eval-lab` first (or open an ADR here that references the binding doc explicitly).
 
@@ -33,15 +33,15 @@ If a change in this repo would require a change in any of the above, **stop** �
 
 When sources disagree, the higher tier wins:
 
-| Tier | Source | Authority |
-| --- | --- | --- |
-| **1** | bd workspace `~/000-projects/.beads/` (prefix `iec-`) | task state, dependencies, sub-bead clusters |
-| **2** | DR-010 | governance bindings, override addenda § 13.5 + § 13.6 |
-| **3** | Blueprint A | ecosystem principles, repo taxonomy, anti-goals |
-| **4** | Blueprint B | runtime architecture, 13-entity domain model, gate-result/v1 |
-| **5** | Canonical glossary | platform terminology |
-| **6** | Repo blueprint (`iec-E10`) | this repo's specific architecture choices |
-| **7** | This `CLAUDE.md` | operational rules for working in this directory |
+| Tier  | Source                                                | Authority                                                    |
+| ----- | ----------------------------------------------------- | ------------------------------------------------------------ |
+| **1** | bd workspace `~/000-projects/.beads/` (prefix `iec-`) | task state, dependencies, sub-bead clusters                  |
+| **2** | DR-010                                                | governance bindings, override addenda § 13.5 + § 13.6        |
+| **3** | Blueprint A                                           | ecosystem principles, repo taxonomy, anti-goals              |
+| **4** | Blueprint B                                           | runtime architecture, 13-entity domain model, gate-result/v1 |
+| **5** | Canonical glossary                                    | platform terminology                                         |
+| **6** | Repo blueprint (`iec-E10`)                            | this repo's specific architecture choices                    |
+| **7** | This `CLAUDE.md`                                      | operational rules for working in this directory              |
 
 ## Tooling commands
 
@@ -126,11 +126,11 @@ Canonical bd workspace is **`~/000-projects/.beads/`** (umbrella, prefix `iec-`)
 
 Three-layer mirror (per umbrella `CLAUDE.md`):
 
-| Layer | Where |
-| --- | --- |
-| Bead | `~/000-projects/.beads/` (canonical state) |
+| Layer        | Where                                                                                                                        |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| Bead         | `~/000-projects/.beads/` (canonical state)                                                                                   |
 | GitHub issue | <https://github.com/jeremylongshore/intent-eval-core/issues> — one per epic (label `epic`); sub-beads share the parent issue |
-| Plane | **Intent Eval Core — Kernel** sub-module under LAB project |
+| Plane        | **Intent Eval Core — Kernel** sub-module under LAB project                                                                   |
 
 Use `bd-sync link/note/close` for every state change. After bulk operations, JSONL stays fresh via `export.interval=1s` in the umbrella `.beads/config.yaml` (the earlier "auto-flush drops writes" framing was closed as mischaracterized — the real cause was bd's 60s throttle window).
 
@@ -150,36 +150,61 @@ Use `bd-sync link/note/close` for every state change. After bulk operations, JSO
 5. **CI is the source of truth for "passes"** — local `pnpm run check` is necessary but not sufficient; main-branch protection requires the CI status check to pass.
 6. **PRs go through review even from the owner** — the canonical contracts kernel earns its weight from review discipline. No direct pushes to main.
 
-## AI code review (Greptile + Gemini)
+## AI code review — BOTH REVIEWERS ARE DARK (do not wait for one)
 
-Two AI reviewers run on PRs here, **both advisory** — neither is a branch-protection
-required check. The deterministic merge gate is this repo's own CI (`lint + typecheck + test + build`) plus CodeQL.
+**As of 2026-07-22 no AI reviewer runs on this repo.** Verified by surveying the
+last four PRs across all six Intent Eval Platform repos: `gemini-code-assist`
+now posts only a sunset notice, and `greptile` has zero activity anywhere.
 
-- **Gemini Code Assist** (`.gemini/config.yaml` + `.gemini/styleguide.md`) is the
-  **active** reviewer. Re-instated 2026-06-24 as the fallback after the Greptile
-  review quota was exhausted. Workhorse for design / logic / correctness /
-  cross-artifact consistency; CodeQL owns security.
-- **Greptile** (`.greptile/config.json` + `rules.md` + `files.json`) is configured to
-  the platform-unified schema (`strictness: 3`, `commentTypes: ["logic","syntax"]`,
-  `statusCheck: false`, a universal `no-gate-weakening` rule, plus this repo's scoped
-  invariant rules). It stays in place and resumes when the Greptile quota resets.
+- **Gemini Code Assist** — **SUNSET, permanently.** The consumer version on
+  GitHub has ceased all review activity; the bot says so verbatim on live PRs.
+  `.gemini/config.yaml` + `.gemini/styleguide.md` are retained but INERT. This
+  is a vendor decision — it is not a quota that resets and it is not coming back.
+- **Greptile** (`.greptile/config.json` + `rules.md` + `files.json`) — configured
+  to the platform-unified schema (`strictness: 3`, `commentTypes:
+["logic","syntax"]`, `statusCheck: false`, a universal `no-gate-weakening`
+  rule, plus this repo's scoped invariant rules) but **not observed reviewing
+  any PR**. The config stays so the App works if it is reinstalled; do not treat
+  it as an expected reviewer today.
 
-Read either review when present; the required gate is CI. Re-installing/uninstalling
-the GitHub Apps is an admin (UI) action — the in-repo config here does not install them.
+**Operationally: never block a merge waiting for an AI review.** Check whether
+one arrived, read it if so, and otherwise proceed on CI. The deterministic merge gate is this repo's own CI (`lint + typecheck + test + build`) plus CodeQL. That was
+always the required gate; it is now the only one. Installing or uninstalling the
+GitHub Apps is an admin (UI) action — the in-repo config here does not do it.
+
+**Replacement (decided 2026-07-22, not yet activated):** stand up the advisory
+lane we already run on the marketplace repo —
+`claude-code-plugins/.github/workflows/minimax-review.yml`. The action is
+[`tarmojussila/minimax-code-review`](https://github.com/tarmojussila/minimax-code-review)
+(the upstream mechanism), consumed via our own fork
+`jeremylongshore/minimax-code-review` **pinned to an immutable SHA** — the right
+supply-chain posture for a small single-maintainer action: we do not auto-track
+upstream. It is fork-safe by construction (`pull_request`, not
+`pull_request_target`, plus a same-repo guard, so a forked PR never receives the
+API key) and kill-switched by repo variable.
+
+**Do not copy CCPI's prompts.** The mechanism is generic; the value is prompts
+grounded in the consuming repo's own invariants — CCPI's three lanes are written
+against its validators and its A-grade bar and would be noise here. For this
+repo the reviewer should be pointed at kernel contract integrity — `FORBIDDEN.md` anti-goals and `ALLOWLIST.md`, three-layer JSON-Schema/Zod/Pydantic parity, cross-field invariants, and any change to a signed one-way-door shape.
+
+Activation needs owner secret actions: repo secret `MINIMAX_API_KEY` + repo
+variable `ENABLE_MINIMAX_REVIEW=true` (+ `MINIMAX_MODEL`). Until then this repo
+is CI-only, deliberately.
 
 ## Anti-goals (binding scope control)
 
 These are the kernel's NORMATIVE boundaries. Each is enforced architecturally — not just documented. The full boundary doctrine is at [`000-docs/003-AT-STND-core-repo-boundaries-2026-05-18.md`](000-docs/003-AT-STND-core-repo-boundaries-2026-05-18.md). The machine-readable enumeration is at [`FORBIDDEN.md`](FORBIDDEN.md). The allowlist counterpart is at [`ALLOWLIST.md`](ALLOWLIST.md). The unified checker is at [`scripts/check-boundaries.ts`](scripts/check-boundaries.ts) (`pnpm run boundaries`).
 
-| Anti-goal | What it prevents | Enforcement |
-| --- | --- | --- |
-| **NOT a runtime** | Adding orchestration / agents / job queues / schedulers to the kernel | FORBIDDEN.md Axis 1 (npm packages) + Axis 2 (src/runtime/, src/orchestrator/) + Axis 3 (services/, workers/) |
-| **NOT a judge** | Adding LLM-judge logic or behavioral evaluation primitives | FORBIDDEN.md Axis 1 (LLM provider adapters) + Axis 2 (src/judges/, src/agents/) |
-| **NOT a harness** | Adding deterministic gate logic (that belongs in audit-harness) | FORBIDDEN.md Axis 2 (src/adapters/, src/optimization/) + dep-cruiser `validators-only-import-zod` |
-| **NOT a service** | Adding HTTP servers / gRPC / REST APIs / websockets | FORBIDDEN.md Axis 1 (web frameworks) + Axis 2 (src/server/, src/api/) + Axis 3 (services/, api/) |
-| **NOT a database** | Adding DB drivers / ORMs / storage SDKs | FORBIDDEN.md Axis 1 (pg, mysql, mongodb, prisma, etc.) + Axis 2 (src/db/, src/persistence/) |
-| **Predicate URIs are scoped** | Using `labs.intentsolutions.io` as a predicate URI host | FORBIDDEN.md URL-pattern axis — REFUSE, no override path; CISO binding DR-004 + DR-010 § 10 |
-| **Schema duplication forbidden** | Peer repos redefining canonical entity types locally | Architectural: the kernel IS the source-of-truth; peer repos import — this is enforced via the unification thesis, validated by `/audit-tests` on peer repos |
+| Anti-goal                        | What it prevents                                                      | Enforcement                                                                                                                                                  |
+| -------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **NOT a runtime**                | Adding orchestration / agents / job queues / schedulers to the kernel | FORBIDDEN.md Axis 1 (npm packages) + Axis 2 (src/runtime/, src/orchestrator/) + Axis 3 (services/, workers/)                                                 |
+| **NOT a judge**                  | Adding LLM-judge logic or behavioral evaluation primitives            | FORBIDDEN.md Axis 1 (LLM provider adapters) + Axis 2 (src/judges/, src/agents/)                                                                              |
+| **NOT a harness**                | Adding deterministic gate logic (that belongs in audit-harness)       | FORBIDDEN.md Axis 2 (src/adapters/, src/optimization/) + dep-cruiser `validators-only-import-zod`                                                            |
+| **NOT a service**                | Adding HTTP servers / gRPC / REST APIs / websockets                   | FORBIDDEN.md Axis 1 (web frameworks) + Axis 2 (src/server/, src/api/) + Axis 3 (services/, api/)                                                             |
+| **NOT a database**               | Adding DB drivers / ORMs / storage SDKs                               | FORBIDDEN.md Axis 1 (pg, mysql, mongodb, prisma, etc.) + Axis 2 (src/db/, src/persistence/)                                                                  |
+| **Predicate URIs are scoped**    | Using `labs.intentsolutions.io` as a predicate URI host               | FORBIDDEN.md URL-pattern axis — REFUSE, no override path; CISO binding DR-004 + DR-010 § 10                                                                  |
+| **Schema duplication forbidden** | Peer repos redefining canonical entity types locally                  | Architectural: the kernel IS the source-of-truth; peer repos import — this is enforced via the unification thesis, validated by `/audit-tests` on peer repos |
 
 **Override process for everything except CISO-binding URL patterns**: file a bead in `iec-` prefix, reference it in PR body as `boundary-override: bd_000-projects-<id>`. See doctrine § 3 for details. Class-2 ISEDC review is required for major-boundary crossings.
 
