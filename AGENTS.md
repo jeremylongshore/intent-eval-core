@@ -71,3 +71,7 @@ These changes have ripple effects across every downstream consumer (`audit-harne
 - Read [CLAUDE.md](CLAUDE.md) for the source-of-truth hierarchy and architectural binding docs
 - Read the bead description for the work item: `bd show bd_000-projects-<id>` (canonical workspace at `~/000-projects/.beads/`)
 - Open a question issue with the `question` label rather than guessing
+
+## Merge gate
+
+**CI required checks are the only merge gate.** Do not block merges waiting for Gemini or Greptile (both dark as of 2026-07-22). See `CLAUDE.md` § AI code review.
