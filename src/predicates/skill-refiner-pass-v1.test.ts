@@ -10,7 +10,10 @@ import {
   type SkillRefinerTestStatisticKind,
   type SkillRefinerVerdict,
 } from './skill-refiner-pass-v1.js';
-import { SkillRefinerPassV1Schema } from '../validators/v1/skill-refiner-pass-v1.js';
+import {
+  SkillRefinerPassV1Schema,
+  SkillRefinerPassV1StatementSchema,
+} from '../validators/v1/skill-refiner-pass-v1.js';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -256,5 +259,41 @@ describe('skill-refiner-pass/v1 — in-toto Statement (DR-082 Q4)', () => {
     // digest must equal the prefixed result_snapshot_hash minus `sha256:`.
     const subjectDigest = statement.subject[0]?.digest.sha256;
     expect(subjectDigest).toBe(statement.predicate.result_snapshot_hash.slice('sha256:'.length));
+  });
+});
+
+describe('skill-refiner-pass/v1 — Statement schema binding (core#60 / DR-085 D4)', () => {
+  it('accepts a Statement whose subject digest equals result_snapshot_hash bare hex', () => {
+    const body = minimalBody();
+    const r = SkillRefinerPassV1StatementSchema.safeParse({
+      _type: 'https://in-toto.io/Statement/v1',
+      subject: [{ name: 'skill-refiner:ci:x', digest: { sha256: RESULT_HASH } }],
+      predicateType: SKILL_REFINER_PASS_V1_URI,
+      predicate: body,
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it('REJECTS a Statement whose subject digest does not match result_snapshot_hash', () => {
+    const body = minimalBody();
+    const r = SkillRefinerPassV1StatementSchema.safeParse({
+      _type: 'https://in-toto.io/Statement/v1',
+      subject: [{ name: 'skill-refiner:ci:x', digest: { sha256: 'e'.repeat(64) } }],
+      predicateType: SKILL_REFINER_PASS_V1_URI,
+      predicate: body,
+    });
+    expect(r.success).toBe(false);
+  });
+
+  it('rejects duplicate named_dimension_deltas ids', () => {
+    const body = {
+      ...minimalBody(),
+      named_dimension_deltas: [
+        { id: 'safety', delta: 0.01, non_regressed: true },
+        { id: 'safety', delta: -0.02, non_regressed: true },
+      ],
+    };
+    const r = SkillRefinerPassV1Schema.safeParse(body);
+    expect(r.success).toBe(false);
   });
 });

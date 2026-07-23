@@ -9,14 +9,9 @@
  * the PASS is unfalsifiable.
  *
  * Mirrors the wire discipline of gate-result/v1 (DR-082 Q4): this body becomes
- * the `predicate` of an in-toto Statement v1 over DSSE. The intended subject↔body
- * binding is `subject[].digest.sha256` === `result_snapshot_hash` (the POST-EDIT
- * output snapshot, per DR-085 D4 — the result is the artifact the PASS attests).
- * NOTE (DR-085 D4/F5): that Statement-layer binding is NOT YET implemented for this
- * predicate — `evidence-statement.ts` currently enforces only `gate-result/v1`
- * (I1/I2); a `SkillRefinerPassV1Statement` mirror is a tracked follow-up and must
- * land before first production signature. This body schema validates the body
- * alone and does NOT assert the subject↔body equality.
+ * the `predicate` of an in-toto Statement v1 over DSSE. Subject↔body binding
+ * (DR-085 D4): `subject[].digest.sha256` === `result_snapshot_hash` sans
+ * `sha256:` — enforced by {@link SkillRefinerPassV1StatementSchema}.
  *
  * Runs in `sigstore_staging` until ALL FOUR DR-082 Q3 production triggers hold
  * (DR-085 D4 retired the `ln` label). The `skill_version_id` / `parent_version_id`
@@ -129,6 +124,20 @@ export const SkillRefinerPassV1Schema = z
         }
       });
     }
+
+    // core#60 P2: named_dimension_deltas[].id uniqueness — two rows for one
+    // dimension id would let contradictory non_regressed values co-exist.
+    const seen = new Set<string>();
+    body.named_dimension_deltas.forEach((d, i) => {
+      if (seen.has(d.id)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['named_dimension_deltas', i, 'id'],
+          message: `named_dimension_deltas id '${d.id}' is duplicated — dimension ids must be unique within a body`,
+        });
+      }
+      seen.add(d.id);
+    });
   });
 
 export type SkillRefinerPassV1 = z.infer<typeof SkillRefinerPassV1Schema>;
@@ -136,7 +145,55 @@ export type SkillRefinerPassV1 = z.infer<typeof SkillRefinerPassV1Schema>;
 /**
  * Canonical predicate URI per ISEDC CISO binding (evals.intentsolutions.io,
  * never labs). FLAT — a sibling of gate-result/v1, no `/authoring/` segment
- * (DR-082 Q1).
+ * (DR-082 Q1). Declared before the Statement schema so `z.literal` can close.
  */
 export const SKILL_REFINER_PASS_V1_URI =
   'https://evals.intentsolutions.io/skill-refiner-pass/v1' as const;
+
+/** Length of the `sha256:` prefix every result_snapshot_hash carries. */
+const SHA256_PREFIX_LEN = 'sha256:'.length;
+
+/**
+ * in-toto Statement v1 wrapping a skill-refiner-pass/v1 body, with the DR-085 D4
+ * subject↔body binding enforced: subject[0].digest.sha256 ===
+ * predicate.result_snapshot_hash sans `sha256:` (post-edit artifact).
+ *
+ * Mirrors gate-result EvidenceStatementSchema I2. Must land before production
+ * Rekor signatures of skill-refiner-pass rows (core#60 / DR-085 D2 freeze).
+ */
+export const SkillRefinerPassV1StatementSchema = z
+  .object({
+    _type: z.literal('https://in-toto.io/Statement/v1'),
+    subject: z
+      .array(
+        z
+          .object({
+            name: z.string().min(1),
+            digest: z.object({ sha256: z.string().regex(/^[0-9a-f]{64}$/) }).strict(),
+          })
+          .strict(),
+      )
+      .min(1),
+    predicateType: z.literal(SKILL_REFINER_PASS_V1_URI),
+    predicate: SkillRefinerPassV1Schema,
+  })
+  .strict()
+  .superRefine((data, ctx) => {
+    const subject0 = data.subject[0];
+    /* v8 ignore next -- .min(1) guarantees subject[0] */
+    if (subject0 === undefined) return;
+
+    const expected = data.predicate.result_snapshot_hash.slice(SHA256_PREFIX_LEN);
+    if (subject0.digest.sha256 !== expected) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['subject', 0, 'digest', 'sha256'],
+        message:
+          'subject[0].digest.sha256 must equal predicate.result_snapshot_hash without the sha256: prefix (DR-085 D4 post-edit subject binding)',
+      });
+    }
+  });
+
+export type SkillRefinerPassV1StatementValidated = z.infer<
+  typeof SkillRefinerPassV1StatementSchema
+>;
