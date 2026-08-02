@@ -1,3 +1,11 @@
+<!-- BEGIN BD-SYNC:cross-ref:v1 -->
+
+Beads: `bd_000-projects-pu35.2`
+GitHub: `jeremylongshore/intent-eval-core#12, jeremylongshore/intent-eval-core#87`
+Projection-SHA256: 65b52c01297ce39ae4d99c883c669c3dceea1acff6469a7d56cd9c0ba81a140c
+
+<!-- END BD-SYNC:cross-ref:v1 -->
+
 # AT-DECR 011 — SkillVersion signing state machine (the DR-028 T1 / DR-085 D1 deferred work)
 
 | Field | Value |
@@ -6,6 +14,10 @@
 | Status | RATIFIED (acting-CTO authorization, CEO-mode delegation, 2026-07-09) — additive, staging-first, activates nothing irreversible |
 | Scope | Lands the P0-RATIFY-2 + Kleppmann F-MK-2 SkillVersion signing lifecycle that DR-028 T1 / DR-085 D1 explicitly deferred: six OPTIONAL fields + a lifecycle `TransitionMap` + a both-directions cross-field invariant, at all three kernel layers |
 | Bead | `aon3.4` (RC-IEC Skill-Refiner coordination epic child — the v0.4.0 Decision-Record work) |
+| Beads | `bd_000-projects-pu35.2` (AC-12 documentation backfill) |
+| GitHub | [`jeremylongshore/intent-eval-core#87`](https://github.com/jeremylongshore/intent-eval-core/issues/87) |
+| Plane | `LAB-124` |
+| Historical coordination | [`jeremylongshore/intent-eval-core#12`](https://github.com/jeremylongshore/intent-eval-core/issues/12) (closed Skill Refiner integration epic) |
 | Implements | DR-028 T1 binding-minority deferral (lines 105/108, ISEDC Session 7) reconciled by DR-085 D1 ("Phase C ships entity + discriminator + parent_version_id only; the state-machine formalism is authored as a SECOND DR in v0.4.0 — not now") |
 | Package version | `@intentsolutions/core` 0.9.0 → **0.10.0** (additive minor per SemVer — new OPTIONAL fields only; see § 6 for the "v0.4.0 DR" naming note) |
 | Authority chain | Blueprint A (constitution) → DR-010 (governance lock) → Blueprint B § 2 (domain model) + § 3 (state machines) → DR-028 T1 / DR-085 D1..D5 (SkillVersion + its deferral) → this DR → `schemas/v1/skill-version.schema.json` + `src/entities/SkillVersion.ts` + `src/validators/v1/skill-version.ts` + `python/.../models.py` |

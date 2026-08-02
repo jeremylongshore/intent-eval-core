@@ -17,7 +17,22 @@ related_glossary:
 filing_standard: Document Filing Standard v4.3
 ---
 
+<!-- BEGIN BD-SYNC:cross-ref:v1 -->
+
+Beads: `bd_000-projects-pu35.2`
+GitHub: `jeremylongshore/intent-eval-core#12, jeremylongshore/intent-eval-core#87`
+Projection-SHA256: 65b52c01297ce39ae4d99c883c669c3dceea1acff6469a7d56cd9c0ba81a140c
+
+<!-- END BD-SYNC:cross-ref:v1 -->
+
 ## Repo Blueprint — `intent-eval-core`
+
+| Tracking field | Value |
+| --- | --- |
+| **Beads** | `bd_000-projects-pu35.2` |
+| **GitHub** | [`jeremylongshore/intent-eval-core#87`](https://github.com/jeremylongshore/intent-eval-core/issues/87) |
+| **Plane** | `LAB-124` |
+| **Historical coordination** | [`jeremylongshore/intent-eval-core#12`](https://github.com/jeremylongshore/intent-eval-core/issues/12) (closed Skill Refiner integration epic) |
 
 ## § 1 — Repo identity
 
