@@ -75,7 +75,7 @@ test:types (tsd) + harness:verify + api:check/api:diff + Codecov upload.
 
 ## Project structure
 
-Published as **`@intentsolutions/core@0.9.0`** (sigstore provenance). The kernel is **bicameral** — a runtime tier and an authoring tier:
+Published as **`@intentsolutions/core@0.10.0`** (sigstore provenance). The kernel is **bicameral** — a runtime tier and an authoring tier:
 
 ```text
 intent-eval-core/
@@ -110,6 +110,13 @@ intent-eval-core/
 ├── .nvmrc                  ← Node 22
 └── .github/workflows/ci.yml ← lint+typecheck+test+build on PR + push to main
 ```
+
+### Eval-spec identity
+
+The kernel's `EvalSpec` is the only canonical platform evaluation-spec
+contract. J-Rig's skill-shaped document is a `SkillEvalSpec` profile and must
+cross an explicit adapter before shared evidence or rollout claims. See
+[`000-docs/012-AT-SPEC-eval-substrate-contract-identity-2026-08-01.md`](000-docs/012-AT-SPEC-eval-substrate-contract-identity-2026-08-01.md) and the umbrella blueprint `IEP-EVAL-EVOLUTION-001`.
 
 ## TypeScript discipline
 

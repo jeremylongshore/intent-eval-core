@@ -9,7 +9,7 @@ Part of the **[Intent Eval Platform](https://github.com/intent-solutions-io/inte
 
 Canonical contracts kernel for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab) — TypeScript types, JSON Schemas, Zod validators, and state machines for the 16 canonical platform entities (the 13 from Blueprint B § 2 + `SkillVersion`, the 14th per DR-028 T1, + `UsageEvent` and `HumanReview`, the 15th and 16th per DR-103 D1).
 
-> **Status — v0.9.0:** current published release (first public release was `v0.1.0`, 2026-05-17). Contracts follow SemVer. Published with Sigstore provenance — verify via `npm audit signatures`.
+> **Status — v0.10.0:** current published release (first public release was `v0.1.0`, 2026-05-17). Contracts follow SemVer. Published with Sigstore provenance — verify via `npm audit signatures`.
 
 ## Install
 
@@ -57,6 +57,13 @@ It is **not**:
 - A harness — deterministic gates live in `audit-harness`
 
 Every validator in the platform — `audit-harness` deterministic gates, `j-rig` behavioral evaluators, `intent-rollout-gate` decision shell — depends on this package for canonical contract definitions. One source of truth, many consumers.
+
+### Eval-spec identity
+
+`EvalSpec` in this package is the canonical kernel contract. The skill-specific
+J-Rig document is a profile named `SkillEvalSpec` and must be adapted to the
+kernel contract before it participates in shared evidence or rollout lineage.
+The boundary and migration rules are recorded in [`000-docs/012-AT-SPEC-eval-substrate-contract-identity-2026-08-01.md`](000-docs/012-AT-SPEC-eval-substrate-contract-identity-2026-08-01.md).
 
 ## Architecture
 

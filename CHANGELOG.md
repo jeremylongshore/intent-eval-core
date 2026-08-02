@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation
+
+- Record the cross-repo `EvalSpec` identity decision: the kernel remains
+  canonical, while J-Rig's skill-shaped profile is `SkillEvalSpec` and must be
+  adapted with source-profile lineage before shared evidence or rollout use.
+- Correct the published-version references in the README and CLAUDE guidance
+  to `@intentsolutions/core@0.10.0`.
+
 ## [0.10.0] - 2026-07-09
 
 ### Added
