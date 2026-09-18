@@ -30,6 +30,7 @@ Naming: `NNN-CC-ABCD-description-YYYY-MM-DD.md` where:
 | 009 | [CompositionDag wire format normative spec](009-DR-RFC-compositiondag-wire-format-2026-06-10.md) | 2026-06-10 | DR-RFC | accepted (iec-deferral-F; locks CompositionDag serialization) |
 | 010 | [ID + event-ID invariants](010-AT-STND-id-and-event-id-invariants-2026-06-13.md) | 2026-06-13 | AT-STND | NORMATIVE (iec-E06 invariant register; kernel-vs-runtime generation boundary) |
 | 011 | [SkillVersion signing state machine (DR-028 T1 / DR-085 D1 deferred)](011-AT-DECR-skillversion-signing-state-machine-2026-07-09.md) | 2026-07-09 | AT-DECR | RATIFIED (acting-CTO, aon3.4; additive six OPTIONAL fields + staging-first state machine + both-directions cross-field invariant; kernel 0.10.0) |
+| 012 | [Eval-substrate contract identity](012-AT-SPEC-eval-substrate-contract-identity-2026-08-01.md) | 2026-08-01 | AT-SPEC | IMPLEMENTATION APPLICATION — core `EvalSpec` remains canonical; J-Rig's skill-shaped profile is `SkillEvalSpec` with an explicit adapter and lineage; current kernel currency is 0.10.0; master plan `IEP-EVAL-EVOLUTION-001`; bead `bd_000-projects-htjt.1`. |
 
 ## Cross-repo authority chain
 
