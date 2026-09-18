@@ -37,8 +37,10 @@ yarn-error.log*
 # OS
 Thumbs.db
 
-# Beads workspace (kernel is task-tracked at umbrella ~/000-projects/.beads/)
-.beads/
+# Beads workspace (kernel is task-tracked at umbrella ~/000-projects/.beads/).
+# Keep only the tracked redirect so this checkout cannot open a second store.
+.beads/*
+!.beads/redirect
 
 # api-extractor temp output (golden snapshot at api/intentsolutions-core.api.md IS committed)
 api/temp/

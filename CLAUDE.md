@@ -122,7 +122,7 @@ The strictness floor is **non-negotiable**. Loosening any strict flag requires e
 
 ## Task tracking (beads)
 
-Canonical bd workspace is **`~/000-projects/.beads/`** (umbrella, prefix `iec-`). This repo does **not** have its own `.beads/` directory — every IEP task is tracked at the umbrella level so cross-repo dependencies are visible.
+Canonical bd workspace is **`~/000-projects/.beads/`** (umbrella, prefix `iec-`). The tracked `.beads/redirect` resolves the supported workspace layout to that canonical Dolt store, so this repo does not open a second member database. Every IEP task is tracked at the umbrella level so cross-repo dependencies are visible. Any legacy local-store JSONL, backups, and Git history remain recovery artifacts; do not run `bd init` here.
 
 Three-layer mirror (per umbrella `CLAUDE.md`):
 
