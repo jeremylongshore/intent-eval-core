@@ -23,8 +23,9 @@ name: Changelog observance
 #   2 — environment error (base ref unresolvable)
 
 on:
+  # No `branches:` filter on purpose: with `branches: [main]` a stacked PR whose
+  # base is another feature branch gets no checks at all. Push builds stay on main.
   pull_request:
-    branches: [main]
   workflow_dispatch: # manual re-run (diffs against origin/main)
 
 permissions:
