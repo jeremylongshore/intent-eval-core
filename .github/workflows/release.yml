@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # ISEDC E09 DR / CISO reproducible-from-tag invariant: pin the
           # checked-out bytes to the exact ref that triggered this run (the
@@ -43,10 +43,10 @@ jobs:
           fetch-depth: 0
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -127,7 +127,7 @@ jobs:
       id-token: write # sigstore-python keyless signing (Fulcio OIDC)
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # ISEDC E09 DR / CISO reproducible-from-tag invariant: the PyPI
           # sdist/wheel is BUILT from this checkout, so the bytes MUST be the
@@ -256,7 +256,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # ISEDC E09 DR / CISO reproducible-from-tag invariant: this job signs
           # the EvidenceBundle, so the canonical bytes it hashes + cosign-signs
@@ -265,10 +265,10 @@ jobs:
           fetch-depth: 0
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
