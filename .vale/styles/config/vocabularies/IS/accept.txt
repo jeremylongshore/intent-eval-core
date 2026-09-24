@@ -92,6 +92,7 @@ repath
 (?i)repos
 REQs
 rollups
+rollout
 RTM
 Sigstore
 SKILL.md

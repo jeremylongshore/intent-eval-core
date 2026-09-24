@@ -15,8 +15,9 @@ on:
   # (and report) on every PR. A path-filtered required check that is skipped sits
   # "pending" forever and permanently blocks the PR (e.g. a dep-bump touching only
   # package.json). The lanes are fast (<15s), so always-run costs little.
+  # No `branches:` filter on purpose: with `branches: [main]` a stacked PR whose
+  # base is another feature branch gets no checks at all. Push builds stay on main.
   pull_request:
-    branches: [main]
   push:
     branches: [main]
 
@@ -34,10 +35,10 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -56,7 +57,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Run actionlint directly (not via the reviewdog wrapper): the binary's own
       # non-zero exit on any error IS the gate, so the check-run settles to a
