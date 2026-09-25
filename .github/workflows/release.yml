@@ -350,7 +350,7 @@ jobs:
 
     steps:
       - name: Connect to tailnet (Tailscale OIDC)
-        uses: tailscale/github-action@v4.1.2
+        uses: tailscale/github-action@v4.2.0
         with:
           oauth-client-id: ${{ secrets.TS_OIDC_CLIENT_ID }}
           oauth-client-secret: ${{ secrets.TS_AUDIENCE }}
