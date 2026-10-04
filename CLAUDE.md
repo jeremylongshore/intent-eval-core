@@ -75,7 +75,7 @@ test:types (tsd) + harness:verify + api:check/api:diff + Codecov upload.
 
 ## Project structure
 
-Published as **`@intentsolutions/core@0.10.0`** (sigstore provenance). The kernel is **bicameral** — a runtime tier and an authoring tier:
+Published as **`@intentsolutions/core@0.11.0`** (sigstore provenance; npm + PyPI, 2026-10-04). The kernel is **bicameral** — a runtime tier and an authoring tier:
 
 ```text
 intent-eval-core/
