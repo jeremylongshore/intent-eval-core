@@ -862,6 +862,7 @@ function isPatternOnlyString(schema: FieldSchema): boolean {
   return (
     schema.type === 'string' &&
     schema.pattern !== undefined &&
+    schema.minLength === undefined &&
     schema.maxLength === undefined &&
     schema.enum === undefined &&
     schema.format === undefined
