@@ -49,6 +49,8 @@ export const AGENT_DEFINITION_REQUIRED_FIELDS = [
 
 // ─── Constraint constants (mirror the JSON Schemas exactly) ──────────────────
 
+/** code.claude.com sub-agents name pattern (upstream-base). */
+export const AGENT_NAME_BASE_PATTERN = /^[^:]*$/;
 /** code.claude.com sub-agents permissionMode allowed values (upstream-base). */
 export const AGENT_PERMISSIONMODE_VALUES = [
   'default',
@@ -118,8 +120,13 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 export function upstreamBaseIssues(artifact: AuthoringArtifact): FoldIssue[] {
   const issues: FoldIssue[] = [...requiredFieldsIssues(artifact, AGENT_DEFINITION_BASE_REQUIRED)];
 
-  if ('name' in artifact && typeof artifact['name'] !== 'string') {
-    issues.push({ message: 'name must be a string', path: ['name'] });
+  if ('name' in artifact) {
+    const name = artifact['name'];
+    if (typeof name !== 'string') {
+      issues.push({ message: 'name must be a string', path: ['name'] });
+    } else if (!AGENT_NAME_BASE_PATTERN.test(name)) {
+      issues.push({ message: 'name does not match the documented pattern', path: ['name'] });
+    }
   }
 
   if ('description' in artifact) {
@@ -235,6 +242,14 @@ export function upstreamBaseIssues(artifact: AuthoringArtifact): FoldIssue[] {
         path: ['color'],
       });
     }
+  }
+
+  if ('experimental' in artifact && !isPlainObject(artifact['experimental'])) {
+    issues.push({ message: 'experimental must be an object', path: ['experimental'] });
+  }
+
+  if ('omitClaudeMd' in artifact && typeof artifact['omitClaudeMd'] !== 'boolean') {
+    issues.push({ message: 'omitClaudeMd must be a boolean', path: ['omitClaudeMd'] });
   }
 
   if ('initialPrompt' in artifact && typeof artifact['initialPrompt'] !== 'string') {

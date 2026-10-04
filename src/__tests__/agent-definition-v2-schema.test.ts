@@ -457,3 +457,45 @@ describe('agent-definition v2 — monotonicity (overlay strictly additive/narrow
     }
   });
 });
+
+describe('agent-definition v2 — 2026-10 FOLD from the 2026-09-30 projection (lab 9k5h.18 / core 9k5h.19)', () => {
+  const base = { name: 'reviewer', description: 'Reviews diffs.' };
+
+  it("rejects a ':' in name at the base layer, in ajv AND the generated Zod (fold agreement)", () => {
+    // Upstream: names can't contain ':' (reserved for plugin-scoped ids such as
+    // my-plugin:reviewer; such a file is not loaded since Claude Code v2.1.218).
+    const scoped = { ...base, name: 'my-plugin:reviewer' };
+    expect(validateBase(scoped)).toBe(false);
+    expect(upstreamBaseIssues(scoped).map((i) => i.path.join('.'))).toContain('name');
+  });
+
+  it('accepts names the IS overlay would reject: the base mirrors upstream, not IS kebab-case', () => {
+    // Upstream no longer documents lowercase-and-hyphens, so the base accepts
+    // these; the composed v2 contract still rejects them via the is-overlay
+    // (DR-062 C3), so the composed contract is unchanged.
+    const upper = { ...base, name: 'Code_Reviewer' };
+    expect(validateBase(upper)).toBe(true);
+    expect(upstreamBaseIssues(upper)).toEqual([]);
+    expect(validateComposition({ ...V2_VALID, name: 'Code_Reviewer' })).toBe(false);
+    expect(validateComposition({ ...V2_VALID, name: 'my-plugin:reviewer' })).toBe(false);
+  });
+
+  it('accepts the new optional fields experimental (object) and omitClaudeMd (boolean)', () => {
+    const withNew = { ...base, experimental: { cacheTtl: '1h' }, omitClaudeMd: true };
+    expect(validateBase(withNew)).toBe(true);
+    expect(upstreamBaseIssues(withNew)).toEqual([]);
+    expect(
+      validateComposition({ ...V2_VALID, experimental: { cacheTtl: '5m' }, omitClaudeMd: false }),
+    ).toBe(true);
+  });
+
+  it('rejects the wrong type for each new field, in ajv AND Zod', () => {
+    for (const bad of [
+      { ...base, experimental: '1h' },
+      { ...base, omitClaudeMd: 'yes' },
+    ]) {
+      expect(validateBase(bad)).toBe(false);
+      expect(upstreamBaseIssues(bad).length).toBeGreaterThan(0);
+    }
+  });
+});

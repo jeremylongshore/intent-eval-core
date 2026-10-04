@@ -857,6 +857,18 @@ function constName(fieldConstPrefix: string, field: string, suffix: string): str
  * Zod was authored without this floor, so the emit is GATED to the v2 family —
  * adding it to v1 would be a forbidden tightening of the frozen contract.
  */
+/** A base string field whose only constraint is a `pattern` (v2 codegen branch). */
+function isPatternOnlyString(schema: FieldSchema): boolean {
+  return (
+    schema.type === 'string' &&
+    schema.pattern !== undefined &&
+    schema.minLength === undefined &&
+    schema.maxLength === undefined &&
+    schema.enum === undefined &&
+    schema.format === undefined
+  );
+}
+
 function descriptionNonEmptyCheck(): string[] {
   return [
     `  if ('description' in artifact) {`,
@@ -925,6 +937,29 @@ function baseFieldCheck(
       `          path: ['${field}'],`,
       `        });`,
       `      }`,
+      `    }`,
+      `  }`,
+    );
+    return lines;
+  }
+
+  // v2-only: a string constrained by a `pattern` alone (no maxLength / enum /
+  // format). Added for the 2026-10 fold: the agent-definition base `name` now
+  // encodes upstream's "names can't contain ':'" rule. Without this branch the
+  // field fell through to a type-only check, so ajv rejected a ':' name at the
+  // base layer while the generated Zod accepted it (an ajv ↔ Zod gap). v2-gated
+  // so the byte-frozen v1 generated Zod is untouched.
+  if (version === 'v2' && isPatternOnlyString(schema)) {
+    // BASE_PATTERN, not PATTERN: the overlay may export <FIELD>_PATTERN for its
+    // own narrowing (agent name kebab), so the base constant needs its own name.
+    const patternConst = constName(fieldConstPrefix, field, 'BASE_PATTERN');
+    lines.push(
+      `  if ('${field}' in artifact) {`,
+      `    const ${field} = artifact['${field}'];`,
+      `    if (typeof ${field} !== 'string') {`,
+      `      issues.push({ message: '${field} must be a string', path: ['${field}'] });`,
+      `    } else if (!${patternConst}.test(${field})) {`,
+      `      issues.push({ message: '${field} does not match the documented pattern', path: ['${field}'] });`,
       `    }`,
       `  }`,
     );
@@ -2003,6 +2038,11 @@ function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSc
         `export const ${constName(fieldConstPrefix, field, 'PATTERN')} = ${jsRegexLiteral(schema.pattern)};`,
         `/** ${prov} ${field} length ceiling (upstream-base). */`,
         `export const ${constName(fieldConstPrefix, field, 'MAX')} = ${schema.maxLength};`,
+      );
+    } else if (spec.version === 'v2' && isPatternOnlyString(schema)) {
+      constLines.push(
+        `/** ${prov} ${field} pattern (upstream-base). */`,
+        `export const ${constName(fieldConstPrefix, field, 'BASE_PATTERN')} = ${jsRegexLiteral(schema.pattern)};`,
       );
     } else if (schema.type === 'string' && schema.maxLength !== undefined) {
       constLines.push(

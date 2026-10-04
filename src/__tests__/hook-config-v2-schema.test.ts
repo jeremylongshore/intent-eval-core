@@ -434,3 +434,39 @@ describe('hook-config v2 — monotonicity (overlay strictly additive/narrowing o
     }
   });
 });
+
+describe('hook-config v2 — 2026-10 FOLD: three events upstream added (lab 9k5h.18 / core 9k5h.19)', () => {
+  const NEW_EVENTS = ['DirectoryAdded', 'PreModelSwitch', 'PostModelSwitch'] as const;
+  const group = { hooks: [{ type: 'command', command: './scripts/guard.sh' }] };
+
+  it.each(NEW_EVENTS)(
+    '%s — the frozen v1 base rejects it, the v2 base and composition accept it',
+    (event) => {
+      // v1 is BYTE-FROZEN at @intentsolutions/core@0.4.1: its closed 30-event enum
+      // stays exactly as published, so it keeps rejecting the new events.
+      expect(validateV1Base({ event, type: 'command', command: './scripts/guard.sh' })).toBe(false);
+      // v2 mirrors the 2026-10-01 projection (events.enum, 33 values).
+      expect(validateBase(doc(group, event))).toBe(true);
+      expect(upstreamBaseIssues(doc(group, event))).toEqual([]);
+      // The IS overlay requires an explicit, non-empty matcher on every group.
+      const composed = { hooks: { [event]: [{ matcher: '*', hooks: [IS_HANDLER] }] } };
+      expect(validateComposition(composed)).toBe(true);
+    },
+  );
+
+  it('still rejects an event upstream does not document (the enum stayed closed)', () => {
+    expect(validateBase(doc(group, 'ModelSwitched'))).toBe(false);
+  });
+
+  it('enumerates exactly 33 events in lifecycle-table order', () => {
+    const base = loadJson(join(V2_DIR, 'upstream-base/hook-config.v2.json')) as {
+      properties: { hooks: { propertyNames: { enum: string[] } } };
+    };
+    const events = base.properties.hooks.propertyNames.enum;
+    expect(events).toHaveLength(33);
+    expect(events.indexOf('DirectoryAdded')).toBe(events.indexOf('CwdChanged') + 1);
+    expect(
+      events.slice(events.indexOf('PostCompact') + 1, events.indexOf('PostCompact') + 3),
+    ).toEqual(['PreModelSwitch', 'PostModelSwitch']);
+  });
+});
