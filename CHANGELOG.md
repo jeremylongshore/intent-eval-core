@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-10-04
+
+### Added
+
+- **`authoring/v2` upstream fold, 2026-10** (`lineage: 9k5h.19@authoring-v2-upstream-fold-2026-10`; #103).
+  The v2 `hook-config` upstream base accepts the three hook events Claude Code added
+  (`DirectoryAdded`, `PreModelSwitch`, `PostModelSwitch`; 30 → 33). The v2
+  `agent-definition` upstream base gains upstream's only structural name rule (no `:`)
+  and the optional `experimental` (object) and `omitClaudeMd` (boolean) fields. The
+  composed v2 name contract is unchanged (the IS kebab rule stays in the is-overlay).
+  `authoring/v1` is untouched: it stays byte-frozen at 0.4.1 and keeps rejecting the new
+  events by design. Details: `schemas/authoring/v2/CHANGELOG.md`.
+
+### Changed
+
+- **`skill-refiner-pass/v1` validation is stricter** (#82). `SkillRefinerPassV1StatementSchema`
+  now enforces the DR-085 D4 subject binding (`subject[0].digest.sha256` must equal
+  `result_snapshot_hash` without its `sha256:` prefix), and a body with duplicate
+  `named_dimension_deltas[].id` values is rejected. A producer that emitted either shape
+  validated under 0.10.0 and is refused under 0.11.0; check emitters before bumping.
+
 ### Documentation
 
 - Record the cross-repo `EvalSpec` identity decision: the kernel remains
