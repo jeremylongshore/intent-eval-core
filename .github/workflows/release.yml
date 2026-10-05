@@ -185,7 +185,7 @@ jobs:
       # signature only has meaning alongside the bytes that actually ship.
       - name: Sign wheel + sdist (sigstore-python keyless → Rekor)
         if: steps.guard.outputs.token_present == 'true'
-        uses: sigstore/gh-action-sigstore-python@v3.4.0
+        uses: sigstore/gh-action-sigstore-python@v3.5.0
         with:
           inputs: ./python/dist/*.whl ./python/dist/*.tar.gz
           # We attach the bundles onto the Release ourselves below; don't let the
