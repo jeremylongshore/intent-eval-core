@@ -35,3 +35,7 @@ scripts/canonical-payload.fixture.json
 # 6hm8 — runtime reference drift gate and its corruption/missing-file tests.
 scripts/codegen-validators.ts
 scripts/codegen-validators.test.ts
+
+# 0k3s — Pydantic regeneration preservation and failure-path regressions.
+scripts/codegen_pydantic.py
+python/tests/test_codegen_preservation.py

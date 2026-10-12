@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Preserve Pydantic reference documentation and existing modules when generation
+  fails. Stage and validate output before replacing changed Python modules, prune
+  obsolete modules only after success, and keep `--check` read-only
+  (`bd_000-projects-0k3s`).
+
 - Refresh seven stale runtime Zod reference files and enforce
   `codegen:validators:check` in local and hosted CI. The check detects changed,
   missing and obsolete generated files without modifying the checkout;

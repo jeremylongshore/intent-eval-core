@@ -30,6 +30,16 @@ pinned generator version => byte-identical output. It normalizes the absolute
 resolves them locally (AJV resolves them against each schema's `$id` base; we
 collapse to relative paths — both arrive at the same target file).
 
+Regeneration stages and validates the output before publishing any modules.
+Only top-level `*.py` files are managed: obsolete modules are removed after
+successful generation, while this README, other documentation and nested
+directories are preserved. Unchanged modules retain their timestamps.
+Generator, import-repair or validation failures leave existing output intact;
+concurrent module edits detected before publication abort regeneration.
+Publication replaces each changed file atomically, but is not a directory-wide
+transaction. `--check` always generates in a temporary directory and does not
+modify the committed output.
+
 ## What NOT to do
 
 - **Don't import from `_generated/`** — import from `intent_eval_core` /
