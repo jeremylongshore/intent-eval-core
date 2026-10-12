@@ -60,3 +60,11 @@ COUL = "COUL"
 # ("per-type conditional requireds", "per-type requireds"); correct-as-written
 # across the authoring schemas + codegen, not a misspelling of "required".
 requireds = "requireds"
+
+# Preserve the verbatim negative-key example in this proposed council record.
+# The misspelling remains an error everywhere else, including source and fixtures.
+[type.trajectory-review]
+extend-glob = ["014-AT-DECR-pair-trajectory-assertions-2026-10-12.md"]
+
+[type.trajectory-review.extend-identifiers]
+input_contans = "input_contans"
