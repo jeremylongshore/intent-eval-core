@@ -20,6 +20,7 @@
  */
 
 export * from './EvalSpec.js';
+export * from './TrajectoryAssertion.js';
 export * from './EvalRun.js';
 export * from './MatcherMap.js';
 export * from './EvidenceBundle.js';

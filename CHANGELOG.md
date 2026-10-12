@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Proposed
+
+- Draft five typed trajectory assertion classes with shared TypeScript, JSON
+  Schema, Zod and Python structural validation (`bd_000-projects-dn6j.15`;
+  `lineage: j-rig-trajectory@b75364db5f21b874ca1f7fa12ce76c01e3c9a7b4`).
+  Preserve legacy named assertions and opaque extensions. Class-2 record 014
+  awaits owner ratification and a regex syntax policy; this draft does not
+  authorize a kernel release or the subsequent J-Rig adapter migration.
+
 ### Fixed
 
 - Refresh seven stale runtime Zod reference files and enforce

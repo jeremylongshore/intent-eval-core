@@ -31,13 +31,13 @@ export function ancestorChain(edges: readonly LineageEdge[], id: Uuidv7): readon
 export function asEventId(value: string): EventId | null;
 
 // @public
-export const ASSERTION_CLASSES: readonly ["output-equals", "output-contains", "output-matches", "schema-conforms", "judge-verdict", "matcher-satisfied"];
+export const ASSERTION_CLASSES: readonly ["output-equals", "output-contains", "output-matches", "schema-conforms", "judge-verdict", "matcher-satisfied", "tool-called", "tool-not-called", "order-before", "file-exists", "file-matches-sha-in"];
 
 // @public
-export type AssertionClass = 'output-equals' | 'output-contains' | 'output-matches' | 'schema-conforms' | 'judge-verdict' | 'matcher-satisfied';
+export type AssertionClass = LegacyAssertionClass | TrajectoryAssertionClass;
 
 // @public
-export type AssertionExpression = NamedAssertionExpression | AssertionExpressionExtension;
+export type AssertionExpression = NamedAssertionExpression | TrajectoryAssertion | AssertionExpressionExtension;
 
 // @public
 export interface AssertionExpressionExtension {
@@ -355,6 +355,16 @@ export type FailureTaxonomyStatus = 'proposed' | 'canonical' | 'deprecated';
 // @public
 export const failureTaxonomyTransitions: TransitionMap<FailureTaxonomyState>;
 
+// @public (undocumented)
+export type FileExistsTarget = TrajectoryFileSelector & {
+    readonly produced?: boolean;
+};
+
+// @public (undocumented)
+export type FileMatchesShaInTarget = TrajectoryFileSelector & {
+    readonly in: string;
+};
+
 // @public
 export const GATE_RESULT_V1_URI: "https://evals.intentsolutions.io/gate-result/v1";
 
@@ -519,6 +529,13 @@ export function isSha256Prefixed(value: string): value is Sha256Prefixed;
 export function isTerminal<S extends string>(map: TransitionMap<S>, state: S): boolean;
 
 // @public
+export function isTrajectoryAssertion(assertion: {
+    readonly class: string;
+    readonly target: unknown;
+    readonly extension?: unknown;
+}): assertion is TrajectoryAssertion;
+
+// @public
 export function isUuidv7(value: string): value is Uuidv7;
 
 // @public
@@ -569,6 +586,9 @@ export type KernelErrorClass = (typeof KERNEL_ERROR_CLASSES)[number];
 
 // @public (undocumented)
 export type KnownPredicateUri = (typeof PREDICATE_URIS)[keyof typeof PREDICATE_URIS];
+
+// @public
+export type LegacyAssertionClass = 'output-equals' | 'output-contains' | 'output-matches' | 'schema-conforms' | 'judge-verdict' | 'matcher-satisfied';
 
 // @public
 export interface LineageDefect {
@@ -661,7 +681,7 @@ export type MmClassId = `MM-${number}`;
 // @public
 export interface NamedAssertionExpression {
     // (undocumented)
-    readonly class: AssertionClass;
+    readonly class: LegacyAssertionClass;
     readonly negate?: boolean;
     readonly target: unknown;
 }
@@ -671,6 +691,14 @@ export interface NamedDimensionDelta {
     readonly delta: number;
     readonly id: string;
     readonly non_regressed: boolean;
+}
+
+// @public (undocumented)
+export interface OrderBeforeTarget {
+    // (undocumented)
+    readonly first: TrajectoryToolMatcher;
+    // (undocumented)
+    readonly then: TrajectoryToolMatcher;
 }
 
 // @public
@@ -1084,6 +1112,11 @@ export function terminalStates<S extends string>(map: TransitionMap<S>): readonl
 // @public
 export function toMermaid<S extends string>(map: TransitionMap<S>, opts?: MermaidOptions): string;
 
+// @public (undocumented)
+export interface ToolCalledTarget extends TrajectoryToolMatcher {
+    readonly min_count?: number;
+}
+
 // @public
 export interface ToolInvocation {
     readonly args: ToolInvocationArgs;
@@ -1123,6 +1156,50 @@ export type ToolInvocationState = 'invoked';
 
 // @public
 export const toolInvocationTransitions: TransitionMap<ToolInvocationState>;
+
+// @public
+export const TRAJECTORY_ASSERTION_CLASSES: readonly ["tool-called", "tool-not-called", "order-before", "file-exists", "file-matches-sha-in"];
+
+// @public
+export type TrajectoryAssertion = {
+    readonly negate?: boolean;
+    readonly extension?: never;
+} & ({
+    readonly class: 'tool-called';
+    readonly target: ToolCalledTarget;
+} | {
+    readonly class: 'tool-not-called';
+    readonly target: TrajectoryToolMatcher;
+} | {
+    readonly class: 'order-before';
+    readonly target: OrderBeforeTarget;
+} | {
+    readonly class: 'file-exists';
+    readonly target: FileExistsTarget;
+} | {
+    readonly class: 'file-matches-sha-in';
+    readonly target: FileMatchesShaInTarget;
+});
+
+// @public (undocumented)
+export type TrajectoryAssertionClass = (typeof TRAJECTORY_ASSERTION_CLASSES)[number];
+
+// @public
+export type TrajectoryFileSelector = {
+    readonly path: string;
+    readonly pattern?: never;
+} | {
+    readonly path?: never;
+    readonly pattern: string;
+};
+
+// @public
+export interface TrajectoryToolMatcher {
+    // (undocumented)
+    readonly input_contains?: string;
+    // (undocumented)
+    readonly tool: string;
+}
 
 // @public
 export type TransitionMap<S extends string> = Readonly<Record<S, readonly S[]>>;

@@ -36,6 +36,41 @@ export default z
                   extension: z.literal(true),
                 })
                 .strict(),
+              z
+                .object({
+                  class: z.literal('tool-called'),
+                  target: z.any(),
+                  negate: z.boolean().optional(),
+                })
+                .strict(),
+              z
+                .object({
+                  class: z.literal('tool-not-called'),
+                  target: z.any(),
+                  negate: z.boolean().optional(),
+                })
+                .strict(),
+              z
+                .object({
+                  class: z.literal('order-before'),
+                  target: z.any(),
+                  negate: z.boolean().optional(),
+                })
+                .strict(),
+              z
+                .object({
+                  class: z.literal('file-exists'),
+                  target: z.any(),
+                  negate: z.boolean().optional(),
+                })
+                .strict(),
+              z
+                .object({
+                  class: z.literal('file-matches-sha-in'),
+                  target: z.any(),
+                  negate: z.boolean().optional(),
+                })
+                .strict(),
             ];
             const { errors, failed } = schemas.reduce<{
               errors: z.core.$ZodIssue[];
@@ -73,7 +108,7 @@ export default z
         ),
       )
       .describe(
-        'Typed assertion expressions. Class union LOCKED additively per deferral-A (bd_000-projects-gzgj): a named-class discriminated union plus an open extension slot. Per-class `target` payload stays open (refined at the validator layer per engagement).',
+        'Legacy named assertions retain open targets; trajectory assertions have strict typed targets. extension:true payloads remain opaque, including class-name collisions. Class-2 proposal 014 is awaiting ratification.',
       ),
     scoring: z
       .object({

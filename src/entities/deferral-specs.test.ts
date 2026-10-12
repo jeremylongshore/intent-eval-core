@@ -55,6 +55,11 @@ describe('deferral-A: AssertionExpression typed-class enum (bd_000-projects-gzgj
       | 'schema-conforms'
       | 'judge-verdict'
       | 'matcher-satisfied'
+      | 'tool-called'
+      | 'tool-not-called'
+      | 'order-before'
+      | 'file-exists'
+      | 'file-matches-sha-in'
     >();
   });
 
@@ -66,8 +71,13 @@ describe('deferral-A: AssertionExpression typed-class enum (bd_000-projects-gzgj
       'schema-conforms',
       'judge-verdict',
       'matcher-satisfied',
+      'tool-called',
+      'tool-not-called',
+      'order-before',
+      'file-exists',
+      'file-matches-sha-in',
     ]);
-    expect(ASSERTION_CLASSES).toHaveLength(6);
+    expect(ASSERTION_CLASSES).toHaveLength(11);
   });
 
   it('a named assertion narrows on `class`', () => {

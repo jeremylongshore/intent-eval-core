@@ -58,6 +58,24 @@ Plus `GATE_RESULT_V1_URI` (the canonical predicate URI at
 
 ## How it stays in lockstep with the TypeScript kernel
 
+### Proposed trajectory assertions
+
+The trajectory API is a draft pending [Class-2 record 014](../000-docs/014-AT-DECR-pair-trajectory-assertions-2026-10-12.md); it is not in the published package. Its regex syntax policy remains undecided. The current candidate validates structure only.
+
+Decode JSON with `json.loads`, validate with `EvalSpec.model_validate`, and preserve wire names and absent fields when serializing:
+
+```python
+import json
+from intent_eval_core import EvalSpec
+
+spec = EvalSpec.model_validate(json.loads(spec_json))
+wire = spec.model_dump(mode="json", by_alias=True, exclude_unset=True)
+```
+
+`exclude_unset=True` prevents absent optional fields from becoming explicit `null`, which trajectory validation rejects. `by_alias=True` preserves names such as `class` and `in`. Pydantic's generated `model_json_schema()` describes its Python representation; use the repository's canonical JSON Schemas for wire validation. The shared parity corpus exercises JSON decoded by `json.loads`, including escaped Unicode values.
+
+### Generation and validation
+
 - **Codegen, not hand-port** — `scripts/codegen_pydantic.py` runs
   `datamodel-code-generator` (pinned) over the canonical
   `schemas/v1/*.json`. The output lives in `intent_eval_core/_generated/`

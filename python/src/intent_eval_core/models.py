@@ -33,7 +33,7 @@ from typing import Literal
 
 from typing_extensions import Self
 
-from pydantic import conint, model_validator
+from pydantic import conint, field_validator, model_validator
 
 from ._generated import _common_schema as _schema
 
@@ -53,8 +53,11 @@ from ._generated.eval_run_schema import (
     EvalrunSingleExecutionOfAnEvalspecAgainstASkillsnapshotBlueprintB22 as EvalRun,
 )
 from ._generated.eval_spec_schema import (
-    EvalspecDeclarativeEvaluationSpecificationBlueprintB21 as EvalSpec,
+    Assertions as _LegacyAssertion,
+    Assertions1 as _GeneratedExtensionAssertion,
+    EvalspecDeclarativeEvaluationSpecificationBlueprintB21 as _EvalSpecGenerated,
 )
+from .trajectory import TrajectoryAssertion
 from ._generated.evidence_bundle_schema import (
     EvidencebundleAppendOnlyCollectionOfSignedPredicateRowsBlueprintB24 as EvidenceBundle,
 )
@@ -118,6 +121,26 @@ from ._generated.tool_invocation_schema import (
 
 # ── Canonical predicate URI (CISO binding: evals.intentsolutions.io, never labs) ─
 GATE_RESULT_V1_URI = "https://evals.intentsolutions.io/gate-result/v1"
+
+
+class _ExtensionAssertion(_GeneratedExtensionAssertion):
+    @field_validator("extension", mode="before")
+    @classmethod
+    def _literal_true(cls, value: object) -> object:
+        # Python's 1 == True must not bypass a named trajectory's strict target.
+        if value is not True:
+            raise ValueError("extension must be the JSON boolean true")
+        return value
+
+
+class EvalSpec(_EvalSpecGenerated):
+    """EvalSpec with strict trajectory targets and unchanged opaque extensions.
+
+    Generated models cannot enforce selector XOR, strict optional fields or
+    slash-delimited path restrictions; the public trajectory models do so.
+    """
+
+    assertions: list[_LegacyAssertion | _ExtensionAssertion | TrajectoryAssertion]
 
 
 class GateResultV1(_GateResultV1Generated):

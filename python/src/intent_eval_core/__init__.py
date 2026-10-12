@@ -45,6 +45,19 @@ from .models import (
     ToolInvocation,
     UsageEvent,
 )
+from .trajectory import (
+    FileExistsAssertion,
+    FileExistsTarget,
+    FileMatchesShaInAssertion,
+    FileMatchesShaInTarget,
+    OrderBeforeAssertion,
+    OrderBeforeTarget,
+    ToolCalledAssertion,
+    ToolCalledTarget,
+    ToolNotCalledAssertion,
+    TrajectoryAssertion,
+    TrajectoryToolMatcher,
+)
 
 # Kept in lockstep with npm package.json#version by scripts/check_version_lockstep.py
 # (CI-gated). The JSON Schemas under schemas/v1/ are the shared source of truth.
@@ -77,4 +90,16 @@ __all__ = [
     "SkillRefinerPassV1",
     # Constants
     "GATE_RESULT_V1_URI",
+    # Typed trajectory expressions and reusable targets (Class-2 proposal 014)
+    "TrajectoryAssertion",
+    "TrajectoryToolMatcher",
+    "ToolCalledTarget",
+    "OrderBeforeTarget",
+    "FileExistsTarget",
+    "FileMatchesShaInTarget",
+    "ToolCalledAssertion",
+    "ToolNotCalledAssertion",
+    "OrderBeforeAssertion",
+    "FileExistsAssertion",
+    "FileMatchesShaInAssertion",
 ]

@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/jeremylongshore/intent-eval-core/schemas/v1/eval-spec.schema.json",
-  "title": "EvalSpec — declarative evaluation specification (Blueprint B § 2.1)",
-  "description": "Content-addressed via content_hash. State machine: draft → published → deprecated (deprecated reversible to published). Mutable in draft; immutable once published.",
+  "title": "EvalSpec \u2014 declarative evaluation specification (Blueprint B \u00a7 2.1)",
+  "description": "Content-addressed via content_hash. State machine: draft \u2192 published \u2192 deprecated (deprecated reversible to published). Mutable in draft; immutable once published.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -22,18 +22,29 @@
     "content_hash"
   ],
   "properties": {
-    "id": { "$ref": "_common.schema.json#/$defs/uuidv7" },
-    "version": { "$ref": "_common.schema.json#/$defs/semver" },
-    "name": { "$ref": "_common.schema.json#/$defs/kebabSlug" },
-    "description": { "type": "string", "minLength": 1 },
+    "id": {
+      "$ref": "_common.schema.json#/$defs/uuidv7"
+    },
+    "version": {
+      "$ref": "_common.schema.json#/$defs/semver"
+    },
+    "name": {
+      "$ref": "_common.schema.json#/$defs/kebabSlug"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
     "matchers": {
       "type": "array",
       "description": "MatcherMap FKs.",
-      "items": { "$ref": "_common.schema.json#/$defs/uuidv7" }
+      "items": {
+        "$ref": "_common.schema.json#/$defs/uuidv7"
+      }
     },
     "assertions": {
       "type": "array",
-      "description": "Typed assertion expressions. Class union LOCKED additively per deferral-A (bd_000-projects-gzgj): a named-class discriminated union plus an open extension slot. Per-class `target` payload stays open (refined at the validator layer per engagement).",
+      "description": "Legacy named assertions retain open targets; trajectory assertions have strict typed targets. extension:true payloads remain opaque, including class-name collisions. Class-2 proposal 014 is awaiting ratification.",
       "items": {
         "type": "object",
         "required": ["class", "target"],
@@ -53,17 +64,110 @@
                 ]
               },
               "target": {},
-              "negate": { "type": "boolean" }
+              "negate": {
+                "type": "boolean"
+              }
             }
           },
           {
             "additionalProperties": false,
             "required": ["class", "target", "extension"],
             "properties": {
-              "class": { "type": "string" },
+              "class": {
+                "type": "string"
+              },
               "target": {},
-              "negate": { "type": "boolean" },
-              "extension": { "const": true }
+              "negate": {
+                "type": "boolean"
+              },
+              "extension": {
+                "const": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["class", "target"],
+            "properties": {
+              "class": {
+                "type": "string",
+                "const": "tool-called"
+              },
+              "target": {
+                "$ref": "#/$defs/ToolCalledTarget"
+              },
+              "negate": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["class", "target"],
+            "properties": {
+              "class": {
+                "type": "string",
+                "const": "tool-not-called"
+              },
+              "target": {
+                "$ref": "#/$defs/TrajectoryToolMatcher"
+              },
+              "negate": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["class", "target"],
+            "properties": {
+              "class": {
+                "type": "string",
+                "const": "order-before"
+              },
+              "target": {
+                "$ref": "#/$defs/OrderBeforeTarget"
+              },
+              "negate": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["class", "target"],
+            "properties": {
+              "class": {
+                "type": "string",
+                "const": "file-exists"
+              },
+              "target": {
+                "$ref": "#/$defs/FileExistsTarget"
+              },
+              "negate": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["class", "target"],
+            "properties": {
+              "class": {
+                "type": "string",
+                "const": "file-matches-sha-in"
+              },
+              "target": {
+                "$ref": "#/$defs/FileMatchesShaInTarget"
+              },
+              "negate": {
+                "type": "boolean"
+              }
             }
           }
         ]
@@ -71,7 +175,7 @@
     },
     "scoring": {
       "type": "object",
-      "description": "Scoring configuration. aggregation_rule is the spec-bound field per Blueprint B § 2.1. weight_dimension/weights/tiebreaker are the deferral-C lockup (bd_000-projects-21re), additive + optional. § 7.6 architectural rule: ship/no-ship THRESHOLDS belong in consumer-side tests/TESTING.md, NOT here — only weights + exact-tie resolution are kernel-side.",
+      "description": "Scoring configuration. aggregation_rule is the spec-bound field per Blueprint B \u00a7 2.1. weight_dimension/weights/tiebreaker are the deferral-C lockup (bd_000-projects-21re), additive + optional. \u00a7 7.6 architectural rule: ship/no-ship THRESHOLDS belong in consumer-side tests/TESTING.md, NOT here \u2014 only weights + exact-tie resolution are kernel-side.",
       "required": ["aggregation_rule"],
       "properties": {
         "aggregation_rule": {
@@ -91,26 +195,31 @@
             "required": ["key", "weight"],
             "additionalProperties": false,
             "properties": {
-              "key": { "type": "string" },
-              "weight": { "type": "number", "minimum": 0 }
+              "key": {
+                "type": "string"
+              },
+              "weight": {
+                "type": "number",
+                "minimum": 0
+              }
             }
           }
         },
         "tiebreaker": {
           "type": "string",
-          "description": "Deterministic resolution of an exact aggregate tie (deferral-C). NOT a threshold — it resolves a tie, it does not set a pass bar.",
+          "description": "Deterministic resolution of an exact aggregate tie (deferral-C). NOT a threshold \u2014 it resolves a tie, it does not set a pass bar.",
           "enum": ["fail-closed", "fail-open", "first-listed"]
         },
         "extensions": {
           "type": "object",
           "additionalProperties": true,
-          "description": "Tool-specific scoring metadata. MUST NOT drive ship/no-ship decisions (mirrors § 7.4 metadata rule)."
+          "description": "Tool-specific scoring metadata. MUST NOT drive ship/no-ship decisions (mirrors \u00a7 7.4 metadata rule)."
         }
       }
     },
     "composition": {
       "type": "object",
-      "description": "DAG declaration per Blueprint B § 1.3. Validation contract: runtime topologically sorts; cycles rejected at submission with 400. Wire format (adjacency list with typed edges) is engineer's choice per bd_000-projects-3sjx; semantics ARE spec-bound (node types + edge kinds + failure propagation per § 1.3 line 100).",
+      "description": "DAG declaration per Blueprint B \u00a7 1.3. Validation contract: runtime topologically sorts; cycles rejected at submission with 400. Wire format (adjacency list with typed edges) is engineer's choice per bd_000-projects-3sjx; semantics ARE spec-bound (node types + edge kinds + failure propagation per \u00a7 1.3 line 100).",
       "required": ["nodes", "edges"],
       "additionalProperties": false,
       "properties": {
@@ -127,10 +236,12 @@
               },
               "kind": {
                 "type": "string",
-                "description": "Node type per Blueprint B § 1.3 line 92.",
+                "description": "Node type per Blueprint B \u00a7 1.3 line 92.",
                 "enum": ["eval_run", "tool_invocation"]
               },
-              "ref": { "$ref": "_common.schema.json#/$defs/uuidv7" }
+              "ref": {
+                "$ref": "_common.schema.json#/$defs/uuidv7"
+              }
             }
           }
         },
@@ -141,11 +252,15 @@
             "required": ["from", "to", "kind"],
             "additionalProperties": false,
             "properties": {
-              "from": { "type": "string" },
-              "to": { "type": "string" },
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              },
               "kind": {
                 "type": "string",
-                "description": "Edge type — drives runtime failure-propagation per Blueprint B § 1.3 line 100.",
+                "description": "Edge type \u2014 drives runtime failure-propagation per Blueprint B \u00a7 1.3 line 100.",
                 "enum": ["feeds", "gates", "enriches"]
               }
             }
@@ -155,12 +270,14 @@
     },
     "expected_artifacts": {
       "type": "array",
-      "description": "SkillSnapshot.combined_sha values this spec targets. Anchors on CONTENT (sha), not FK — rebuilt snapshots with the same combined_sha still satisfy.",
-      "items": { "$ref": "_common.schema.json#/$defs/sha256" }
+      "description": "SkillSnapshot.combined_sha values this spec targets. Anchors on CONTENT (sha), not FK \u2014 rebuilt snapshots with the same combined_sha still satisfy.",
+      "items": {
+        "$ref": "_common.schema.json#/$defs/sha256"
+      }
     },
     "runtime_limits": {
       "type": "object",
-      "description": "Resource ceilings applied per EvalRun per Blueprint B § 2.1.",
+      "description": "Resource ceilings applied per EvalRun per Blueprint B \u00a7 2.1.",
       "required": [
         "token_ceiling",
         "wall_clock_ceiling_ms",
@@ -169,23 +286,160 @@
       ],
       "additionalProperties": false,
       "properties": {
-        "token_ceiling": { "type": "integer", "minimum": 0 },
-        "wall_clock_ceiling_ms": { "type": "integer", "minimum": 0 },
-        "memory_ceiling_mb": { "type": "integer", "minimum": 0 },
-        "concurrency_hint": { "type": "integer", "minimum": 0 }
+        "token_ceiling": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "wall_clock_ceiling_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "memory_ceiling_mb": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "concurrency_hint": {
+          "type": "integer",
+          "minimum": 0
+        }
       }
     },
     "provider_constraints": {
       "type": "array",
       "description": "Allowlist of provider IDs.",
-      "items": { "type": "string" }
+      "items": {
+        "type": "string"
+      }
     },
-    "created_at": { "$ref": "_common.schema.json#/$defs/rfc3339" },
-    "created_by": { "$ref": "_common.schema.json#/$defs/actorIdentity" },
-    "content_hash": { "$ref": "_common.schema.json#/$defs/sha256" },
+    "created_at": {
+      "$ref": "_common.schema.json#/$defs/rfc3339"
+    },
+    "created_by": {
+      "$ref": "_common.schema.json#/$defs/actorIdentity"
+    },
+    "content_hash": {
+      "$ref": "_common.schema.json#/$defs/sha256"
+    },
     "tenant_id": {
       "$ref": "_common.schema.json#/$defs/uuidv7",
-      "description": "RESERVED multi-tenancy slot (deferral-G, bd_000-projects-k0fj). OPTIONAL + additive per § 7.2; tenant-isolation semantics deferred to a future DR. v1 single-tenant specs omit it."
+      "description": "RESERVED multi-tenancy slot (deferral-G, bd_000-projects-k0fj). OPTIONAL + additive per \u00a7 7.2; tenant-isolation semantics deferred to a future DR. v1 single-tenant specs omit it."
+    }
+  },
+  "$defs": {
+    "TrajectoryToolMatcher": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool"],
+      "properties": {
+        "tool": {
+          "type": "string",
+          "minLength": 1
+        },
+        "input_contains": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "ToolCalledTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool"],
+      "properties": {
+        "tool": {
+          "type": "string",
+          "minLength": 1
+        },
+        "input_contains": {
+          "type": "string",
+          "minLength": 1
+        },
+        "min_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "OrderBeforeTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["first", "then"],
+      "properties": {
+        "first": {
+          "$ref": "#/$defs/TrajectoryToolMatcher"
+        },
+        "then": {
+          "$ref": "#/$defs/TrajectoryToolMatcher"
+        }
+      }
+    },
+    "FileExistsTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pattern": {
+          "type": "string",
+          "minLength": 1,
+          "description": "ECMAScript regex source without flags. Syntax-validation policy is pending Class-2 record 014."
+        },
+        "produced": {
+          "type": "boolean"
+        }
+      },
+      "oneOf": [
+        {
+          "required": ["path"]
+        },
+        {
+          "required": ["pattern"]
+        }
+      ]
+    },
+    "FileMatchesShaInTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["in"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pattern": {
+          "type": "string",
+          "minLength": 1,
+          "description": "ECMAScript regex source without flags. Syntax-validation policy is pending Class-2 record 014."
+        },
+        "in": {
+          "type": "string",
+          "minLength": 1,
+          "allOf": [
+            {
+              "not": {
+                "pattern": "^/"
+              }
+            },
+            {
+              "not": {
+                "pattern": "(^|/)\\.\\.(/|(?![\\s\\S]))"
+              }
+            }
+          ]
+        }
+      },
+      "oneOf": [
+        {
+          "required": ["path"]
+        },
+        {
+          "required": ["pattern"]
+        }
+      ]
     }
   }
 }

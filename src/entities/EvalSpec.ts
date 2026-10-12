@@ -10,6 +10,8 @@
 
 import type { ActorIdentity, KebabSlug, Rfc3339, Sha256, SemVer, Uuidv7 } from '../primitives.js';
 import type { TransitionMap } from '../state-machines/types.js';
+import { TRAJECTORY_ASSERTION_CLASSES } from './TrajectoryAssertion.js';
+import type { TrajectoryAssertion, TrajectoryAssertionClass } from './TrajectoryAssertion.js';
 
 /** State machine states for EvalSpec (Blueprint B § 2.1). */
 export type EvalSpecState = 'draft' | 'published' | 'deprecated';
@@ -127,13 +129,16 @@ export interface RuntimeLimits {
  * Class-2 ISEDC pair Decision Record (touches the canonical-domain schema
  * surface per DR-010 § 7 Q6).
  */
-export type AssertionClass =
+export type LegacyAssertionClass =
   | 'output-equals'
   | 'output-contains'
   | 'output-matches'
   | 'schema-conforms'
   | 'judge-verdict'
   | 'matcher-satisfied';
+
+/** Named classes, including the typed trajectory additions (Class-2 record 014). */
+export type AssertionClass = LegacyAssertionClass | TrajectoryAssertionClass;
 
 /** The v1 named assertion-class set as a runtime tuple (for iteration/enum). */
 export const ASSERTION_CLASSES = [
@@ -143,10 +148,12 @@ export const ASSERTION_CLASSES = [
   'schema-conforms',
   'judge-verdict',
   'matcher-satisfied',
+  ...TRAJECTORY_ASSERTION_CLASSES,
 ] as const satisfies readonly AssertionClass[];
 
 /**
- * Named assertion expression — discriminated on `class`.
+ * Legacy named assertion expression. Retained as an interface for compatibility;
+ * new trajectory classes use TrajectoryAssertion with class-specific targets.
  *
  * Per-class `target` payload shape is deliberately NOT codified by Blueprint B
  * (an `output-equals` target is probably a literal; a `schema-conforms` target
@@ -156,7 +163,7 @@ export const ASSERTION_CLASSES = [
  * a kernel break. `negate` flips the assertion sense (default false).
  */
 export interface NamedAssertionExpression {
-  readonly class: AssertionClass;
+  readonly class: LegacyAssertionClass;
   /** Class-specific target payload — refined per-class at the validator layer. */
   readonly target: unknown;
   /** When true, the assertion passes iff the underlying predicate is FALSE. */
@@ -164,10 +171,9 @@ export interface NamedAssertionExpression {
 }
 
 /**
- * Open extension assertion expression. The `class` string MUST NOT collide
- * with any `AssertionClass` literal — discriminating consumers check the named
- * set first, then fall through to extension handling (mirrors the
- * `MatcherExpectedBehavior` extension pattern).
+ * Open extension assertion expression. Existing validators accept any class,
+ * including collisions with named classes. Check `extension: true` BEFORE
+ * interpreting the class; such payloads remain opaque for compatibility.
  */
 export interface AssertionExpressionExtension {
   readonly class: string;
@@ -177,13 +183,14 @@ export interface AssertionExpressionExtension {
 }
 
 /**
- * Typed assertion expression. Blueprint B § 2.1 says only "typed assertion
- * expression"; the v1 class union is now LOCKED additively (deferral-A,
- * bd_000-projects-gzgj) as a discriminated union of named classes plus an open
- * extension slot. Consumers brand the per-class `target` to a specific grammar
- * at the validator layer (epic iec-E04).
+ * Assertion expression: legacy named targets, typed trajectory targets, or an
+ * opaque extension. Check the extension marker first. Use isTrajectoryAssertion
+ * on validated input to narrow trajectory classes without interpreting extensions.
  */
-export type AssertionExpression = NamedAssertionExpression | AssertionExpressionExtension;
+export type AssertionExpression =
+  | NamedAssertionExpression
+  | TrajectoryAssertion
+  | AssertionExpressionExtension;
 
 /**
  * Composition DAG node — every node is either an EvalRun or a
