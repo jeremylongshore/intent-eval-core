@@ -51,7 +51,7 @@ No portable-subset restriction or Python-regex substitution is proposed. Until J
 
 These are my CTO recommendations, pending Jeremy’s ratification.
 
-**Q1 — Use five typed named assertions in the existing `assertions` array.**
+### Q1 — Use five typed named assertions in the existing `assertions` array
 
 **Position/recommendation:** Add `tool-called`, `tool-not-called`, `order-before`, `file-exists`, and `file-matches-sha-in`, with each `target` containing the corresponding J-Rig parameters unchanged. Define an explicit mapping from J-Rig’s underscore names. Retain the existing six classes with `target: unknown`.
 
@@ -67,7 +67,7 @@ Split the existing `NamedAssertionExpression` into a union of legacy expressions
 
 **Accepted compromise:** Keep J-Rig-specific criterion metadata in lineage, keyed by the existing assertion index and source ID. Preserve original criteria there as source provenance if needed; declare the canonical typed target authoritative. Do not create two executable representations.
 
-**Q2 — Preserve the actual acceptance contract; require an explicit ECMAScript validation strategy.**
+### Q2 — Preserve the actual acceptance contract; require an explicit ECMAScript validation strategy
 
 **Position/recommendation:** Encode strict parameter objects in canonical JSON Schema, mirror them in public Zod/Pydantic validators, and regenerate reference artifacts:
 
@@ -95,7 +95,7 @@ Generated Pydantic optionals currently become `T | None`; the public models need
 
 J-Rig’s fail-closed missing/truncated-trajectory behavior remains runtime-owned. If trajectory assertions inherit `negate`, specify that it cannot convert invalid or missing evidence into success.
 
-**Q3 — Ratify, release the kernel, then migrate J-Rig.**
+### Q3 — Ratify, release the kernel, then migrate J-Rig
 
 **Position/recommendation:** File the Class-2 pair record with Jeremy as final decision-maker. After ratification, ship the kernel through a PR with synchronized TS, JSON Schema, Zod, Python, generated references, API surface, and compatibility fixtures. Use the next appropriate feature release, with npm/PyPI versions in lockstep; verify published artifacts before touching J-Rig.
 
@@ -111,7 +111,7 @@ The bead explicitly says J-Rig waits for the kernel release. Its adapter current
 
 VP DevRel recommendation; advisory only. Jeremy has not ratified these proposals.
 
-**Q1 — Contract shape**
+### Q1 — Contract shape
 
 **Position:** Add five named classes—`tool-called`, `tool-not-called`, `order-before`, `file-exists`, `file-matches-sha-in`—with typed `target` payloads in the existing `assertions` array.
 
@@ -131,7 +131,7 @@ Example:
 
 **Accepted compromise:** An optional block containing `{assertion_index, kind, params}` is workable only with unique, in-range references and a declared single authority. If the adapter retains original parameters in its extension target, it must reject conflicting copies. The kernel must not import J-Rig-specific criterion semantics to enforce that correspondence.
 
-**Q2 — Validation parity**
+### Q2 — Validation parity
 
 **Position:** Make structural acceptance identical across JSON Schema, Zod, and Python; TypeScript must expose corresponding discriminated types without coercion or serialization defaults.
 
@@ -160,7 +160,7 @@ My preferred syntax boundary is explicit: the kernel accepts a nonempty pattern 
 
 Useful rejection examples: both `path` and `pattern`; neither selector; `min_count: 0`; `produced: null`; `in: "../receipt.txt"`; misspelled `input_contans`.
 
-**Q3 — Adoption and release sequence**
+### Q3 — Adoption and release sequence
 
 **Position:** Release the kernel first, then migrate the adapter with an explicit mapping revision and recorded compatibility evidence.
 
