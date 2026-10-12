@@ -63,9 +63,9 @@ export default z
         z
           .object({
             enum_class: z
-              .string()
+              .any()
               .describe(
-                'Tool-defined error class. NOT a closed enum at the kernel layer — each tool defines its own set (bd_000-projects-84li tracks the registry pattern).',
+                'Error class — a kernel-registered cross-cutting class (network.timeout, provider.rate_limited, tool.crashed, …) OR a tool-defined `<domain>.<condition>` string. Registration pattern LOCKED per deferral-E (bd_000-projects-84li): the format is constrained, the enum stays open.',
               ),
             message: z.string(),
           })

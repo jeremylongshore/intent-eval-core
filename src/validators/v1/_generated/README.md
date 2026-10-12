@@ -1,6 +1,6 @@
 # `_generated/` — codegen reference output (NOT canonical)
 
-This directory holds the **raw output** of `json-schema-to-zod` run against
+This directory holds the **formatted reference output** of `json-schema-to-zod` run against
 `schemas/v1/*.schema.json`. **It is not the canonical source of validators.**
 The canonical validators live one level up at `src/validators/v1/*.ts` and
 are **hand-authored** to:
@@ -17,11 +17,18 @@ are **hand-authored** to:
 ## Codegen invocation
 
 ```bash
-pnpm run codegen:validators
+pnpm run codegen:validators        # regenerate and format references
+pnpm run codegen:validators:check  # verify without writing files
 ```
 
-This regenerates `_generated/*.ts` from the schemas. The script is reproducible
-(same input → same output, pinned `json-schema-to-zod` version in `package.json`).
+This regenerates `_generated/*.ts` from every runtime schema, using the
+lockfile-resolved `json-schema-to-zod` version with ESM / Zod 4 output and the
+repository Prettier configuration. Obsolete generated `.ts` files are removed;
+this README is retained. Identical inputs produce byte-identical output.
+
+The read-only check fails on changed, missing, or obsolete generated files. It
+runs in `pnpm run check` and CI. A schema change must include its regenerated
+reference files; formatting alone must not leave the check failing.
 
 ## When to consult this dir
 

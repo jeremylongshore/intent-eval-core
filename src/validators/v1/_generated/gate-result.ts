@@ -58,6 +58,12 @@ export default z
       .enum(['RF-0', 'RF-1', 'RF-2', 'RF-3', 'RF-4'])
       .describe('Replay fidelity level per iel-E11.')
       .optional(),
+    coverage_detail: z
+      .array(z.any())
+      .describe(
+        "Richer per-dimension coverage metadata (deferral-D lockup, bd_000-projects-9xyk). OPTIONAL + additive — the required `coverage` string arrays are unchanged, so the predicate URI is unaffected per § 7.2. Each entry's id MUST be a member of the matching `coverage` array (enforced at the validator layer). Descriptive only; MUST NOT drive ship/no-ship.",
+      )
+      .optional(),
   })
   .strict()
   .and(

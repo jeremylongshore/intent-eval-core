@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Refresh seven stale runtime Zod reference files and enforce
+  `codegen:validators:check` in local and hosted CI. The check detects changed,
+  missing and obsolete generated files without modifying the checkout;
+  regeneration applies repository formatting (`bd_000-projects-6hm8`).
+
 - Bind the private dashboard producer's complete canonical statement payload in
   signed bundle metadata and reject payload/projection mutations before assembly.
   Twelve CI contracts cover the kernel 0.11.0 self-reference; public contracts,

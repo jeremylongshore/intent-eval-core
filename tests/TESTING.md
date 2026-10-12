@@ -87,6 +87,7 @@ Removing any waiver requires an engineer commit that adds the gate AND re-pins v
 | L2 | lint | ESLint 9 flat | `pnpm run lint` |
 | L2 | format | Prettier 3 | `pnpm run format:check` |
 | L2 | typecheck | TypeScript 5 strict | `pnpm run typecheck` |
+| L2 | runtime reference drift | json-schema-to-zod + Prettier | `pnpm run codegen:validators:check` (read-only; rejects stale, missing and obsolete output) |
 | L3 | runtime + type tests | vitest 2 + `expectTypeOf` | `pnpm run test` |
 | L3 | coverage | vitest c8 | `pnpm run test:coverage` (100% floor enforced in `vitest.config.ts`) |
 | L4 | architecture rules | `dependency-cruiser@17` via harness | `pnpm exec audit-harness arch` |

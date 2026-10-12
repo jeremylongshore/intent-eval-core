@@ -8,13 +8,94 @@ export default z
     description: z.string().min(1),
     matchers: z.array(z.any()).describe('MatcherMap FKs.'),
     assertions: z
-      .array(z.any())
+      .array(
+        z.record(z.string(), z.any()).and(
+          z.any().superRefine((x, ctx) => {
+            const schemas = [
+              z
+                .object({
+                  class: z
+                    .enum([
+                      'output-equals',
+                      'output-contains',
+                      'output-matches',
+                      'schema-conforms',
+                      'judge-verdict',
+                      'matcher-satisfied',
+                    ])
+                    .optional(),
+                  target: z.any().optional(),
+                  negate: z.boolean().optional(),
+                })
+                .strict(),
+              z
+                .object({
+                  class: z.string(),
+                  target: z.any(),
+                  negate: z.boolean().optional(),
+                  extension: z.literal(true),
+                })
+                .strict(),
+            ];
+            const { errors, failed } = schemas.reduce<{
+              errors: z.core.$ZodIssue[];
+              failed: number;
+            }>(
+              ({ errors, failed }, schema) =>
+                ((result) =>
+                  result.error
+                    ? {
+                        errors: [...errors, ...result.error.issues],
+                        failed: failed + 1,
+                      }
+                    : { errors, failed })(schema.safeParse(x)),
+              { errors: [], failed: 0 },
+            );
+            const passed = schemas.length - failed;
+            if (passed !== 1) {
+              ctx.addIssue(
+                errors.length
+                  ? {
+                      path: [],
+                      code: 'invalid_union',
+                      errors: [errors],
+                      message: 'Invalid input: Should pass single schema. Passed ' + passed,
+                    }
+                  : {
+                      path: [],
+                      code: 'custom',
+                      errors: [errors],
+                      message: 'Invalid input: Should pass single schema. Passed ' + passed,
+                    },
+              );
+            }
+          }),
+        ),
+      )
       .describe(
-        "Typed assertion expressions. Blueprint B § 2.1 says only 'typed expression' — no class enum, no payload grammar. Element shape deferred per spec STOP directive (bd_000-projects-gzgj, Class-2 ISEDC required to enumerate).",
+        'Typed assertion expressions. Class union LOCKED additively per deferral-A (bd_000-projects-gzgj): a named-class discriminated union plus an open extension slot. Per-class `target` payload stays open (refined at the validator layer per engagement).',
       ),
     scoring: z
       .object({
         aggregation_rule: z.enum(['majority', 'unanimous', 'weighted']),
+        weight_dimension: z
+          .enum(['matcher', 'mm-class', 'judge'])
+          .describe(
+            'Dimension the weighted rule distributes over (deferral-C, bd_000-projects-21re). Required when `weights` present; ignored otherwise.',
+          )
+          .optional(),
+        weights: z
+          .array(z.object({ key: z.string(), weight: z.number().gte(0) }).strict())
+          .describe(
+            'Per-unit weights for the weighted rule (deferral-C). Normalized by their sum at scoring time.',
+          )
+          .optional(),
+        tiebreaker: z
+          .enum(['fail-closed', 'fail-open', 'first-listed'])
+          .describe(
+            'Deterministic resolution of an exact aggregate tie (deferral-C). NOT a threshold — it resolves a tie, it does not set a pass bar.',
+          )
+          .optional(),
         extensions: z
           .record(z.string(), z.any())
           .describe(
@@ -23,7 +104,7 @@ export default z
           .optional(),
       })
       .describe(
-        'Scoring configuration. aggregation_rule is the ONLY spec-bound field per Blueprint B § 2.1. § 7.6 architectural rule: thresholds belong in consumer-side tests/TESTING.md, NOT here. Additions require ISEDC review (bd_000-projects-21re).',
+        'Scoring configuration. aggregation_rule is the spec-bound field per Blueprint B § 2.1. weight_dimension/weights/tiebreaker are the deferral-C lockup (bd_000-projects-21re), additive + optional. § 7.6 architectural rule: ship/no-ship THRESHOLDS belong in consumer-side tests/TESTING.md, NOT here — only weights + exact-tie resolution are kernel-side.',
       ),
     composition: z
       .object({
@@ -74,6 +155,12 @@ export default z
     created_at: z.any(),
     created_by: z.any(),
     content_hash: z.any(),
+    tenant_id: z
+      .any()
+      .describe(
+        'RESERVED multi-tenancy slot (deferral-G, bd_000-projects-k0fj). OPTIONAL + additive per § 7.2; tenant-isolation semantics deferred to a future DR. v1 single-tenant specs omit it.',
+      )
+      .optional(),
   })
   .strict()
   .describe(

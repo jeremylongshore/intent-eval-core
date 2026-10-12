@@ -19,12 +19,45 @@ export default z
             .object({
               kind: z.literal('structural'),
               matcher: z
-                .any()
+                .object({
+                  mode: z
+                    .literal('all')
+                    .describe(
+                      'v1 fixes `all` (every constraint must hold); reserved for a future additive `any`.',
+                    ),
+                  constraints: z.array(
+                    z
+                      .object({
+                        path: z
+                          .string()
+                          .min(1)
+                          .describe(
+                            "Dotted/bracketed accessor into the candidate's parsed tree. Accessor grammar is the runtime's concern.",
+                          ),
+                        op: z.enum([
+                          'exists',
+                          'absent',
+                          'equals',
+                          'type-is',
+                          'matches',
+                          'length-equals',
+                        ]),
+                        value: z
+                          .any()
+                          .describe(
+                            'Required for value-bearing ops (equals/type-is/matches/length-equals); omitted for presence ops (exists/absent). Cross-field enforced at the validator layer.',
+                          )
+                          .optional(),
+                      })
+                      .strict(),
+                  ),
+                })
+                .strict()
                 .describe(
-                  'Wholly undefined in Blueprint B § 2.3. Lock when a downstream engagement specifies (bd_000-projects-ra9a).',
+                  "Structural-matcher payload — LOCKED per deferral-B (bd_000-projects-ra9a). A conjunction of path-anchored constraints over the candidate's parsed tree.",
                 ),
             })
-            .catchall(z.any()),
+            .strict(),
         ];
         const { errors, failed } = schemas.reduce<{
           errors: z.core.$ZodIssue[];
