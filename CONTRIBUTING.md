@@ -98,7 +98,8 @@ Per Blueprint A § 1.2 principle 10 ("schema is canon"), every breaking schema c
 ### Schema as canon
 
 - Edit `schemas/v1/*.schema.json` first; regenerate validators via `pnpm run codegen:validators`
-- The CI gate fails if generated files drift from schemas (intentional — keeps the relationship enforced)
+- Run `pnpm run codegen:validators:check` to check runtime reference output without changing files. It also runs in `pnpm run check` and CI, and rejects changed, missing, or obsolete `_generated/*.ts` files.
+- Regeneration formats the output using the repository Prettier configuration and removes obsolete generated `.ts` files; `_generated/README.md` is retained.
 - Every Zod refinement (e.g., `gate-result/v1`'s `advisory_severity` conditional rule) needs positive AND negative test fixtures
 
 ### Testing

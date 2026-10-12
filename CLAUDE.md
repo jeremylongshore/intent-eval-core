@@ -59,15 +59,16 @@ pnpm run format:check     # prettier --check .
 pnpm run boundaries       # kernel anti-goal boundary checker (FORBIDDEN.md/ALLOWLIST.md)
 pnpm run arch             # audit-harness architecture rules (Blueprint A anti-goals)
 pnpm run harness:verify   # hash-pinned policy verification (audit-harness verify)
-pnpm run codegen:validators  # regen src/validators/v1/_generated/ Zod from schemas/v1/*.json
+pnpm run codegen:validators  # regen formatted Zod references from schemas/v1/*.schema.json
+pnpm run codegen:validators:check  # read-only drift gate (missing/stale/obsolete references)
 pnpm run codegen:authoring   # regen authoring-tier codegen (:check for stale-gate)
 pnpm run codegen:pydantic    # regen Python Pydantic mirror (:check for drift)
 pnpm run api:check        # api-extractor SemVer surface regression gate (iec-E07)
 pnpm run test:coverage    # vitest --coverage, 100% floor (NOT 80%)
 ```
 
-`pnpm run check` is the **canonical pre-commit gate** — a 15-step chain, NOT just lint+typecheck+test:
-codegen:authoring:check → check:{predicate-namespace,chamber-isolation,rubric-floor,prose-anchors,
+`pnpm run check` is the **canonical pre-commit gate** — a 16-step chain, NOT just lint+typecheck+test:
+codegen:validators:check → codegen:authoring:check → check:{predicate-namespace,chamber-isolation,rubric-floor,prose-anchors,
 coverage-map,coverage-map-prose-anchors,is-extension-rationale} → check:version-lockstep →
 format:check → lint → typecheck → test → arch → boundaries. CI (`.github/workflows/ci.yml`,
 job "lint + typecheck + test + build") additionally runs build + test:coverage (100% floor) +

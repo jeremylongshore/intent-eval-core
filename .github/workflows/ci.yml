@@ -41,6 +41,10 @@ jobs:
       - name: Harness verify (hash-pinned policy artifacts)
         run: pnpm run harness:verify
 
+      # Runtime schema reference output must match the checked-in schemas.
+      - name: Runtime validator codegen up to date
+        run: pnpm run codegen:validators:check
+
       # Single-source authoring codegen (DR-044 D8): the authoring-family Zod
       # validators + the D7 inline $comment effective-required manifests are
       # GENERATED from schemas/authoring/v1/*. Fail the build if the committed

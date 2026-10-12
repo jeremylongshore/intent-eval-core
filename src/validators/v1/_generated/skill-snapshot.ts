@@ -50,6 +50,12 @@ export default z
     storage_key: z.any(),
     created_at: z.any(),
     created_by: z.any(),
+    tenant_id: z
+      .any()
+      .describe(
+        'RESERVED multi-tenancy slot (deferral-G, bd_000-projects-k0fj). OPTIONAL + additive per § 7.2; tenant-isolation semantics deferred to a future DR. v1 single-tenant snapshots omit it.',
+      )
+      .optional(),
   })
   .strict()
   .describe(
