@@ -25,3 +25,9 @@ scripts/check-rubric-floor.ts
 # to @master) fails `audit-harness verify` until a separate, reviewable
 # `audit-harness init` re-pins it.
 .github/workflows/typos.yml
+
+# 0s2a — private evidence producer and canonical payload mutation contracts.
+scripts/emit-evidence.ts
+scripts/assemble-manifest.ts
+scripts/canonical-payload.test.ts
+scripts/canonical-payload.fixture.json
