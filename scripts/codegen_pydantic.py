@@ -34,9 +34,9 @@ and CI (same input + same pinned generator => byte-identical output).
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import os
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -89,10 +89,11 @@ def _normalize_into(dst: Path) -> None:
     """Copy schemas/v1/*.json into dst with refs normalized. Skips index.json
     (a catalog, not an entity/predicate schema — codegen has nothing to emit
     for it and its $id is informational)."""
+    files = sorted(f for f in SCHEMAS_DIR.glob("*.json") if f.name != "index.json")
+    if not files:
+        raise ValueError(f"No input schemas found in {SCHEMAS_DIR}")
     dst.mkdir(parents=True, exist_ok=True)
-    for f in sorted(SCHEMAS_DIR.glob("*.json")):
-        if f.name == "index.json":
-            continue
+    for f in files:
         data = json.loads(f.read_text(encoding="utf-8"))
         normalized = _normalize_refs(data)
         (dst / f.name).write_text(
@@ -175,25 +176,51 @@ def _fix_common_import(out_dir: Path) -> None:
 
 
 def generate(out_dir: Path) -> None:
-    with tempfile.TemporaryDirectory(prefix="iec-schemas-norm-") as td:
+    """Render and validate the full output before replacing owned Python files.
+
+    The pinned generator emits a flat package. Only top-level ``*.py`` files
+    are owned here; README, other documentation, and nested directories are
+    preserved. Replacements are atomic per file, not a whole-directory swap.
+    """
+    before = _snapshot(out_dir)
+    out_dir.parent.mkdir(parents=True, exist_ok=True)
+    # A sibling temporary directory keeps os.replace on the same filesystem.
+    with tempfile.TemporaryDirectory(prefix=".iec-codegen-", dir=out_dir.parent) as td:
         norm = Path(td) / "schemas"
+        staged = Path(td) / "generated"
         _normalize_into(norm)
-        # Clean the output dir so deletions in the schema set propagate.
-        if out_dir.exists():
-            for child in out_dir.iterdir():
-                if child.is_dir():
-                    shutil.rmtree(child)
-                else:
-                    child.unlink()
-        _run_codegen(norm, out_dir)
-        _fix_common_import(out_dir)
+        _run_codegen(norm, staged)
+        # Refuse special paths before import repair can follow a staged symlink.
+        after = _snapshot(staged)
+        if not after or not any(name != "__init__.py" for name in after):
+            raise ValueError("Generator produced no model modules; existing output preserved")
+        if any(path.is_dir() for path in staged.iterdir()):
+            raise ValueError("Expected flat generated modules; existing output preserved")
+        _fix_common_import(staged)
+        after = _snapshot(staged)
+        for name, content in after.items():
+            ast.parse(content, filename=name)
+        if _snapshot(out_dir) != before:
+            raise ValueError("Output changed during generation; refusing to overwrite concurrent edits")
+
+        out_dir.mkdir(exist_ok=True)
+        for name, content in after.items():
+            if before.get(name) != content:
+                os.replace(staged / name, out_dir / name)
+        # Prune only obsolete owned modules, after successful generation and writes.
+        for name in before.keys() - after.keys():
+            (out_dir / name).unlink()
 
 
-def _snapshot(d: Path) -> dict[str, str]:
-    """Map of relative-path -> file content for every .py under d."""
-    snap: dict[str, str] = {}
-    for p in sorted(d.rglob("*.py")):
-        snap[str(p.relative_to(d))] = p.read_text(encoding="utf-8")
+def _snapshot(d: Path) -> dict[str, bytes]:
+    """Read owned flat Python modules without following output symlinks."""
+    if d.is_symlink() or (d.exists() and not d.is_dir()):
+        raise ValueError(f"Expected a regular output directory: {d}")
+    snap: dict[str, bytes] = {}
+    for p in sorted(d.glob("*.py")):
+        if p.is_symlink() or not p.is_file():
+            raise ValueError(f"Expected a regular generated Python file: {p}")
+        snap[p.name] = p.read_bytes()
     return snap
 
 
@@ -231,7 +258,7 @@ def main() -> int:
         return 0
 
     generate(OUT_DIR)
-    n = len(list(OUT_DIR.rglob("*.py")))
+    n = len(_snapshot(OUT_DIR))
     print(f"Generated {n} Pydantic module(s) into {OUT_DIR.relative_to(REPO_ROOT)}")
     return 0
 
