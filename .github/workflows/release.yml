@@ -282,6 +282,9 @@ jobs:
       - name: Build (kernel validators must be in dist for the emit self-reference)
         run: pnpm run build
 
+      - name: Canonical dashboard payload mutation contracts
+        run: pnpm exec vitest run scripts/canonical-payload.test.ts
+
       - name: Emit-evidence self-check (kernel-valid + canonical-stable)
         run: node --experimental-strip-types scripts/emit-evidence.ts --self-check
 

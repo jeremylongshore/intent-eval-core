@@ -94,3 +94,5 @@ Phase A foundation complete (2026-05-15). First public release `v0.1.0` shipped 
 - Bead workspace: `~/000-projects/.beads/` (prefix `iec-`)
 - Plane sub-module: **Intent Eval Core — Kernel** in [LAB project](https://projects.intentsolutions.io)
 - Master plan: `~/.claude/plans/se-the-council-bubbly-frog.md`
+
+Private dashboard producer verification: [canonical evidence guide](000-docs/013-AT-SPEC-canonical-dashboard-evidence-2026-10-12.md).

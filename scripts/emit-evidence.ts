@@ -14,8 +14,9 @@
  *                                             covers; CI runs `cosign sign-blob`
  *                                             over THIS file)
  *   build/evidence/gate-result-<i>.json     — the gate-result/v1 predicate body
+ *   build/evidence/evidence-payload-<i>.json — canonical statement-array bytes
  *   build/evidence/manifest-skeleton.json   — repo + signing claims + per-row
- *                                             {bundleFile, gateResults, sourceSha}
+ *                                             {bundleFile, gateResults, evidencePayload, sourceSha}
  *                                             for scripts/assemble-manifest.ts
  *
  * The signing + Rekor anchoring + final `report-manifest.json` assembly + publish
@@ -41,9 +42,9 @@
  *     the sigstore Bundle's inclusion proof (which the dashboard's step-3 Rekor
  *     check verifies). The bundle field stays empty to avoid the chicken-and-egg
  *     of embedding a log index in the very bytes being logged.
- *   - The gate-result/v1 bodies travel alongside each row (`gateResults`) for the
- *     dashboard's gate-row resolver; their content hash is recorded in the
- *     bundle `subject_set`.
+ *   - Each row carries a kernel-valid `evidencePayload` statement array. The
+ *     signed `storage_key` hashes its complete canonical bytes; subjects, types
+ *     and row count derive from it. `gateResults` is a checked projection.
  *
  * Usage:
  *   node --experimental-strip-types scripts/emit-evidence.ts [--out build/evidence] [--self-check]
@@ -63,6 +64,11 @@ import {
   GATE_RESULT_V1_URI,
 } from '@intentsolutions/core/validators/v1/gate-result-v1';
 import { EvidenceBundleSchema } from '@intentsolutions/core/validators/v1/evidence-bundle';
+import {
+  EvidenceBundlePayloadSchema,
+  IN_TOTO_STATEMENT_V1_TYPE,
+  type EvidenceBundlePayload,
+} from '@intentsolutions/core/validators/v1/evidence-statement';
 
 const GITHUB_REPO = 'jeremylongshore/intent-eval-core';
 const REPO_KEY = 'iec';
@@ -135,6 +141,7 @@ export interface EmitRow {
   readonly bundle: unknown;
   readonly canonicalBundle: string;
   readonly gateResult: unknown;
+  readonly evidencePayload: EvidenceBundlePayload;
   readonly sourceSha: string;
 }
 
@@ -172,46 +179,64 @@ export function buildGateResult(o: GateOutcome, ctx: EmitContext): Record<string
   return body;
 }
 
-/**
- * Wrap a gate-result body in a kernel EvidenceBundle. Throws if the bundle is
- * not kernel-schema-valid.
- */
+/** Wrap one gate predicate in the kernel's invariant-checked statement array. */
+export function buildEvidencePayload(gateResult: Record<string, unknown>): EvidenceBundlePayload {
+  const body = GateResultV1Schema.parse(gateResult);
+  return EvidenceBundlePayloadSchema.parse([
+    {
+      _type: IN_TOTO_STATEMENT_V1_TYPE,
+      subject: [{ name: body.gate_id, digest: { sha256: body.input_hash.slice(7) } }],
+      predicateType: GATE_RESULT_V1_URI,
+      predicate: body,
+    },
+  ]);
+}
+
+/** Derive signed metadata from the complete ordered statement payload. */
+export function evidencePayloadMetadata(payloadRaw: unknown) {
+  const payload = EvidenceBundlePayloadSchema.parse(payloadRaw);
+  const subjects = new Map(
+    payload.flatMap((statement) =>
+      statement.subject.map((subject) => [stableStringify(subject), subject] as const),
+    ),
+  );
+  return {
+    predicate_uri_set: [...new Set(payload.map((statement) => statement.predicateType))],
+    row_count: payload.length,
+    subject_set: [...subjects.values()],
+    storage_key: `sha256:${sha256Hex(stableStringify(payloadRaw))}`,
+  };
+}
+
 export function buildEvidenceBundle(
-  gateResult: Record<string, unknown>,
+  evidencePayload: EvidenceBundlePayload,
   ctx: EmitContext,
 ): Record<string, unknown> {
-  const grCanonical = stableStringify(gateResult);
-  const grHashHex = sha256Hex(grCanonical);
-  const inputHash = String(gateResult['input_hash']);
-  const subjectDigest = inputHash.startsWith('sha256:')
-    ? inputHash.slice('sha256:'.length)
-    : inputHash;
   const bundle: Record<string, unknown> = {
     id: uuidv7(ctx.nowMs, ctx.rand16()),
     eval_run_id: uuidv7(ctx.nowMs, ctx.rand16()),
     created_at: ctx.nowIso,
-    predicate_uri_set: [GATE_RESULT_V1_URI],
-    row_count: 1,
-    subject_set: [{ name: String(gateResult['gate_id']), digest: { sha256: subjectDigest } }],
-    storage_key: `sha256:${grHashHex}`,
+    ...evidencePayloadMetadata(evidencePayload),
     signing_mode: 'rekor_production',
-    rekor_log_indices: [], // real index lives in the sigstore Bundle (see header)
-    verification_status: 'unverified', // the dashboard re-verifies; we don't self-attest
+    rekor_log_indices: [],
+    verification_status: 'unverified',
     verification_last_checked_at: ctx.nowIso,
   };
-  EvidenceBundleSchema.parse(bundle);
+  EvidenceBundleSchema.parse(bundle); // fail-closed
   return bundle;
 }
 
 /** Build all rows from outcomes. */
 export function buildRows(outcomes: readonly GateOutcome[], ctx: EmitContext): EmitRow[] {
   return outcomes.map((o) => {
-    const gateResult = buildGateResult(o, ctx);
-    const bundle = buildEvidenceBundle(gateResult, ctx);
+    const evidencePayload = buildEvidencePayload(buildGateResult(o, ctx));
+    const gateResult = evidencePayload[0]!.predicate;
+    const bundle = buildEvidenceBundle(evidencePayload, ctx);
     return {
       bundle,
       canonicalBundle: stableStringify(bundle),
       gateResult,
+      evidencePayload,
       sourceSha: ctx.sourceSha,
     };
   });
@@ -228,6 +253,7 @@ export interface ManifestSkeleton {
   readonly rows: readonly {
     readonly bundleFile: string;
     readonly gateResults: readonly unknown[];
+    readonly evidencePayload: EvidenceBundlePayload;
     readonly sourceSha: string;
   }[];
 }
@@ -249,7 +275,17 @@ export function writeEmit(rows: readonly EmitRow[], ref: string, outDir: string)
     const bundleFile = `bundle-${i}.json`;
     writeFileSync(join(outDir, bundleFile), row.canonicalBundle, 'utf8');
     writeFileSync(join(outDir, `gate-result-${i}.json`), stableStringify(row.gateResult), 'utf8');
-    return { bundleFile, gateResults: [row.gateResult], sourceSha: row.sourceSha };
+    writeFileSync(
+      join(outDir, `evidence-payload-${i}.json`),
+      stableStringify(row.evidencePayload),
+      'utf8',
+    );
+    return {
+      bundleFile,
+      gateResults: [row.gateResult],
+      evidencePayload: row.evidencePayload,
+      sourceSha: row.sourceSha,
+    };
   });
   const skeleton: ManifestSkeleton = {
     repo: REPO_KEY,

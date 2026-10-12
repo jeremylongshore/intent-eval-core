@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Bind the private dashboard producer's complete canonical statement payload in
+  signed bundle metadata and reject payload/projection mutations before assembly.
+  Twelve CI contracts cover the kernel 0.11.0 self-reference; public contracts,
+  API exports and release signing controls are unchanged (`bd_000-projects-0s2a`).
+
 ## [0.11.0] - 2026-10-04
 
 ### Added
