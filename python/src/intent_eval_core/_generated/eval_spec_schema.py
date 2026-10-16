@@ -6,7 +6,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, confloat, conint, constr
+from pydantic import BaseModel, ConfigDict, Field, RootModel, confloat, conint, constr
 
 from . import _common_schema as schema
 
@@ -169,6 +169,138 @@ class RuntimeLimits(BaseModel):
     concurrency_hint: conint(ge=0)
 
 
+class TrajectoryToolMatcher(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    tool: constr(min_length=1)
+    input_contains: constr(min_length=1) | None = None
+
+
+class ToolCalledTarget(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    tool: constr(min_length=1)
+    input_contains: constr(min_length=1) | None = None
+    min_count: conint(ge=1, le=9007199254740991) | None = None
+
+
+class OrderBeforeTarget(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    first: TrajectoryToolMatcher
+    then: TrajectoryToolMatcher
+
+
+class FileExistsTarget1(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    path: constr(min_length=1)
+    pattern: constr(min_length=1) | None = None
+    """
+    ECMAScript regex source without flags. Syntax-validation policy is pending Class-2 record 014.
+    """
+    produced: bool | None = None
+
+
+class FileExistsTarget2(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    path: constr(min_length=1) | None = None
+    pattern: constr(min_length=1)
+    """
+    ECMAScript regex source without flags. Syntax-validation policy is pending Class-2 record 014.
+    """
+    produced: bool | None = None
+
+
+class FileExistsTarget(RootModel[FileExistsTarget1 | FileExistsTarget2]):
+    root: FileExistsTarget1 | FileExistsTarget2
+
+
+class In(BaseModel):
+    pass
+
+
+class FileMatchesShaInTarget1(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    path: constr(min_length=1)
+    pattern: constr(min_length=1) | None = None
+    """
+    ECMAScript regex source without flags. Syntax-validation policy is pending Class-2 record 014.
+    """
+    in_: In = Field(..., alias="in")
+
+
+class FileMatchesShaInTarget2(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    path: constr(min_length=1) | None = None
+    pattern: constr(min_length=1)
+    """
+    ECMAScript regex source without flags. Syntax-validation policy is pending Class-2 record 014.
+    """
+    in_: In = Field(..., alias="in")
+
+
+class FileMatchesShaInTarget(
+    RootModel[FileMatchesShaInTarget1 | FileMatchesShaInTarget2]
+):
+    root: FileMatchesShaInTarget1 | FileMatchesShaInTarget2
+
+
+class Assertions2(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    class_: Literal["tool-called"] = Field(..., alias="class")
+    target: ToolCalledTarget
+    negate: bool | None = None
+
+
+class Assertions3(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    class_: Literal["tool-not-called"] = Field(..., alias="class")
+    target: TrajectoryToolMatcher
+    negate: bool | None = None
+
+
+class Assertions4(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    class_: Literal["order-before"] = Field(..., alias="class")
+    target: OrderBeforeTarget
+    negate: bool | None = None
+
+
+class Assertions5(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    class_: Literal["file-exists"] = Field(..., alias="class")
+    target: FileExistsTarget
+    negate: bool | None = None
+
+
+class Assertions6(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    class_: Literal["file-matches-sha-in"] = Field(..., alias="class")
+    target: FileMatchesShaInTarget
+    negate: bool | None = None
+
+
 class EvalspecDeclarativeEvaluationSpecificationBlueprintB21(BaseModel):
     """
     Content-addressed via content_hash. State machine: draft → published → deprecated (deprecated reversible to published). Mutable in draft; immutable once published.
@@ -185,9 +317,17 @@ class EvalspecDeclarativeEvaluationSpecificationBlueprintB21(BaseModel):
     """
     MatcherMap FKs.
     """
-    assertions: list[Assertions | Assertions1]
+    assertions: list[
+        Assertions
+        | Assertions1
+        | Assertions2
+        | Assertions3
+        | Assertions4
+        | Assertions5
+        | Assertions6
+    ]
     """
-    Typed assertion expressions. Class union LOCKED additively per deferral-A (bd_000-projects-gzgj): a named-class discriminated union plus an open extension slot. Per-class `target` payload stays open (refined at the validator layer per engagement).
+    Legacy named assertions retain open targets; trajectory assertions have strict typed targets. extension:true payloads remain opaque, including class-name collisions. Class-2 proposal 014 is awaiting ratification.
     """
     scoring: Scoring
     """

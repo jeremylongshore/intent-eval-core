@@ -1,0 +1,1952 @@
+[
+  {
+    "name": "tool-called",
+    "valid": true,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read"
+      }
+    }
+  },
+  {
+    "name": "tool-called-negated",
+    "valid": true,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read"
+      },
+      "negate": true
+    }
+  },
+  {
+    "name": "tool-called-unknown-target-key",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read",
+        "unexpected": true
+      }
+    }
+  },
+  {
+    "name": "tool-called-unknown-envelope-key",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read"
+      },
+      "unexpected": true
+    }
+  },
+  {
+    "name": "tool-called-null-target",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": null
+    }
+  },
+  {
+    "name": "tool-called-array-target",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": []
+    }
+  },
+  {
+    "name": "tool-called-null-negate",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read"
+      },
+      "negate": null
+    }
+  },
+  {
+    "name": "tool-called-string-negate",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read"
+      },
+      "negate": "true"
+    }
+  },
+  {
+    "name": "tool-called-extension-collision",
+    "valid": true,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "opaque": "invalid-as-typed"
+      },
+      "extension": true
+    }
+  },
+  {
+    "name": "tool-called-extension-false",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read"
+      },
+      "extension": false
+    }
+  },
+  {
+    "name": "tool-called-missing-required",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {}
+    }
+  },
+  {
+    "name": "tool-not-called",
+    "valid": true,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": {
+        "tool": "Write",
+        "input_contains": "secret"
+      }
+    }
+  },
+  {
+    "name": "tool-not-called-negated",
+    "valid": true,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": {
+        "tool": "Write",
+        "input_contains": "secret"
+      },
+      "negate": true
+    }
+  },
+  {
+    "name": "tool-not-called-unknown-target-key",
+    "valid": false,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": {
+        "tool": "Write",
+        "input_contains": "secret",
+        "unexpected": true
+      }
+    }
+  },
+  {
+    "name": "tool-not-called-unknown-envelope-key",
+    "valid": false,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": {
+        "tool": "Write",
+        "input_contains": "secret"
+      },
+      "unexpected": true
+    }
+  },
+  {
+    "name": "tool-not-called-null-target",
+    "valid": false,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": null
+    }
+  },
+  {
+    "name": "tool-not-called-array-target",
+    "valid": false,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": []
+    }
+  },
+  {
+    "name": "tool-not-called-null-negate",
+    "valid": false,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": {
+        "tool": "Write",
+        "input_contains": "secret"
+      },
+      "negate": null
+    }
+  },
+  {
+    "name": "tool-not-called-string-negate",
+    "valid": false,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": {
+        "tool": "Write",
+        "input_contains": "secret"
+      },
+      "negate": "true"
+    }
+  },
+  {
+    "name": "tool-not-called-extension-collision",
+    "valid": true,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": {
+        "opaque": "invalid-as-typed"
+      },
+      "extension": true
+    }
+  },
+  {
+    "name": "tool-not-called-extension-false",
+    "valid": false,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": {
+        "tool": "Write",
+        "input_contains": "secret"
+      },
+      "extension": false
+    }
+  },
+  {
+    "name": "tool-not-called-missing-required",
+    "valid": false,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": {}
+    }
+  },
+  {
+    "name": "order-before",
+    "valid": true,
+    "assertion": {
+      "class": "order-before",
+      "target": {
+        "first": {
+          "tool": "Write"
+        },
+        "then": {
+          "tool": "Read",
+          "input_contains": "report"
+        }
+      }
+    }
+  },
+  {
+    "name": "order-before-negated",
+    "valid": true,
+    "assertion": {
+      "class": "order-before",
+      "target": {
+        "first": {
+          "tool": "Write"
+        },
+        "then": {
+          "tool": "Read",
+          "input_contains": "report"
+        }
+      },
+      "negate": true
+    }
+  },
+  {
+    "name": "order-before-unknown-target-key",
+    "valid": false,
+    "assertion": {
+      "class": "order-before",
+      "target": {
+        "first": {
+          "tool": "Write"
+        },
+        "then": {
+          "tool": "Read",
+          "input_contains": "report"
+        },
+        "unexpected": true
+      }
+    }
+  },
+  {
+    "name": "order-before-unknown-envelope-key",
+    "valid": false,
+    "assertion": {
+      "class": "order-before",
+      "target": {
+        "first": {
+          "tool": "Write"
+        },
+        "then": {
+          "tool": "Read",
+          "input_contains": "report"
+        }
+      },
+      "unexpected": true
+    }
+  },
+  {
+    "name": "order-before-null-target",
+    "valid": false,
+    "assertion": {
+      "class": "order-before",
+      "target": null
+    }
+  },
+  {
+    "name": "order-before-array-target",
+    "valid": false,
+    "assertion": {
+      "class": "order-before",
+      "target": []
+    }
+  },
+  {
+    "name": "order-before-null-negate",
+    "valid": false,
+    "assertion": {
+      "class": "order-before",
+      "target": {
+        "first": {
+          "tool": "Write"
+        },
+        "then": {
+          "tool": "Read",
+          "input_contains": "report"
+        }
+      },
+      "negate": null
+    }
+  },
+  {
+    "name": "order-before-string-negate",
+    "valid": false,
+    "assertion": {
+      "class": "order-before",
+      "target": {
+        "first": {
+          "tool": "Write"
+        },
+        "then": {
+          "tool": "Read",
+          "input_contains": "report"
+        }
+      },
+      "negate": "true"
+    }
+  },
+  {
+    "name": "order-before-extension-collision",
+    "valid": true,
+    "assertion": {
+      "class": "order-before",
+      "target": {
+        "opaque": "invalid-as-typed"
+      },
+      "extension": true
+    }
+  },
+  {
+    "name": "order-before-extension-false",
+    "valid": false,
+    "assertion": {
+      "class": "order-before",
+      "target": {
+        "first": {
+          "tool": "Write"
+        },
+        "then": {
+          "tool": "Read",
+          "input_contains": "report"
+        }
+      },
+      "extension": false
+    }
+  },
+  {
+    "name": "order-before-missing-required",
+    "valid": false,
+    "assertion": {
+      "class": "order-before",
+      "target": {}
+    }
+  },
+  {
+    "name": "file-exists",
+    "valid": true,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "report.md"
+      }
+    }
+  },
+  {
+    "name": "file-exists-negated",
+    "valid": true,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "report.md"
+      },
+      "negate": true
+    }
+  },
+  {
+    "name": "file-exists-unknown-target-key",
+    "valid": false,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "report.md",
+        "unexpected": true
+      }
+    }
+  },
+  {
+    "name": "file-exists-unknown-envelope-key",
+    "valid": false,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "report.md"
+      },
+      "unexpected": true
+    }
+  },
+  {
+    "name": "file-exists-null-target",
+    "valid": false,
+    "assertion": {
+      "class": "file-exists",
+      "target": null
+    }
+  },
+  {
+    "name": "file-exists-array-target",
+    "valid": false,
+    "assertion": {
+      "class": "file-exists",
+      "target": []
+    }
+  },
+  {
+    "name": "file-exists-null-negate",
+    "valid": false,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "report.md"
+      },
+      "negate": null
+    }
+  },
+  {
+    "name": "file-exists-string-negate",
+    "valid": false,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "report.md"
+      },
+      "negate": "true"
+    }
+  },
+  {
+    "name": "file-exists-extension-collision",
+    "valid": true,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "opaque": "invalid-as-typed"
+      },
+      "extension": true
+    }
+  },
+  {
+    "name": "file-exists-extension-false",
+    "valid": false,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "report.md"
+      },
+      "extension": false
+    }
+  },
+  {
+    "name": "file-exists-missing-required",
+    "valid": false,
+    "assertion": {
+      "class": "file-exists",
+      "target": {}
+    }
+  },
+  {
+    "name": "file-matches-sha-in",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "{path}.sha256"
+      }
+    }
+  },
+  {
+    "name": "file-matches-sha-in-negated",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "{path}.sha256"
+      },
+      "negate": true
+    }
+  },
+  {
+    "name": "file-matches-sha-in-unknown-target-key",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "{path}.sha256",
+        "unexpected": true
+      }
+    }
+  },
+  {
+    "name": "file-matches-sha-in-unknown-envelope-key",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "{path}.sha256"
+      },
+      "unexpected": true
+    }
+  },
+  {
+    "name": "file-matches-sha-in-null-target",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": null
+    }
+  },
+  {
+    "name": "file-matches-sha-in-array-target",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": []
+    }
+  },
+  {
+    "name": "file-matches-sha-in-null-negate",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "{path}.sha256"
+      },
+      "negate": null
+    }
+  },
+  {
+    "name": "file-matches-sha-in-string-negate",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "{path}.sha256"
+      },
+      "negate": "true"
+    }
+  },
+  {
+    "name": "file-matches-sha-in-extension-collision",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "opaque": "invalid-as-typed"
+      },
+      "extension": true
+    }
+  },
+  {
+    "name": "file-matches-sha-in-extension-false",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "{path}.sha256"
+      },
+      "extension": false
+    }
+  },
+  {
+    "name": "file-matches-sha-in-missing-required",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {}
+    }
+  },
+  {
+    "name": "tool-called-empty-tool",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": ""
+      }
+    }
+  },
+  {
+    "name": "tool-called-empty-input",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read",
+        "input_contains": ""
+      }
+    }
+  },
+  {
+    "name": "tool-called-null-tool",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": null
+      }
+    }
+  },
+  {
+    "name": "tool-called-null-input",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read",
+        "input_contains": null
+      }
+    }
+  },
+  {
+    "name": "tool-called-number-tool",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": 1
+      }
+    }
+  },
+  {
+    "name": "tool-called-number-input",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read",
+        "input_contains": 1
+      }
+    }
+  },
+  {
+    "name": "tool-called-bool-tool",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": true
+      }
+    }
+  },
+  {
+    "name": "tool-called-bool-input",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read",
+        "input_contains": true
+      }
+    }
+  },
+  {
+    "name": "tool-called-matcher",
+    "valid": true,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read",
+        "input_contains": "report"
+      }
+    }
+  },
+  {
+    "name": "tool-not-called-empty-tool",
+    "valid": false,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": {
+        "tool": ""
+      }
+    }
+  },
+  {
+    "name": "tool-not-called-empty-input",
+    "valid": false,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": {
+        "tool": "Read",
+        "input_contains": ""
+      }
+    }
+  },
+  {
+    "name": "tool-not-called-null-tool",
+    "valid": false,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": {
+        "tool": null
+      }
+    }
+  },
+  {
+    "name": "tool-not-called-null-input",
+    "valid": false,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": {
+        "tool": "Read",
+        "input_contains": null
+      }
+    }
+  },
+  {
+    "name": "tool-not-called-number-tool",
+    "valid": false,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": {
+        "tool": 1
+      }
+    }
+  },
+  {
+    "name": "tool-not-called-number-input",
+    "valid": false,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": {
+        "tool": "Read",
+        "input_contains": 1
+      }
+    }
+  },
+  {
+    "name": "tool-not-called-bool-tool",
+    "valid": false,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": {
+        "tool": true
+      }
+    }
+  },
+  {
+    "name": "tool-not-called-bool-input",
+    "valid": false,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": {
+        "tool": "Read",
+        "input_contains": true
+      }
+    }
+  },
+  {
+    "name": "tool-not-called-matcher",
+    "valid": true,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": {
+        "tool": "Read",
+        "input_contains": "report"
+      }
+    }
+  },
+  {
+    "name": "count-one",
+    "valid": true,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read",
+        "min_count": 1
+      }
+    }
+  },
+  {
+    "name": "count-integral-float",
+    "valid": true,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read",
+        "min_count": 1.0
+      }
+    }
+  },
+  {
+    "name": "count-safe-max",
+    "valid": true,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read",
+        "min_count": 9007199254740991
+      }
+    }
+  },
+  {
+    "name": "count-unsafe",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read",
+        "min_count": 9007199254740992
+      }
+    }
+  },
+  {
+    "name": "count-zero",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read",
+        "min_count": 0
+      }
+    }
+  },
+  {
+    "name": "count-negative",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read",
+        "min_count": -1
+      }
+    }
+  },
+  {
+    "name": "count-fraction",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read",
+        "min_count": 1.5
+      }
+    }
+  },
+  {
+    "name": "count-string",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read",
+        "min_count": "1"
+      }
+    }
+  },
+  {
+    "name": "count-null",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read",
+        "min_count": null
+      }
+    }
+  },
+  {
+    "name": "count-bool",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read",
+        "min_count": true
+      }
+    }
+  },
+  {
+    "name": "no-count-on-not-called",
+    "valid": false,
+    "assertion": {
+      "class": "tool-not-called",
+      "target": {
+        "tool": "Read",
+        "min_count": 1
+      }
+    }
+  },
+  {
+    "name": "order-first-missing-tool",
+    "valid": false,
+    "assertion": {
+      "class": "order-before",
+      "target": {
+        "first": {},
+        "then": {
+          "tool": "Read"
+        }
+      }
+    }
+  },
+  {
+    "name": "order-first-empty-tool",
+    "valid": false,
+    "assertion": {
+      "class": "order-before",
+      "target": {
+        "first": {
+          "tool": ""
+        },
+        "then": {
+          "tool": "Read"
+        }
+      }
+    }
+  },
+  {
+    "name": "order-first-unknown-field",
+    "valid": false,
+    "assertion": {
+      "class": "order-before",
+      "target": {
+        "first": {
+          "tool": "Read",
+          "min_count": 1
+        },
+        "then": {
+          "tool": "Read"
+        }
+      }
+    }
+  },
+  {
+    "name": "order-first-null",
+    "valid": false,
+    "assertion": {
+      "class": "order-before",
+      "target": {
+        "first": null,
+        "then": {
+          "tool": "Read"
+        }
+      }
+    }
+  },
+  {
+    "name": "order-then-missing-tool",
+    "valid": false,
+    "assertion": {
+      "class": "order-before",
+      "target": {
+        "first": {
+          "tool": "Write"
+        },
+        "then": {}
+      }
+    }
+  },
+  {
+    "name": "order-then-empty-tool",
+    "valid": false,
+    "assertion": {
+      "class": "order-before",
+      "target": {
+        "first": {
+          "tool": "Write"
+        },
+        "then": {
+          "tool": ""
+        }
+      }
+    }
+  },
+  {
+    "name": "order-then-unknown-field",
+    "valid": false,
+    "assertion": {
+      "class": "order-before",
+      "target": {
+        "first": {
+          "tool": "Write"
+        },
+        "then": {
+          "tool": "Read",
+          "min_count": 1
+        }
+      }
+    }
+  },
+  {
+    "name": "order-then-null",
+    "valid": false,
+    "assertion": {
+      "class": "order-before",
+      "target": {
+        "first": {
+          "tool": "Write"
+        },
+        "then": null
+      }
+    }
+  },
+  {
+    "name": "file-exists-path-relative",
+    "valid": true,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "report.md"
+      }
+    }
+  },
+  {
+    "name": "file-exists-path-absolute",
+    "valid": true,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "/tmp/report.md"
+      }
+    }
+  },
+  {
+    "name": "file-exists-path-parent",
+    "valid": true,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "../report.md"
+      }
+    }
+  },
+  {
+    "name": "file-exists-path-windows",
+    "valid": true,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "C:\\report.md"
+      }
+    }
+  },
+  {
+    "name": "file-exists-pattern-simple",
+    "valid": true,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "pattern": ".*\\.md$"
+      }
+    }
+  },
+  {
+    "name": "file-exists-pattern-named-group",
+    "valid": true,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "pattern": "(?<name>x)"
+      }
+    }
+  },
+  {
+    "name": "file-exists-pattern-identity-escape",
+    "valid": true,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "pattern": "a\\Z"
+      }
+    }
+  },
+  {
+    "name": "file-exists-pattern-legacy-octal",
+    "valid": true,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "pattern": "\\8"
+      }
+    }
+  },
+  {
+    "name": "file-exists-both-selectors",
+    "valid": false,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "report.md",
+        "pattern": ".*"
+      }
+    }
+  },
+  {
+    "name": "file-exists-path-empty",
+    "valid": false,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": ""
+      }
+    }
+  },
+  {
+    "name": "file-exists-path-null",
+    "valid": false,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": null
+      }
+    }
+  },
+  {
+    "name": "file-exists-path-number",
+    "valid": false,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": 1
+      }
+    }
+  },
+  {
+    "name": "file-exists-pattern-empty",
+    "valid": false,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "pattern": ""
+      }
+    }
+  },
+  {
+    "name": "file-exists-pattern-null",
+    "valid": false,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "pattern": null
+      }
+    }
+  },
+  {
+    "name": "file-exists-pattern-number",
+    "valid": false,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "pattern": 1
+      }
+    }
+  },
+  {
+    "name": "file-exists-other-selector-null",
+    "valid": false,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "report.md",
+        "pattern": null
+      }
+    }
+  },
+  {
+    "name": "file-matches-sha-in-path-relative",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "receipts.txt"
+      }
+    }
+  },
+  {
+    "name": "file-matches-sha-in-path-absolute",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "/tmp/report.md",
+        "in": "receipts.txt"
+      }
+    }
+  },
+  {
+    "name": "file-matches-sha-in-path-parent",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "../report.md",
+        "in": "receipts.txt"
+      }
+    }
+  },
+  {
+    "name": "file-matches-sha-in-path-windows",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "C:\\report.md",
+        "in": "receipts.txt"
+      }
+    }
+  },
+  {
+    "name": "file-matches-sha-in-pattern-simple",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "pattern": ".*\\.md$",
+        "in": "receipts.txt"
+      }
+    }
+  },
+  {
+    "name": "file-matches-sha-in-pattern-named-group",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "pattern": "(?<name>x)",
+        "in": "receipts.txt"
+      }
+    }
+  },
+  {
+    "name": "file-matches-sha-in-pattern-identity-escape",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "pattern": "a\\Z",
+        "in": "receipts.txt"
+      }
+    }
+  },
+  {
+    "name": "file-matches-sha-in-pattern-legacy-octal",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "pattern": "\\8",
+        "in": "receipts.txt"
+      }
+    }
+  },
+  {
+    "name": "file-matches-sha-in-both-selectors",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "pattern": ".*",
+        "in": "receipts.txt"
+      }
+    }
+  },
+  {
+    "name": "file-matches-sha-in-path-empty",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "",
+        "in": "receipts.txt"
+      }
+    }
+  },
+  {
+    "name": "file-matches-sha-in-path-null",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": null,
+        "in": "receipts.txt"
+      }
+    }
+  },
+  {
+    "name": "file-matches-sha-in-path-number",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": 1,
+        "in": "receipts.txt"
+      }
+    }
+  },
+  {
+    "name": "file-matches-sha-in-pattern-empty",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "pattern": "",
+        "in": "receipts.txt"
+      }
+    }
+  },
+  {
+    "name": "file-matches-sha-in-pattern-null",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "pattern": null,
+        "in": "receipts.txt"
+      }
+    }
+  },
+  {
+    "name": "file-matches-sha-in-pattern-number",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "pattern": 1,
+        "in": "receipts.txt"
+      }
+    }
+  },
+  {
+    "name": "file-matches-sha-in-other-selector-null",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "pattern": null,
+        "in": "receipts.txt"
+      }
+    }
+  },
+  {
+    "name": "produced-true",
+    "valid": true,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "report.md",
+        "produced": true
+      }
+    }
+  },
+  {
+    "name": "produced-false",
+    "valid": true,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "report.md",
+        "produced": false
+      }
+    }
+  },
+  {
+    "name": "produced-null",
+    "valid": false,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "report.md",
+        "produced": null
+      }
+    }
+  },
+  {
+    "name": "produced-string",
+    "valid": false,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "report.md",
+        "produced": "false"
+      }
+    }
+  },
+  {
+    "name": "produced-int",
+    "valid": false,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "report.md",
+        "produced": 1
+      }
+    }
+  },
+  {
+    "name": "sha-record-''",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": ""
+      }
+    }
+  },
+  {
+    "name": "sha-record-'/'",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "/"
+      }
+    }
+  },
+  {
+    "name": "sha-record-'/receipt'",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "/receipt"
+      }
+    }
+  },
+  {
+    "name": "sha-record-'..'",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": ".."
+      }
+    }
+  },
+  {
+    "name": "sha-record-'../receipt'",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "../receipt"
+      }
+    }
+  },
+  {
+    "name": "sha-record-'a/../b'",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "a/../b"
+      }
+    }
+  },
+  {
+    "name": "sha-record-'a/..'",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "a/.."
+      }
+    }
+  },
+  {
+    "name": "sha-record-'a/..\\n'",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "a/..\n"
+      }
+    }
+  },
+  {
+    "name": "sha-record-'a/..x/b'",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "a/..x/b"
+      }
+    }
+  },
+  {
+    "name": "sha-record-'./receipt'",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "./receipt"
+      }
+    }
+  },
+  {
+    "name": "sha-record-'a//receipt'",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "a//receipt"
+      }
+    }
+  },
+  {
+    "name": "sha-record-'C:\\\\receipt'",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "C:\\receipt"
+      }
+    }
+  },
+  {
+    "name": "sha-record-'..\\\\receipt'",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "..\\receipt"
+      }
+    }
+  },
+  {
+    "name": "sha-record-'{path}.sha256'",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "{path}.sha256"
+      }
+    }
+  },
+  {
+    "name": "sha-record-'a/.../b'",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": "a/.../b"
+      }
+    }
+  },
+  {
+    "name": "sha-record-None",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": null
+      }
+    }
+  },
+  {
+    "name": "sha-record-1",
+    "valid": false,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report.md",
+        "in": 1
+      }
+    }
+  },
+  {
+    "name": "legacy-output-equals",
+    "valid": true,
+    "assertion": {
+      "class": "output-equals",
+      "target": null
+    }
+  },
+  {
+    "name": "legacy-extension-output-equals",
+    "valid": true,
+    "assertion": {
+      "class": "output-equals",
+      "target": {
+        "any": "payload"
+      },
+      "extension": true
+    }
+  },
+  {
+    "name": "legacy-output-contains",
+    "valid": true,
+    "assertion": {
+      "class": "output-contains",
+      "target": null
+    }
+  },
+  {
+    "name": "legacy-extension-output-contains",
+    "valid": true,
+    "assertion": {
+      "class": "output-contains",
+      "target": {
+        "any": "payload"
+      },
+      "extension": true
+    }
+  },
+  {
+    "name": "legacy-output-matches",
+    "valid": true,
+    "assertion": {
+      "class": "output-matches",
+      "target": null
+    }
+  },
+  {
+    "name": "legacy-extension-output-matches",
+    "valid": true,
+    "assertion": {
+      "class": "output-matches",
+      "target": {
+        "any": "payload"
+      },
+      "extension": true
+    }
+  },
+  {
+    "name": "legacy-schema-conforms",
+    "valid": true,
+    "assertion": {
+      "class": "schema-conforms",
+      "target": null
+    }
+  },
+  {
+    "name": "legacy-extension-schema-conforms",
+    "valid": true,
+    "assertion": {
+      "class": "schema-conforms",
+      "target": {
+        "any": "payload"
+      },
+      "extension": true
+    }
+  },
+  {
+    "name": "legacy-judge-verdict",
+    "valid": true,
+    "assertion": {
+      "class": "judge-verdict",
+      "target": null
+    }
+  },
+  {
+    "name": "legacy-extension-judge-verdict",
+    "valid": true,
+    "assertion": {
+      "class": "judge-verdict",
+      "target": {
+        "any": "payload"
+      },
+      "extension": true
+    }
+  },
+  {
+    "name": "legacy-matcher-satisfied",
+    "valid": true,
+    "assertion": {
+      "class": "matcher-satisfied",
+      "target": null
+    }
+  },
+  {
+    "name": "legacy-extension-matcher-satisfied",
+    "valid": true,
+    "assertion": {
+      "class": "matcher-satisfied",
+      "target": {
+        "any": "payload"
+      },
+      "extension": true
+    }
+  },
+  {
+    "name": "arbitrary-extension",
+    "valid": true,
+    "assertion": {
+      "class": "vendor.check",
+      "target": [1, null, "x"],
+      "extension": true
+    }
+  },
+  {
+    "name": "unknown-without-extension",
+    "valid": false,
+    "assertion": {
+      "class": "vendor.check",
+      "target": {}
+    }
+  },
+  {
+    "name": "non-boolean-extension-1",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": null,
+      "extension": 1
+    }
+  },
+  {
+    "name": "non-boolean-extension-1.0",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": null,
+      "extension": 1.0
+    }
+  },
+  {
+    "name": "non-boolean-extension-'true'",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": null,
+      "extension": "true"
+    }
+  },
+  {
+    "name": "non-boolean-extension-False",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": null,
+      "extension": false
+    }
+  },
+  {
+    "name": "non-boolean-extension-None",
+    "valid": false,
+    "assertion": {
+      "class": "tool-called",
+      "target": null,
+      "extension": null
+    }
+  },
+  {
+    "name": "tool-high-surrogate",
+    "valid": true,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "\ud800"
+      }
+    }
+  },
+  {
+    "name": "tool-low-surrogate",
+    "valid": true,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "\udfff"
+      }
+    }
+  },
+  {
+    "name": "tool-astral",
+    "valid": true,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "\ud83d\ude80"
+      }
+    }
+  },
+  {
+    "name": "input_contains-high-surrogate",
+    "valid": true,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read",
+        "input_contains": "\ud800"
+      }
+    }
+  },
+  {
+    "name": "input_contains-low-surrogate",
+    "valid": true,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read",
+        "input_contains": "\udfff"
+      }
+    }
+  },
+  {
+    "name": "input_contains-astral",
+    "valid": true,
+    "assertion": {
+      "class": "tool-called",
+      "target": {
+        "tool": "Read",
+        "input_contains": "\ud83d\ude80"
+      }
+    }
+  },
+  {
+    "name": "path-high-surrogate",
+    "valid": true,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "\ud800"
+      }
+    }
+  },
+  {
+    "name": "path-low-surrogate",
+    "valid": true,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "\udfff"
+      }
+    }
+  },
+  {
+    "name": "path-astral",
+    "valid": true,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "path": "\ud83d\ude80"
+      }
+    }
+  },
+  {
+    "name": "pattern-high-surrogate",
+    "valid": true,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "pattern": "\ud800"
+      }
+    }
+  },
+  {
+    "name": "pattern-low-surrogate",
+    "valid": true,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "pattern": "\udfff"
+      }
+    }
+  },
+  {
+    "name": "pattern-astral",
+    "valid": true,
+    "assertion": {
+      "class": "file-exists",
+      "target": {
+        "pattern": "\ud83d\ude80"
+      }
+    }
+  },
+  {
+    "name": "in-high-surrogate",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report",
+        "in": "\ud800"
+      }
+    }
+  },
+  {
+    "name": "in-low-surrogate",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report",
+        "in": "\udfff"
+      }
+    }
+  },
+  {
+    "name": "in-astral",
+    "valid": true,
+    "assertion": {
+      "class": "file-matches-sha-in",
+      "target": {
+        "path": "report",
+        "in": "\ud83d\ude80"
+      }
+    }
+  }
+]

@@ -3,6 +3,7 @@
  */
 
 import { z } from 'zod';
+import { TrajectoryAssertionSchema } from './trajectory-assertion.js';
 import {
   ActorIdentitySchema,
   KebabSlugSchema,
@@ -85,7 +86,7 @@ export const CompositionDagSchema = z
   .strict();
 
 /** v1 named assertion-class set (deferral-A, bd_000-projects-gzgj). */
-export const AssertionClassSchema = z.enum([
+const LegacyAssertionClassSchema = z.enum([
   'output-equals',
   'output-contains',
   'output-matches',
@@ -94,19 +95,29 @@ export const AssertionClassSchema = z.enum([
   'matcher-satisfied',
 ]);
 
+export const AssertionClassSchema = z.enum([
+  ...LegacyAssertionClassSchema.options,
+  'tool-called',
+  'tool-not-called',
+  'order-before',
+  'file-exists',
+  'file-matches-sha-in',
+]);
+
 /**
  * Assertion expression — named-class discriminated union plus an open
- * extension slot (deferral-A lockup, bd_000-projects-gzgj). Per-class `target`
- * payload stays `unknown` — refined per engagement at a higher layer.
+ * extension slot. Legacy named targets remain unknown; trajectory targets
+ * are strict typed parameters. Extensions are always opaque, including collisions.
  */
 export const AssertionExpressionSchema = z.union([
   z
     .object({
-      class: AssertionClassSchema,
+      class: LegacyAssertionClassSchema,
       target: z.unknown(),
       negate: z.boolean().optional(),
     })
     .strict(),
+  TrajectoryAssertionSchema,
   z
     .object({
       class: z.string(),

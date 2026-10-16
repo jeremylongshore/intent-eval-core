@@ -12,6 +12,7 @@
 
 export * from './_primitives.js';
 export * from './eval-spec.js';
+export * from './trajectory-assertion.js';
 export * from './eval-run.js';
 export * from './matcher-map.js';
 export * from './evidence-bundle.js';
