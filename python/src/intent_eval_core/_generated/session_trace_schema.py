@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, conint
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class SessiontraceOtelCompatibleExecutionTraceForAnEvalrunBlueprintB210(BaseModel):
@@ -16,13 +16,13 @@ class SessiontraceOtelCompatibleExecutionTraceForAnEvalrunBlueprintB210(BaseMode
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: schema.Uuidv7
-    eval_run_id: schema.Uuidv7
-    created_at: schema.Rfc3339
-    closed_at: schema.Rfc3339 | None = None
-    root_span_id: schema.OtelSpanId
+    id: field_common_schema.Uuidv7
+    eval_run_id: field_common_schema.Uuidv7
+    created_at: field_common_schema.Rfc3339
+    closed_at: field_common_schema.Rfc3339 | None = None
+    root_span_id: field_common_schema.OtelSpanId
     total_spans: conint(ge=0)
     max_loop_depth: conint(ge=0)
     total_tool_invocations: conint(ge=0)
     total_judge_decisions: conint(ge=0)
-    trace_blob_storage_key: schema.StorageKey
+    trace_blob_storage_key: field_common_schema.StorageKey

@@ -7,7 +7,7 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, conint
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class Meter(Enum):
@@ -54,7 +54,7 @@ class UsageeventAppendOnlyProductMeteringLedgerRow15ThCanonicalEntityDr103D1(Bas
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: schema.Uuidv7
+    id: field_common_schema.Uuidv7
     """
     UUIDv7 PK.
     """
@@ -70,11 +70,11 @@ class UsageeventAppendOnlyProductMeteringLedgerRow15ThCanonicalEntityDr103D1(Bas
     """
     The business unit `quantity` is expressed in. MIXED across meters — a `tokens` count and a `count` are NON-COMPARABLE, which is exactly why a cross-`(meter, unit)` SUM is out of contract (C3).
     """
-    source_entity_type: SourceEntityType | None = None
+    source_entity_type: SourceEntityType | None
     """
     The gated entity TYPE this row meters. Non-null for every metered (non-`api_call`) row (anti-gaming, DR-103 D1 B1.2, enforced in the allOf/if-then below); `null` permitted ONLY for `meter === 'api_call'`.
     """
-    source_entity_id: schema.Uuidv7 | None = None
+    source_entity_id: field_common_schema.Uuidv7 | None
     """
     Reference (UUIDv7) to the gated source entity. Non-null for every metered (non-`api_call`) row (anti-gaming); `null` only for `api_call`. A content/identity reference, NOT an enforced relational FK — the kernel persists nothing.
     """
@@ -82,12 +82,12 @@ class UsageeventAppendOnlyProductMeteringLedgerRow15ThCanonicalEntityDr103D1(Bas
     """
     The verified marker — `true` iff the runtime confirmed the source session cleared its quality gate. MUST be `true` for every metered (non-`api_call`) row (anti-gaming, DR-103 D1 B1.2): a metered row with an unverified source is REFUSED. The runtime sets this; a developer never hand-authors `true` (DR-103 D1 B1.6 honest-emit-path binding). For `api_call` it MAY be `false`.
     """
-    cost_record_ref: schema.Uuidv7 | None = None
+    cost_record_ref: field_common_schema.Uuidv7 | None
     """
     NULLABLE back-reference to the CostRecord that priced the SAME action — the SEAM proving UsageEvent and CostRecord are SEPARATE tables (DR-103 D1). `null` in the common case (most metered actions are not provider-priced). A reference, NOT an enforced relational FK.
     """
-    recorded_at: schema.Rfc3339
-    tenant_id: schema.Uuidv7 | None = None
+    recorded_at: field_common_schema.Rfc3339
+    tenant_id: field_common_schema.Uuidv7 | None = None
     """
     RESERVED multi-tenancy slot (DR-085 D5 / deferral-G, bd_000-projects-k0fj), byte-identical to EvalSpec/EvalRun/SkillSnapshot/SkillVersion. OPTIONAL + NOT NULLABLE — omitted from `required`; an explicit `null` is rejected (the schema $ref's uuidv7 with no null branch). A present tenant_id is an attested tenant claim; an absent one is single-tenant/global and MUST NOT be pooled into a cross-tenant aggregate (DR-103 D2 B2.2). Tenant-isolation semantics deferred to a future DR; v1 single-tenant rows omit it.
     """

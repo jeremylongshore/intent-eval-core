@@ -14,7 +14,8 @@ validators and JSON Schemas, here as **Pydantic v2 models** for Python
 consumers. The models are code-generated from the canonical `schemas/v1/*.json`
 JSON Schemas and validated for parity against the same golden fixtures the
 TypeScript/AJV side validates — a payload accepted by the Zod validator is
-accepted here, and one rejected there is rejected here.
+accepted here, and one rejected there is rejected here for the shared fixture
+set. A known published exception for omitted nullable fields is recorded below.
 
 ## Install
 
@@ -66,6 +67,13 @@ Plus `GATE_RESULT_V1_URI` (the canonical predicate URI at
   `datamodel-code-generator` (pinned) over the canonical
   `schemas/v1/*.json`. The output lives in `intent_eval_core/_generated/`
   (reference material; never import from it directly).
+- **Security and compatibility** — generation requires the exact 0.86.0 pin
+  and rejects remote schema references. Scoped defaults preserve 0.11.0's
+  Python behavior for 21 omitted nullable fields across eight entities, even
+  though the canonical JSON Schemas require those fields. The defaults are
+  enumerated in `scripts/codegen_pydantic.py`; `test_codegen_security.py`
+  records these known differences. Removing them is a separate contract
+  decision tracked by `bd_000-projects-wcze.11`, not part of this security update.
 - **Cross-field rules** — the JSON Schema `allOf`/`if-then` conditional rules
   (e.g. gate-result/v1's "advisory requires advisory_severity",
   "fail/advisory/error requires a non-empty reason") cannot be expressed by the

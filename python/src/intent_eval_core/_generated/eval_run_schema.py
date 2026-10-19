@@ -7,7 +7,7 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, constr
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class State(Enum):
@@ -47,51 +47,51 @@ class EvalrunSingleExecutionOfAnEvalspecAgainstASkillsnapshotBlueprintB22(BaseMo
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: schema.Uuidv7
-    eval_spec_id: schema.Uuidv7
-    eval_spec_version: schema.Semver
+    id: field_common_schema.Uuidv7
+    eval_spec_id: field_common_schema.Uuidv7
+    eval_spec_version: field_common_schema.Semver
     """
     Frozen at queue time — defends against mid-flight spec mutation.
     """
-    eval_spec_content_hash: schema.Sha256
+    eval_spec_content_hash: field_common_schema.Sha256
     """
     Frozen at queue time.
     """
-    skill_snapshot_id: schema.Uuidv7
+    skill_snapshot_id: field_common_schema.Uuidv7
     state: State
     """
     EvalRun state enum (Blueprint B § 2.2 + § 3.1). Terminal states: archived, skipped_due_to_gate, archived_failed.
     """
     terminal_reason: TerminalReason | None = None
-    queued_at: schema.Rfc3339
-    started_at: schema.Rfc3339 | None = None
-    judged_at: schema.Rfc3339 | None = None
-    reported_at: schema.Rfc3339 | None = None
-    archived_at: schema.Rfc3339 | None = None
+    queued_at: field_common_schema.Rfc3339
+    started_at: field_common_schema.Rfc3339 | None = None
+    judged_at: field_common_schema.Rfc3339 | None = None
+    reported_at: field_common_schema.Rfc3339 | None = None
+    archived_at: field_common_schema.Rfc3339 | None = None
     worker_id: constr(min_length=1) | None = None
-    lease_expires_at: schema.Rfc3339 | None = None
-    session_trace_id: schema.Uuidv7
+    lease_expires_at: field_common_schema.Rfc3339 | None = None
+    session_trace_id: field_common_schema.Uuidv7
     """
     FK → SessionTrace.id. Populated as Run executes.
     """
-    evidence_bundle_id: schema.Uuidv7 | None = None
+    evidence_bundle_id: field_common_schema.Uuidv7 | None = None
     """
     FK → EvidenceBundle.id. Populated at judged → reported.
     """
-    cost_record_id: schema.Uuidv7
+    cost_record_id: field_common_schema.Uuidv7
     """
     FK → CostRecord.id. Populated continuously.
     """
-    parent_run_id: schema.Uuidv7 | None = None
+    parent_run_id: field_common_schema.Uuidv7 | None = None
     """
     Multi-step DAG child link.
     """
-    idempotency_key: schema.Uuidv7
+    idempotency_key: field_common_schema.Uuidv7
     """
     Defaults to `id` if not explicitly provided.
     """
-    submitted_by: schema.ActorIdentity
-    tenant_id: schema.Uuidv7 | None = None
+    submitted_by: field_common_schema.ActorIdentity
+    tenant_id: field_common_schema.Uuidv7 | None = None
     """
     RESERVED multi-tenancy slot (deferral-G, bd_000-projects-k0fj). OPTIONAL + additive per § 7.2; tenant-isolation semantics deferred to a future DR. SHOULD equal the parent EvalSpec.tenant_id when both present (runtime invariant). v1 single-tenant runs omit it.
     """

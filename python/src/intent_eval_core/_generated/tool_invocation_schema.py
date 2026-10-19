@@ -7,14 +7,14 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, conint, constr
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class Error(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    enum_class: schema.ErrorClass
+    enum_class: field_common_schema.ErrorClass
     """
     Error class — a kernel-registered cross-cutting class (network.timeout, provider.rate_limited, tool.crashed, …) OR a tool-defined `<domain>.<condition>` string. Registration pattern LOCKED per deferral-E (bd_000-projects-84li): the format is constrained, the enum stays open.
     """
@@ -31,28 +31,28 @@ class ToolinvocationSingleToolProviderCallRecordedUnderASessiontraceBlueprintB21
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: schema.Uuidv7
-    session_trace_id: schema.Uuidv7
-    parent_span_id: schema.OtelSpanId
+    id: field_common_schema.Uuidv7
+    session_trace_id: field_common_schema.Uuidv7
+    parent_span_id: field_common_schema.OtelSpanId
     tool_id: constr(min_length=1)
     """
     Tool identifier. Convention examples: 'audit-harness:escape-scan', 'provider:anthropic:claude-sonnet-4-5'. Format NOT enforced at this layer.
     """
-    tool_version: schema.Semver
+    tool_version: field_common_schema.Semver
     args: dict[str, Any]
     """
     Sanitized args (credentials redacted by runtime sanitizer).
     """
-    args_hash: schema.Sha256
+    args_hash: field_common_schema.Sha256
     result_summary: dict[str, Any]
     """
     Sanitized result summary (inline-fit portion).
     """
-    result_hash: schema.Sha256
-    result_storage_key: schema.StorageKey | None = None
-    invoked_at: schema.Rfc3339
+    result_hash: field_common_schema.Sha256
+    result_storage_key: field_common_schema.StorageKey | None = None
+    invoked_at: field_common_schema.Rfc3339
     latency_ms: conint(ge=0)
-    cost_record_ref: schema.Uuidv7
+    cost_record_ref: field_common_schema.Uuidv7
     error: Error | None = None
     retry_attempt: conint(ge=0)
     """

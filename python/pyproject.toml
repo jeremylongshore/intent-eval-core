@@ -49,7 +49,7 @@ dependencies = [
 # Codegen + parity-test toolchain. The datamodel-code-generator version is
 # PINNED for reproducible generation (matches DCG_PIN in scripts/codegen_pydantic.py).
 dev = [
-  "datamodel-code-generator[http]==0.25.9",
+  "datamodel-code-generator[http]==0.86.0",
   "pytest>=8.0",
 ]
 

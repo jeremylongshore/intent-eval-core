@@ -7,7 +7,7 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, conint, constr
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class AttributionClass(Enum):
@@ -32,12 +32,12 @@ class CostrecordSingleCostResourceAttributionRowBlueprintB212(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: schema.Uuidv7
-    eval_run_id: schema.Uuidv7 | None = None
+    id: field_common_schema.Uuidv7
+    eval_run_id: field_common_schema.Uuidv7 | None = None
     """
     Nullable for system-level rollups.
     """
-    tool_invocation_id: schema.Uuidv7 | None = None
+    tool_invocation_id: field_common_schema.Uuidv7 | None = None
     """
     Nullable for run-level / system rollups.
     """
@@ -51,8 +51,8 @@ class CostrecordSingleCostResourceAttributionRowBlueprintB212(BaseModel):
     completion_tokens: conint(ge=0)
     cached_tokens: conint(ge=0)
     wall_clock_ms: conint(ge=0)
-    external_api_cost_micro_usd: schema.MicroUsd
-    recorded_at: schema.Rfc3339
+    external_api_cost_micro_usd: field_common_schema.MicroUsd
+    recorded_at: field_common_schema.Rfc3339
     cost_basis_version: constr(min_length=1)
     """
     Version tag of the cost-basis lookup table. Table itself forward-deferred to iel-E14b.

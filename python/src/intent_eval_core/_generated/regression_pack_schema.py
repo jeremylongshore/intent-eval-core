@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, Field, conint, constr
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class OutcomeSummary(BaseModel):
@@ -29,18 +29,18 @@ class RegressionpackFrozenBundleOfEvalrunsProvingABehaviorContractBlueprintB27(
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: schema.Uuidv7
-    name: schema.KebabSlug
+    id: field_common_schema.Uuidv7
+    name: field_common_schema.KebabSlug
     purpose: constr(min_length=1)
-    skill_snapshot_sha: schema.Sha256
-    eval_spec_ids: list[schema.Uuidv7]
-    eval_run_ids: list[schema.Uuidv7]
+    skill_snapshot_sha: field_common_schema.Sha256
+    eval_spec_ids: list[field_common_schema.Uuidv7]
+    eval_run_ids: list[field_common_schema.Uuidv7]
     outcome_summary: dict[constr(pattern=r"^MM-[1-6]$"), OutcomeSummary]
     """
     Aggregate pass/fail (and optional extension) per MM-class. Partial because not every pack tests every class. Per Blueprint B § 2.7: 'aggregate pass/fail rates per matcher class' — others optional, not invented.
     """
-    ancestor_pack_id: schema.Uuidv7 | None = None
+    ancestor_pack_id: field_common_schema.Uuidv7 | None = None
     delta_declaration: str
-    created_at: schema.Rfc3339
-    created_by: schema.ActorIdentity
-    content_hash: schema.Sha256
+    created_at: field_common_schema.Rfc3339
+    created_by: field_common_schema.ActorIdentity
+    content_hash: field_common_schema.Sha256

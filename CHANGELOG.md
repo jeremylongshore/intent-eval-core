@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Upgrade the pinned Python model generator to 0.86.0, refuse off-pin execution,
+  and disable remote schema fetching. Preserve the published Python defaults
+  through explicit scoped overrides; the existing nullable-field omission gap
+  is tracked separately in `bd_000-projects-wcze.11` (`bd_000-projects-wcze.10`).
+
 - Refresh development dependencies, upgrade Vitest and its coverage provider,
   and select a supported Vite peer. Apply tested, lockfile-bound pnpm patches
   for the unpatched `braces` nesting and `sprintf-js` formatting advisories.

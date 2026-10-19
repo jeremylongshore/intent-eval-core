@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class SkillsnapshotContentAddressedPinOfASkillSSourceDepsConfigBlueprintB29(BaseModel):
@@ -16,23 +16,23 @@ class SkillsnapshotContentAddressedPinOfASkillSSourceDepsConfigBlueprintB29(Base
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: schema.Uuidv7
-    skill_id: schema.KebabSlug
+    id: field_common_schema.Uuidv7
+    skill_id: field_common_schema.KebabSlug
     """
     Logical skill identifier — stable across snapshots of the same skill.
     """
-    source_sha: schema.Sha256
-    dependency_lock_sha: schema.Sha256
-    config_sha: schema.Sha256
-    combined_sha: schema.Sha256
+    source_sha: field_common_schema.Sha256
+    dependency_lock_sha: field_common_schema.Sha256
+    config_sha: field_common_schema.Sha256
+    combined_sha: field_common_schema.Sha256
     """
     Load-bearing pin. sha256(source_sha || dependency_lock_sha || config_sha).
     """
-    version_label: schema.Semver | None = None
-    storage_key: schema.StorageKey
-    created_at: schema.Rfc3339
-    created_by: schema.ActorIdentity
-    tenant_id: schema.Uuidv7 | None = None
+    version_label: field_common_schema.Semver | None = None
+    storage_key: field_common_schema.StorageKey
+    created_at: field_common_schema.Rfc3339
+    created_by: field_common_schema.ActorIdentity
+    tenant_id: field_common_schema.Uuidv7 | None = None
     """
     RESERVED multi-tenancy slot (deferral-G, bd_000-projects-k0fj). OPTIONAL + additive per § 7.2; tenant-isolation semantics deferred to a future DR. v1 single-tenant snapshots omit it.
     """

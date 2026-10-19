@@ -7,7 +7,7 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, confloat, conint, constr
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class Verdict(Enum):
@@ -41,15 +41,15 @@ class JudgedecisionSingleJudgeSVerdictOnAnEvalrunForAMatchermapBlueprintB25(Base
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: schema.Uuidv7
-    eval_run_id: schema.Uuidv7
-    session_trace_id: schema.Uuidv7
-    matcher_map_id: schema.Uuidv7
+    id: field_common_schema.Uuidv7
+    eval_run_id: field_common_schema.Uuidv7
+    session_trace_id: field_common_schema.Uuidv7
+    matcher_map_id: field_common_schema.Uuidv7
     judge_identity: constr(min_length=1)
     """
     Stable judge identity, e.g., `audit-harness@0.3.0:escape-scan`.
     """
-    judge_version: schema.Semver
+    judge_version: field_common_schema.Semver
     verdict: Verdict
     """
     Verdict enum per Blueprint B § 2.5 (closed 5-element set). UPPERCASE — deliberately DISTINCT from GateDecision (lowercase).
@@ -66,11 +66,11 @@ class JudgedecisionSingleJudgeSVerdictOnAnEvalrunForAMatchermapBlueprintB25(Base
     """
     Free-form judge reasoning output.
     """
-    input_hash: schema.Sha256
+    input_hash: field_common_schema.Sha256
     seed: int | str | None = None
     """
     Populated for verdict_source='llm_with_seed'. Blueprint B does not specify integer vs string — both accepted.
     """
-    evaluated_at: schema.Rfc3339
+    evaluated_at: field_common_schema.Rfc3339
     latency_ms: conint(ge=0)
-    cost_record_ref: schema.Uuidv7
+    cost_record_ref: field_common_schema.Uuidv7

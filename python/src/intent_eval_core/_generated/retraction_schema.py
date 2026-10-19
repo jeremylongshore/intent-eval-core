@@ -7,7 +7,7 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class RetractedSubject(BaseModel):
@@ -18,15 +18,15 @@ class RetractedSubject(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    bundle_id: schema.Uuidv7 | None = None
+    bundle_id: field_common_schema.Uuidv7 | None = None
     """
     UUIDv7 of the EvidenceBundle being retracted (FK → EvidenceBundle.id).
     """
-    storage_key: schema.StorageKey | None = None
+    storage_key: field_common_schema.StorageKey | None = None
     """
     Content-addressed object-storage key of the retracted bundle payload (EvidenceBundle.storage_key).
     """
-    content_hash: schema.Sha256Prefixed | None = None
+    content_hash: field_common_schema.Sha256Prefixed | None = None
     """
     sha256-prefixed digest of the retracted artifact, pinning exactly which content is retracted even if a storage backend re-keys.
     """
@@ -67,11 +67,11 @@ class RetractionV1InTotoPredicateBodyForRetractingAPriorAttestation(BaseModel):
     """
     OPTIONAL human-readable free-text elaboration. The machine-actionable retraction class is carried by reason_class; this is operator context only and MUST NOT be parsed for decisions.
     """
-    retracted_at: schema.Rfc3339
+    retracted_at: field_common_schema.Rfc3339
     """
     RFC 3339 UTC timestamp at which the retraction took effect.
     """
-    retracted_by: schema.ActorIdentity | None = None
+    retracted_by: field_common_schema.ActorIdentity | None = None
     """
     OPTIONAL actor identity (operator email / service account) that authored the retraction, for audit-trail attribution.
     """
