@@ -24,7 +24,9 @@ string with plain text; every control must be accepted.
 
 The legitimate labels come from the marketplace checker's existing allow-list:
 the seven braced template variables, including portable skill/plugin roots,
-plus combinations and repetition. Forbidden labels cover command-substitution
+plus combinations, repetition, and mixed `$ARGUMENTS` / `$1` text. The manifest
+records both braced and unbraced tokens; the marketplace runner verifies both
+sets against the source allow-list. Forbidden labels cover command-substitution
 and backtick shapes, unknown and malformed variables, parameter defaults,
 near-miss token names, and allowed tokens mixed with forbidden syntax. These
 are inert synthetic strings. Neither runner executes them.
@@ -74,7 +76,7 @@ and make policy/field-coverage disagreement visible.
 
 ## Reproduction
 
-From the kernel checkout:
+From the kernel checkout, using the repository’s supported Node 22 or newer:
 
 ```bash
 pnpm install --frozen-lockfile

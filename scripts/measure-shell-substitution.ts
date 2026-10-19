@@ -21,6 +21,7 @@ const FixtureSchema = z.object({
 const ManifestSchema = z.object({
   schemaVersion: z.literal(1),
   allowedBracedTokens: z.array(z.string()).length(7),
+  allowedUnbracedTokens: z.tuple([z.literal('$ARGUMENTS'), z.literal('$1')]),
   fixtures: z.array(FixtureSchema).length(100),
 });
 export type Fixture = z.infer<typeof FixtureSchema> & {

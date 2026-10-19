@@ -66,9 +66,9 @@ def main():
     )
     manifest_bytes = (corpus / "manifest.json").read_bytes()
     manifest = json.loads(manifest_bytes)
-    if not set(manifest["allowedBracedTokens"]).issubset(
-        validator.YAML_VALUE_ALLOWED_VARS
-    ):
+    if not set(
+        manifest["allowedBracedTokens"] + manifest["allowedUnbracedTokens"]
+    ).issubset(validator.YAML_VALUE_ALLOWED_VARS):
         raise ValueError(
             "Corpus label policy no longer matches the marketplace allow-list"
         )

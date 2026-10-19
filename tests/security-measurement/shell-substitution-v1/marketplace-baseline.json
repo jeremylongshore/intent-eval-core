@@ -4,7 +4,7 @@
   "sourceRevision": "6d2613e0d17c8602328c9f96234c4a0e52a2dc77",
   "sourcePath": "scripts/validate-skills-schema.py",
   "validatorSha256": "2b0cb1d864108d593b6207c04fbc60ee856f8c54cb2e916542b5db837ab2e4d4",
-  "corpusSha256": "b2f6eff461301d74b06099e02501fda7a7f0e807f69ef47546d21e0731ee4446",
+  "corpusSha256": "feac22e7d61ba4064f00855c9b7dfb640b0850572cfd80eacba9a9b76f335dc4",
   "scope": "Actual checker on the same synthetic corpus; not full authoring conformance or a population error-rate estimate.",
   "metrics": {
     "legitimate": 50,

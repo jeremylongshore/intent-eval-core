@@ -1,7 +1,5 @@
 {
   "schemaVersion": 1,
-  "authority": "intent-eval-lab/000-docs/033-PP-PLAN-skill-refiner-sak-amendment-v7-2026-05-28.md section14.25",
-  "labelPolicy": "Marketplace YAML substitution policy, not a claim that kernel v1/v2 permits these tokens. Labels and paths are independent of validator outputs.",
   "allowedBracedTokens": [
     "${CLAUDE_SKILL_DIR}",
     "${CLAUDE_PLUGIN_ROOT}",
@@ -11,7 +9,7 @@
     "${CLAUDE_SESSION_ID}",
     "${CLAUDE_EFFORT}"
   ],
-  "design": "10 curated legitimate values and10 forbidden values crossed with5 YAML string locations; correlated synthetic cases, not a population estimate. JSON flow-mapping frontmatter is a YAML1.2 subset; parser dialect/style coverage is not claimed.",
+  "allowedUnbracedTokens": ["$ARGUMENTS", "$1"],
   "fixtures": [
     {
       "id": "legitimate-description-skill-dir",
