@@ -274,6 +274,21 @@ describe('skill-refiner-pass/v1 — Statement schema binding (core#60 / DR-085 D
     expect(r.success).toBe(true);
   });
 
+  it('rejects an empty subject without throwing during digest refinement', () => {
+    const result = SkillRefinerPassV1StatementSchema.safeParse({
+      _type: 'https://in-toto.io/Statement/v1',
+      subject: [],
+      predicateType: SKILL_REFINER_PASS_V1_URI,
+      predicate: minimalBody(),
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([expect.objectContaining({ code: 'too_small', path: ['subject'] })]),
+      );
+    }
+  });
+
   it('REJECTS a Statement whose subject digest does not match result_snapshot_hash', () => {
     const body = minimalBody();
     const r = SkillRefinerPassV1StatementSchema.safeParse({

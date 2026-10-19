@@ -39,3 +39,7 @@ scripts/codegen-validators.test.ts
 # 0k3s — Pydantic regeneration preservation and failure-path regressions.
 scripts/codegen_pydantic.py
 python/tests/test_codegen_preservation.py
+
+# wcze.9 — reviewed development-dependency mitigations and bypass regressions.
+patches/*.patch
+scripts/toolchain-patches.test.ts

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Refresh development dependencies, upgrade Vitest and its coverage provider,
+  and select a supported Vite peer. Apply tested, lockfile-bound pnpm patches
+  for the unpatched `braces` nesting and `sprintf-js` formatting advisories.
+  Registry audits still report those two versions; see CONTRIBUTING.md for
+  the mitigations and limits. The runtime Zod pin, schema bytes, public API,
+  and four 100% coverage thresholds are unchanged (`bd_000-projects-wcze.9`).
+
 ### Fixed
 
 - Preserve Pydantic reference documentation and existing modules when generation
