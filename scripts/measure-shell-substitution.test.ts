@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import {
   cleanControl,
   loadCorpus,
@@ -9,6 +10,20 @@ import {
 import type { Observation } from './measure-shell-substitution.ts';
 
 describe('shell-substitution measurement', () => {
+  it('reproduces the saved per-case baseline and its source and corpus hashes', () => {
+    const baseline: unknown = JSON.parse(
+      readFileSync(
+        new URL(
+          '../tests/security-measurement/shell-substitution-v1/kernel-baseline.json',
+          import.meta.url,
+        ),
+        'utf8',
+      ),
+    );
+    // A changed source/corpus requires an explicit, dated remeasurement. This
+    // equality preserves the recorded failures; it never requires targetsMet.
+    expect(measureKernel()).toEqual(baseline);
+  });
   it('reports unmet targets with a failing CLI exit status', () => {
     const run = spawnSync(
       process.execPath,
