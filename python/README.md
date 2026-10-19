@@ -1,9 +1,13 @@
 # intent-eval-core (Python)
 
-Python (Pydantic v2) distribution of
-[`@intentsolutions/core`](https://www.npmjs.com/package/@intentsolutions/core) —
-the canonical contracts kernel for the
-[Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab).
+The spec authority kernel for agent-native artifacts — Python runtime models.
+
+This Pydantic v2 distribution provides runtime contracts from
+[`@intentsolutions/core`](https://www.npmjs.com/package/@intentsolutions/core)
+for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab).
+It does not implement the kernel's authoring-schema validators. The kernel's
+[authority and upstream sources](https://github.com/jeremylongshore/intent-eval-core#authority-and-upstream-sources)
+explain the marketplace scope, upstream provenance, and authoring lifecycle.
 
 The **same** entity + predicate contracts the TypeScript package exposes as Zod
 validators and JSON Schemas, here as **Pydantic v2 models** for Python
