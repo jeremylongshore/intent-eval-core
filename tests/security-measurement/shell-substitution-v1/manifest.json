@@ -1,0 +1,815 @@
+{
+  "schemaVersion": 1,
+  "allowedBracedTokens": [
+    "${CLAUDE_SKILL_DIR}",
+    "${CLAUDE_PLUGIN_ROOT}",
+    "${SKILL_DIR}",
+    "${PLUGIN_ROOT}",
+    "${CLAUDE_PLUGIN_DATA}",
+    "${CLAUDE_SESSION_ID}",
+    "${CLAUDE_EFFORT}"
+  ],
+  "allowedUnbracedTokens": ["$ARGUMENTS", "$1"],
+  "fixtures": [
+    {
+      "id": "legitimate-description-skill-dir",
+      "label": "legitimate",
+      "context": "description",
+      "variant": "skill-dir",
+      "path": ["description"],
+      "sha256": "5f66b13a16281ed527b71d887420b6a4575672c1124a794c1d9bc02aa546595f"
+    },
+    {
+      "id": "legitimate-description-plugin-root",
+      "label": "legitimate",
+      "context": "description",
+      "variant": "plugin-root",
+      "path": ["description"],
+      "sha256": "a2a25bd45f29c11895e1546ea6a49fb4b4c540c0f24e7f898ba2894b88880d0e"
+    },
+    {
+      "id": "legitimate-description-portable-skill-dir",
+      "label": "legitimate",
+      "context": "description",
+      "variant": "portable-skill-dir",
+      "path": ["description"],
+      "sha256": "4526c66209f27f61f90a700f9bd1c099b6c8684131cc91ed7e23ba1b988c83d1"
+    },
+    {
+      "id": "legitimate-description-portable-plugin-root",
+      "label": "legitimate",
+      "context": "description",
+      "variant": "portable-plugin-root",
+      "path": ["description"],
+      "sha256": "cda43c3584ed3f65fd3985bad8973602dfd8149f247ca976fb5544e469ff9746"
+    },
+    {
+      "id": "legitimate-description-plugin-data",
+      "label": "legitimate",
+      "context": "description",
+      "variant": "plugin-data",
+      "path": ["description"],
+      "sha256": "8827cea748783fb3b4e3e4c86aff7c231d2ba5ff08df70f9e3c90c1bad1372c6"
+    },
+    {
+      "id": "legitimate-description-session-id",
+      "label": "legitimate",
+      "context": "description",
+      "variant": "session-id",
+      "path": ["description"],
+      "sha256": "6abff37fbfccc7f8a3c3753302dcb86df361d6a786882be1fd618c460882e6b0"
+    },
+    {
+      "id": "legitimate-description-effort",
+      "label": "legitimate",
+      "context": "description",
+      "variant": "effort",
+      "path": ["description"],
+      "sha256": "6a7306dbf509d22081d5cf52e88feaaf34d808c3fdf798af29a8a5bd81a4dafb"
+    },
+    {
+      "id": "legitimate-description-combined-roots",
+      "label": "legitimate",
+      "context": "description",
+      "variant": "combined-roots",
+      "path": ["description"],
+      "sha256": "48511e7647d7113da97e08d7605873b18b2bf1bbf82476e8e3eacce9dc4f0b70"
+    },
+    {
+      "id": "legitimate-description-repeated-token",
+      "label": "legitimate",
+      "context": "description",
+      "variant": "repeated-token",
+      "path": ["description"],
+      "sha256": "f47b68fea40f047d58929abcdba1aae2e1f31c59df39458277552c965d6ddd48"
+    },
+    {
+      "id": "legitimate-description-mixed-arguments",
+      "label": "legitimate",
+      "context": "description",
+      "variant": "mixed-arguments",
+      "path": ["description"],
+      "sha256": "5238ce07a74c05dfde5f715f5e2f06ded35c8ba785b0e5e597c84512ca9a2441"
+    },
+    {
+      "id": "legitimate-compatibility-skill-dir",
+      "label": "legitimate",
+      "context": "compatibility",
+      "variant": "skill-dir",
+      "path": ["compatibility"],
+      "sha256": "5c54474bd26ca134e9525bb23685662f80e7b6a2719c0e3a2ce883d6bd2be353"
+    },
+    {
+      "id": "legitimate-compatibility-plugin-root",
+      "label": "legitimate",
+      "context": "compatibility",
+      "variant": "plugin-root",
+      "path": ["compatibility"],
+      "sha256": "a3dc889c698d5330db32e7073f203a7b702d8bad9edcb3fbce1b813610930f63"
+    },
+    {
+      "id": "legitimate-compatibility-portable-skill-dir",
+      "label": "legitimate",
+      "context": "compatibility",
+      "variant": "portable-skill-dir",
+      "path": ["compatibility"],
+      "sha256": "466b10eef68c8a2bc40f19493f9341a97e132e83f4d96c0ec0d2e5c748267611"
+    },
+    {
+      "id": "legitimate-compatibility-portable-plugin-root",
+      "label": "legitimate",
+      "context": "compatibility",
+      "variant": "portable-plugin-root",
+      "path": ["compatibility"],
+      "sha256": "99870c7d8ea85294f633f17793f1e9d0103e88a3114d6610c4c83ee46dc24a00"
+    },
+    {
+      "id": "legitimate-compatibility-plugin-data",
+      "label": "legitimate",
+      "context": "compatibility",
+      "variant": "plugin-data",
+      "path": ["compatibility"],
+      "sha256": "a4e35ef137c63036a7b6d916cfebb466831ec79a2b0cb0a130a368136b607319"
+    },
+    {
+      "id": "legitimate-compatibility-session-id",
+      "label": "legitimate",
+      "context": "compatibility",
+      "variant": "session-id",
+      "path": ["compatibility"],
+      "sha256": "4ed475dc9089e009a1c66bce1620d9af5a2e26a5f4c6c099583ebaf2dd101bce"
+    },
+    {
+      "id": "legitimate-compatibility-effort",
+      "label": "legitimate",
+      "context": "compatibility",
+      "variant": "effort",
+      "path": ["compatibility"],
+      "sha256": "862d239bfca25e3db0463c14f4d9827b90594393a083fafcd6349f9b5729aa57"
+    },
+    {
+      "id": "legitimate-compatibility-combined-roots",
+      "label": "legitimate",
+      "context": "compatibility",
+      "variant": "combined-roots",
+      "path": ["compatibility"],
+      "sha256": "31d282fe6dc8555199479529f89737c3ccbb736c06b79705979be970d5a06100"
+    },
+    {
+      "id": "legitimate-compatibility-repeated-token",
+      "label": "legitimate",
+      "context": "compatibility",
+      "variant": "repeated-token",
+      "path": ["compatibility"],
+      "sha256": "fe29dceb2bd40023b01345182ac5ac0f15213350533b38e49ac60ee645f4a360"
+    },
+    {
+      "id": "legitimate-compatibility-mixed-arguments",
+      "label": "legitimate",
+      "context": "compatibility",
+      "variant": "mixed-arguments",
+      "path": ["compatibility"],
+      "sha256": "98be04cdfdee4273ae16506a4f65b53adb0b826a0c5ec1f4b4b08feca35a3e6b"
+    },
+    {
+      "id": "legitimate-metadata-note-skill-dir",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "variant": "skill-dir",
+      "path": ["metadata", "note"],
+      "sha256": "050e7912d720cd28bca7895c345cfbd856044e240709b1bfc10aaddd9e2ad82e"
+    },
+    {
+      "id": "legitimate-metadata-note-plugin-root",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "variant": "plugin-root",
+      "path": ["metadata", "note"],
+      "sha256": "c91f7325610c517f32caf68535f1c0bbf3bf7d6e7cfb3bfed8abd2dbf097b212"
+    },
+    {
+      "id": "legitimate-metadata-note-portable-skill-dir",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "variant": "portable-skill-dir",
+      "path": ["metadata", "note"],
+      "sha256": "c878be3ebd2d1cb70ff91511faa29ee2ac32478e2e2fde2dd4cc0abcb63f73ed"
+    },
+    {
+      "id": "legitimate-metadata-note-portable-plugin-root",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "variant": "portable-plugin-root",
+      "path": ["metadata", "note"],
+      "sha256": "52084fb08568fd81adf2d3074167884349009b2473e0c27e36d4f1d22db02fd3"
+    },
+    {
+      "id": "legitimate-metadata-note-plugin-data",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "variant": "plugin-data",
+      "path": ["metadata", "note"],
+      "sha256": "9607a83079c0e70f1f0f6ada69cb7a6ba10bda7641e901723d7909961865bf3b"
+    },
+    {
+      "id": "legitimate-metadata-note-session-id",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "variant": "session-id",
+      "path": ["metadata", "note"],
+      "sha256": "2b100b6f952525408d64beca7f1899e6e07b09c94e8cbb6fde5c117ea6e13da9"
+    },
+    {
+      "id": "legitimate-metadata-note-effort",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "variant": "effort",
+      "path": ["metadata", "note"],
+      "sha256": "ce7ef4ab541844597c26749e646a25243b0542c194f06dc2b536710ae7d0321f"
+    },
+    {
+      "id": "legitimate-metadata-note-combined-roots",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "variant": "combined-roots",
+      "path": ["metadata", "note"],
+      "sha256": "a0c1c6a9850c6cb8abe64af238ccd2909beb8cecb39a8a8c915d66b3df5314c9"
+    },
+    {
+      "id": "legitimate-metadata-note-repeated-token",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "variant": "repeated-token",
+      "path": ["metadata", "note"],
+      "sha256": "6073b4a4eca9582027f31f4e6d2132a1e347ee57b8b8187d593c93804bbb5161"
+    },
+    {
+      "id": "legitimate-metadata-note-mixed-arguments",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "variant": "mixed-arguments",
+      "path": ["metadata", "note"],
+      "sha256": "0ffb06e6ec7fe8db067ee8966767b0b7c27ea974e7239b09908ec53a7905efae"
+    },
+    {
+      "id": "legitimate-metadata-list-skill-dir",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "variant": "skill-dir",
+      "path": ["metadata", "examples", 0],
+      "sha256": "8ba91f864cd53b149c6e9ebad966f0ddea876b60314cf4c84ce16ace93356073"
+    },
+    {
+      "id": "legitimate-metadata-list-plugin-root",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "variant": "plugin-root",
+      "path": ["metadata", "examples", 0],
+      "sha256": "04f103cbb07249cac80589564a73a2d67ee0d0f3894cfdbbc5f60a784586d057"
+    },
+    {
+      "id": "legitimate-metadata-list-portable-skill-dir",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "variant": "portable-skill-dir",
+      "path": ["metadata", "examples", 0],
+      "sha256": "a4631d1905e9b0ec80bc0dc567d652aab465cbdfb985b692eab98426264f6695"
+    },
+    {
+      "id": "legitimate-metadata-list-portable-plugin-root",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "variant": "portable-plugin-root",
+      "path": ["metadata", "examples", 0],
+      "sha256": "acc6f8ac5e8c7fae9e93ce851e20a8e3ef18fc04bc04d90872a041a97e39d17f"
+    },
+    {
+      "id": "legitimate-metadata-list-plugin-data",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "variant": "plugin-data",
+      "path": ["metadata", "examples", 0],
+      "sha256": "75fc54a3342820178f21264b9dc33ccb8e7dd57be345403dcd77c574c889feeb"
+    },
+    {
+      "id": "legitimate-metadata-list-session-id",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "variant": "session-id",
+      "path": ["metadata", "examples", 0],
+      "sha256": "63d7a760b27ec045aa9ee76287f88083b377329dcbc6a6fa0c2db6ff00ce16bb"
+    },
+    {
+      "id": "legitimate-metadata-list-effort",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "variant": "effort",
+      "path": ["metadata", "examples", 0],
+      "sha256": "6462ae15c060df80bd833cc5f3a84194a235e85380c02b0cd36765ada8e73ae7"
+    },
+    {
+      "id": "legitimate-metadata-list-combined-roots",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "variant": "combined-roots",
+      "path": ["metadata", "examples", 0],
+      "sha256": "0048dae8b8c282d9ecbd89d7702521595c711a3830eaa76052a7ea7a67137090"
+    },
+    {
+      "id": "legitimate-metadata-list-repeated-token",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "variant": "repeated-token",
+      "path": ["metadata", "examples", 0],
+      "sha256": "b29f9b2d8466a1a4b2cb5e251ed75b3fad60b354d3ee6908139cd47f9a552667"
+    },
+    {
+      "id": "legitimate-metadata-list-mixed-arguments",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "variant": "mixed-arguments",
+      "path": ["metadata", "examples", 0],
+      "sha256": "b5b6efc2288682431366f7d7e769bc854d307a3e7ce5dd62b70b5ee847563ee6"
+    },
+    {
+      "id": "legitimate-metadata-nested-skill-dir",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "variant": "skill-dir",
+      "path": ["metadata", "details", "note"],
+      "sha256": "bd381725cf571343af17ef49b9e40e90c5c228fef4899ee168d1f9b6dfdde642"
+    },
+    {
+      "id": "legitimate-metadata-nested-plugin-root",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "variant": "plugin-root",
+      "path": ["metadata", "details", "note"],
+      "sha256": "bbe4729147f74ee4053b388fca4a57a50189d38ed577ba4cfd3e9411b432ff20"
+    },
+    {
+      "id": "legitimate-metadata-nested-portable-skill-dir",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "variant": "portable-skill-dir",
+      "path": ["metadata", "details", "note"],
+      "sha256": "afd3a8c6c5f440b75aec6f537e30663758d1f851d29d4e4abd4213ce12e5b971"
+    },
+    {
+      "id": "legitimate-metadata-nested-portable-plugin-root",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "variant": "portable-plugin-root",
+      "path": ["metadata", "details", "note"],
+      "sha256": "b6142723895ef72de40e50c9554779f46b1a98139ec9d4cb872d2af5d5cd26eb"
+    },
+    {
+      "id": "legitimate-metadata-nested-plugin-data",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "variant": "plugin-data",
+      "path": ["metadata", "details", "note"],
+      "sha256": "76c83058eb293dfc5ca0eadc1ab8b3d34bd6df2f80173c7c1aa00c7768c3c1c8"
+    },
+    {
+      "id": "legitimate-metadata-nested-session-id",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "variant": "session-id",
+      "path": ["metadata", "details", "note"],
+      "sha256": "672e95f4bc74d8eaacf3d2240024b058beba8486c8b0c1b0f431b9f1eead7292"
+    },
+    {
+      "id": "legitimate-metadata-nested-effort",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "variant": "effort",
+      "path": ["metadata", "details", "note"],
+      "sha256": "b80e9d6fe45d71c2b97081f43d4c87e06248e441a6650a3a2e2d23d5657aee79"
+    },
+    {
+      "id": "legitimate-metadata-nested-combined-roots",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "variant": "combined-roots",
+      "path": ["metadata", "details", "note"],
+      "sha256": "79bc6cff8673582192c48cc3540e26689b8c18d24bc7e611592cf592b64ecb47"
+    },
+    {
+      "id": "legitimate-metadata-nested-repeated-token",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "variant": "repeated-token",
+      "path": ["metadata", "details", "note"],
+      "sha256": "d78fa87df591a0f70bc6435ef37b12e3727fded3fc5e43751e9f43b999b3adf0"
+    },
+    {
+      "id": "legitimate-metadata-nested-mixed-arguments",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "variant": "mixed-arguments",
+      "path": ["metadata", "details", "note"],
+      "sha256": "76a551c1c89c5c870cb2a21f9cd637315b6de7031654068d89f18c84f9e26c98"
+    },
+    {
+      "id": "forbidden-description-command-substitution",
+      "label": "forbidden",
+      "context": "description",
+      "variant": "command-substitution",
+      "path": ["description"],
+      "sha256": "8c514ba4de197591cd945c0ed9cec27dd5a7327eab34c434285bc5c656ad8b70"
+    },
+    {
+      "id": "forbidden-description-backtick-command",
+      "label": "forbidden",
+      "context": "description",
+      "variant": "backtick-command",
+      "path": ["description"],
+      "sha256": "c59bd2f4171d8a3acd7f54fb3c88256035d60fd09311fcd7d1e8423ad0123afd"
+    },
+    {
+      "id": "forbidden-description-unlisted-variable",
+      "label": "forbidden",
+      "context": "description",
+      "variant": "unlisted-variable",
+      "path": ["description"],
+      "sha256": "a036b283e829683622363662a65953498736c936201f9f086aca76e56f6c7419"
+    },
+    {
+      "id": "forbidden-description-nested-substitution",
+      "label": "forbidden",
+      "context": "description",
+      "variant": "nested-substitution",
+      "path": ["description"],
+      "sha256": "8c09788d496fcb56d2e9df663af135e679a9e61e62df0a5570f2241d99577d5f"
+    },
+    {
+      "id": "forbidden-description-allowed-plus-command",
+      "label": "forbidden",
+      "context": "description",
+      "variant": "allowed-plus-command",
+      "path": ["description"],
+      "sha256": "3419f68f02ec2d424997eaa24244febe2f5f23b93159da8f9163f476cc56ca89"
+    },
+    {
+      "id": "forbidden-description-allowed-plus-backtick",
+      "label": "forbidden",
+      "context": "description",
+      "variant": "allowed-plus-backtick",
+      "path": ["description"],
+      "sha256": "6396cf410cc52d3457ca9d80b19182ad7e111770456d9ecd32cfda12a47cb768"
+    },
+    {
+      "id": "forbidden-description-allowed-plus-unlisted",
+      "label": "forbidden",
+      "context": "description",
+      "variant": "allowed-plus-unlisted",
+      "path": ["description"],
+      "sha256": "8293f6a9fcc02dbc64b1f8b1ec4424c62f5eed84f25a18d37367a1dd443fbffc"
+    },
+    {
+      "id": "forbidden-description-parameter-default",
+      "label": "forbidden",
+      "context": "description",
+      "variant": "parameter-default",
+      "path": ["description"],
+      "sha256": "58850dbbd71917fbaa45bc7baf0ed85ba8e1aae616c37011284c8bc58119b78e"
+    },
+    {
+      "id": "forbidden-description-near-miss-token",
+      "label": "forbidden",
+      "context": "description",
+      "variant": "near-miss-token",
+      "path": ["description"],
+      "sha256": "1928a043d61b3d579593946fff5f0aa7df9ab38083a62824071be1cb31f9f254"
+    },
+    {
+      "id": "forbidden-description-unfinished-variable",
+      "label": "forbidden",
+      "context": "description",
+      "variant": "unfinished-variable",
+      "path": ["description"],
+      "sha256": "0b0ba64fd7f15ed1458b65a97288ee6a67bc683951671014c411c928965e23e9"
+    },
+    {
+      "id": "forbidden-compatibility-command-substitution",
+      "label": "forbidden",
+      "context": "compatibility",
+      "variant": "command-substitution",
+      "path": ["compatibility"],
+      "sha256": "7c89bf2bcd8c94a95cee45d2bb1b106a5c84eef2f9100a85e97b6050ba893cde"
+    },
+    {
+      "id": "forbidden-compatibility-backtick-command",
+      "label": "forbidden",
+      "context": "compatibility",
+      "variant": "backtick-command",
+      "path": ["compatibility"],
+      "sha256": "6c78bad70a54aca3ccbb5e67b1522e6e1ae28f9b2f88b28e1eb138330ed76e2c"
+    },
+    {
+      "id": "forbidden-compatibility-unlisted-variable",
+      "label": "forbidden",
+      "context": "compatibility",
+      "variant": "unlisted-variable",
+      "path": ["compatibility"],
+      "sha256": "7a23dabe37a5541f0b9ce8b781b9be67023491c930916d7b7cfee341c4b3455e"
+    },
+    {
+      "id": "forbidden-compatibility-nested-substitution",
+      "label": "forbidden",
+      "context": "compatibility",
+      "variant": "nested-substitution",
+      "path": ["compatibility"],
+      "sha256": "f746e50ba1862d3cc601d7d5e300718c528da8a3ebd8c01b83f83e7a2438e6ca"
+    },
+    {
+      "id": "forbidden-compatibility-allowed-plus-command",
+      "label": "forbidden",
+      "context": "compatibility",
+      "variant": "allowed-plus-command",
+      "path": ["compatibility"],
+      "sha256": "08c58b687d707bd7e2c6187a4d2d98554c39af75d46636a1a06e38a2636b2a8a"
+    },
+    {
+      "id": "forbidden-compatibility-allowed-plus-backtick",
+      "label": "forbidden",
+      "context": "compatibility",
+      "variant": "allowed-plus-backtick",
+      "path": ["compatibility"],
+      "sha256": "8b242b1a6a0666219ffc0cd90e1f7a9a6166c12e2e7aefb47451b4d81e49c66a"
+    },
+    {
+      "id": "forbidden-compatibility-allowed-plus-unlisted",
+      "label": "forbidden",
+      "context": "compatibility",
+      "variant": "allowed-plus-unlisted",
+      "path": ["compatibility"],
+      "sha256": "cffe3becfaa1cab7055c59b099827cfd6683d7b58db4fcc3501637e41fc6258b"
+    },
+    {
+      "id": "forbidden-compatibility-parameter-default",
+      "label": "forbidden",
+      "context": "compatibility",
+      "variant": "parameter-default",
+      "path": ["compatibility"],
+      "sha256": "338ae899e9e2f211e6fb9aaacf21a1f3f4183e0b97684ea873a2d2c45061f491"
+    },
+    {
+      "id": "forbidden-compatibility-near-miss-token",
+      "label": "forbidden",
+      "context": "compatibility",
+      "variant": "near-miss-token",
+      "path": ["compatibility"],
+      "sha256": "209fb820ebb2b5f5223ac8014a67da77fbebf5bea38bc27bb6a3e7392365d63c"
+    },
+    {
+      "id": "forbidden-compatibility-unfinished-variable",
+      "label": "forbidden",
+      "context": "compatibility",
+      "variant": "unfinished-variable",
+      "path": ["compatibility"],
+      "sha256": "856148f8d4b7e57b0d26f39b61c26cc7a3908530309cccab8ebf4ddb6c8ed237"
+    },
+    {
+      "id": "forbidden-metadata-note-command-substitution",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "variant": "command-substitution",
+      "path": ["metadata", "note"],
+      "sha256": "1cb33f6fac7bfa3faa8199dc91c45f1e6fae96f438ab6d36e4439a0fd1788be8"
+    },
+    {
+      "id": "forbidden-metadata-note-backtick-command",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "variant": "backtick-command",
+      "path": ["metadata", "note"],
+      "sha256": "07de88a28d4897547a5935f788b0031f64b7c467a05a662f34ebb8ed79787ceb"
+    },
+    {
+      "id": "forbidden-metadata-note-unlisted-variable",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "variant": "unlisted-variable",
+      "path": ["metadata", "note"],
+      "sha256": "db27093b51c2c2e1f2522499569dfff4796d0db6b3a3a5360ab077af71959b21"
+    },
+    {
+      "id": "forbidden-metadata-note-nested-substitution",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "variant": "nested-substitution",
+      "path": ["metadata", "note"],
+      "sha256": "b8ddf11849d14134cb27c85c82f04a0361f994af8bbe2f6a003eaf2db961e2de"
+    },
+    {
+      "id": "forbidden-metadata-note-allowed-plus-command",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "variant": "allowed-plus-command",
+      "path": ["metadata", "note"],
+      "sha256": "622945a315494d4395133db576fb96f24ac7d4ce9d6b55229f401e5eb557bca7"
+    },
+    {
+      "id": "forbidden-metadata-note-allowed-plus-backtick",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "variant": "allowed-plus-backtick",
+      "path": ["metadata", "note"],
+      "sha256": "a42d335930bbef985ecc4b59b68cfd30860abd77a2870cd61fa070e1aa6e1c82"
+    },
+    {
+      "id": "forbidden-metadata-note-allowed-plus-unlisted",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "variant": "allowed-plus-unlisted",
+      "path": ["metadata", "note"],
+      "sha256": "19307cfd917f0eb6bf372aec03214c915efca682d049d6de46a831e7631d9012"
+    },
+    {
+      "id": "forbidden-metadata-note-parameter-default",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "variant": "parameter-default",
+      "path": ["metadata", "note"],
+      "sha256": "79001d9b2393a5750135d38fb3a804d8bb2d372d5f0f5a2c4a06e71e2bdb49af"
+    },
+    {
+      "id": "forbidden-metadata-note-near-miss-token",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "variant": "near-miss-token",
+      "path": ["metadata", "note"],
+      "sha256": "54b11b683da02234a9c3428a01f7650643182e84149fab0cd403025929472c78"
+    },
+    {
+      "id": "forbidden-metadata-note-unfinished-variable",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "variant": "unfinished-variable",
+      "path": ["metadata", "note"],
+      "sha256": "875dba1c1e69fb92a6981d36b32141fb4ce209dc9d2ea9fae9382abd667f4c11"
+    },
+    {
+      "id": "forbidden-metadata-list-command-substitution",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "variant": "command-substitution",
+      "path": ["metadata", "examples", 0],
+      "sha256": "176a284902d831aefb9d631ceb0849c82d1095708da9b3c742ecaf6add403ec6"
+    },
+    {
+      "id": "forbidden-metadata-list-backtick-command",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "variant": "backtick-command",
+      "path": ["metadata", "examples", 0],
+      "sha256": "c65b49a22b5b14be8b61787067256ac52edae0c3fc80591d6a38087292713030"
+    },
+    {
+      "id": "forbidden-metadata-list-unlisted-variable",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "variant": "unlisted-variable",
+      "path": ["metadata", "examples", 0],
+      "sha256": "0b5cd6089b623e85096ffe418d79051797609d75e16544db7ba71583436d1bb7"
+    },
+    {
+      "id": "forbidden-metadata-list-nested-substitution",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "variant": "nested-substitution",
+      "path": ["metadata", "examples", 0],
+      "sha256": "ddd99d020b491d44594ebe4122bb6c646f2893badd6a4e9111275ec42a4acdbc"
+    },
+    {
+      "id": "forbidden-metadata-list-allowed-plus-command",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "variant": "allowed-plus-command",
+      "path": ["metadata", "examples", 0],
+      "sha256": "40c916911097322d10265c3248c61287586b7ffcf135139ef641caa2e94760bc"
+    },
+    {
+      "id": "forbidden-metadata-list-allowed-plus-backtick",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "variant": "allowed-plus-backtick",
+      "path": ["metadata", "examples", 0],
+      "sha256": "3ac52a65b827854b0cde0cd4e77c96dc11bd51e936cf0fe2bc1c8ad831aac9a5"
+    },
+    {
+      "id": "forbidden-metadata-list-allowed-plus-unlisted",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "variant": "allowed-plus-unlisted",
+      "path": ["metadata", "examples", 0],
+      "sha256": "729204ea51b84a408be5de26c0cbd25fc5bbcc8d61dc88bfaf53610832925729"
+    },
+    {
+      "id": "forbidden-metadata-list-parameter-default",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "variant": "parameter-default",
+      "path": ["metadata", "examples", 0],
+      "sha256": "801ad60e0bd0c8e4825ddafd5521502a0e4ed93256c9f8b8a040245b74035575"
+    },
+    {
+      "id": "forbidden-metadata-list-near-miss-token",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "variant": "near-miss-token",
+      "path": ["metadata", "examples", 0],
+      "sha256": "1587b9b7283e5321b3e9abd11b20bd0383b874269519bc92aea562d37e9321e0"
+    },
+    {
+      "id": "forbidden-metadata-list-unfinished-variable",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "variant": "unfinished-variable",
+      "path": ["metadata", "examples", 0],
+      "sha256": "e628d8698a8f8da7a36208540465e532519237d11b44b1bd32c082702145f983"
+    },
+    {
+      "id": "forbidden-metadata-nested-command-substitution",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "variant": "command-substitution",
+      "path": ["metadata", "details", "note"],
+      "sha256": "5e2db000f5fd8161b8adc316d4f754d7a42ae1275493827222ec93d0d4f537ac"
+    },
+    {
+      "id": "forbidden-metadata-nested-backtick-command",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "variant": "backtick-command",
+      "path": ["metadata", "details", "note"],
+      "sha256": "eb8b1d740ee05e7ed98c7e305c38b36d44567b9e11294cae0f24c2da31e4e48e"
+    },
+    {
+      "id": "forbidden-metadata-nested-unlisted-variable",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "variant": "unlisted-variable",
+      "path": ["metadata", "details", "note"],
+      "sha256": "4eccba3a19b599686641e93dafaa2fabf2cbe5467a04aeb3dbef551e6e2146ec"
+    },
+    {
+      "id": "forbidden-metadata-nested-nested-substitution",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "variant": "nested-substitution",
+      "path": ["metadata", "details", "note"],
+      "sha256": "b417f4235d46c3bb77216df124fc54bfc8e46701aa408f43ad3ebbe83c064aeb"
+    },
+    {
+      "id": "forbidden-metadata-nested-allowed-plus-command",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "variant": "allowed-plus-command",
+      "path": ["metadata", "details", "note"],
+      "sha256": "b02608aa77b53e2d68f8b343e620cedc89fc41447393273cf1aceea3bb6a1d35"
+    },
+    {
+      "id": "forbidden-metadata-nested-allowed-plus-backtick",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "variant": "allowed-plus-backtick",
+      "path": ["metadata", "details", "note"],
+      "sha256": "2c50d8596e0ce327b9c7b3ac776939ae9d789739a5b64ca4c51669f0c3eff844"
+    },
+    {
+      "id": "forbidden-metadata-nested-allowed-plus-unlisted",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "variant": "allowed-plus-unlisted",
+      "path": ["metadata", "details", "note"],
+      "sha256": "f5e322fa380d14191f2601ca93cf5e0c7de260ef109aac5cb7b8ee3293496d32"
+    },
+    {
+      "id": "forbidden-metadata-nested-parameter-default",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "variant": "parameter-default",
+      "path": ["metadata", "details", "note"],
+      "sha256": "c4865dc85e7014dcd5f9ae77e61b12b588cead52449dbbf5d17ce96eb6878816"
+    },
+    {
+      "id": "forbidden-metadata-nested-near-miss-token",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "variant": "near-miss-token",
+      "path": ["metadata", "details", "note"],
+      "sha256": "6500c328980fe0a0f842b78865629e227018f491f16b539516f9dce45b3b9810"
+    },
+    {
+      "id": "forbidden-metadata-nested-unfinished-variable",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "variant": "unfinished-variable",
+      "path": ["metadata", "details", "note"],
+      "sha256": "c166c3c227c18f97e1b679ddb77c2b14a076dd3067794c51c88c872baa78a2ba"
+    }
+  ]
+}

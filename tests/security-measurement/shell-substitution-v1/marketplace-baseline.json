@@ -1,0 +1,667 @@
+{
+  "measurementVersion": 1,
+  "profile": "marketplace-yaml-shell-substitution",
+  "sourceRevision": "6d2613e0d17c8602328c9f96234c4a0e52a2dc77",
+  "sourcePath": "scripts/validate-skills-schema.py",
+  "validatorSha256": "2b0cb1d864108d593b6207c04fbc60ee856f8c54cb2e916542b5db837ab2e4d4",
+  "corpusSha256": "feac22e7d61ba4064f00855c9b7dfb640b0850572cfd80eacba9a9b76f335dc4",
+  "scope": "Actual checker on the same synthetic corpus; not full authoring conformance or a population error-rate estimate.",
+  "metrics": {
+    "legitimate": 50,
+    "forbidden": 50,
+    "falsePositives": [],
+    "falseNegatives": [],
+    "fpRate": 0.0,
+    "fnRate": 0.0,
+    "targetsMet": true
+  },
+  "contexts": {
+    "compatibility": {
+      "legitimate": 10,
+      "forbidden": 10,
+      "falsePositives": [],
+      "falseNegatives": [],
+      "fpRate": 0.0,
+      "fnRate": 0.0,
+      "targetsMet": true
+    },
+    "description": {
+      "legitimate": 10,
+      "forbidden": 10,
+      "falsePositives": [],
+      "falseNegatives": [],
+      "fpRate": 0.0,
+      "fnRate": 0.0,
+      "targetsMet": true
+    },
+    "metadata-list": {
+      "legitimate": 10,
+      "forbidden": 10,
+      "falsePositives": [],
+      "falseNegatives": [],
+      "fpRate": 0.0,
+      "fnRate": 0.0,
+      "targetsMet": true
+    },
+    "metadata-nested": {
+      "legitimate": 10,
+      "forbidden": 10,
+      "falsePositives": [],
+      "falseNegatives": [],
+      "fpRate": 0.0,
+      "fnRate": 0.0,
+      "targetsMet": true
+    },
+    "metadata-note": {
+      "legitimate": 10,
+      "forbidden": 10,
+      "falsePositives": [],
+      "falseNegatives": [],
+      "fpRate": 0.0,
+      "fnRate": 0.0,
+      "targetsMet": true
+    }
+  },
+  "rows": [
+    {
+      "id": "legitimate-description-skill-dir",
+      "label": "legitimate",
+      "context": "description",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-description-plugin-root",
+      "label": "legitimate",
+      "context": "description",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-description-portable-skill-dir",
+      "label": "legitimate",
+      "context": "description",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-description-portable-plugin-root",
+      "label": "legitimate",
+      "context": "description",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-description-plugin-data",
+      "label": "legitimate",
+      "context": "description",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-description-session-id",
+      "label": "legitimate",
+      "context": "description",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-description-effort",
+      "label": "legitimate",
+      "context": "description",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-description-combined-roots",
+      "label": "legitimate",
+      "context": "description",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-description-repeated-token",
+      "label": "legitimate",
+      "context": "description",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-description-mixed-arguments",
+      "label": "legitimate",
+      "context": "description",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-compatibility-skill-dir",
+      "label": "legitimate",
+      "context": "compatibility",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-compatibility-plugin-root",
+      "label": "legitimate",
+      "context": "compatibility",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-compatibility-portable-skill-dir",
+      "label": "legitimate",
+      "context": "compatibility",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-compatibility-portable-plugin-root",
+      "label": "legitimate",
+      "context": "compatibility",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-compatibility-plugin-data",
+      "label": "legitimate",
+      "context": "compatibility",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-compatibility-session-id",
+      "label": "legitimate",
+      "context": "compatibility",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-compatibility-effort",
+      "label": "legitimate",
+      "context": "compatibility",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-compatibility-combined-roots",
+      "label": "legitimate",
+      "context": "compatibility",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-compatibility-repeated-token",
+      "label": "legitimate",
+      "context": "compatibility",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-compatibility-mixed-arguments",
+      "label": "legitimate",
+      "context": "compatibility",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-note-skill-dir",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-note-plugin-root",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-note-portable-skill-dir",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-note-portable-plugin-root",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-note-plugin-data",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-note-session-id",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-note-effort",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-note-combined-roots",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-note-repeated-token",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-note-mixed-arguments",
+      "label": "legitimate",
+      "context": "metadata-note",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-list-skill-dir",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-list-plugin-root",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-list-portable-skill-dir",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-list-portable-plugin-root",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-list-plugin-data",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-list-session-id",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-list-effort",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-list-combined-roots",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-list-repeated-token",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-list-mixed-arguments",
+      "label": "legitimate",
+      "context": "metadata-list",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-nested-skill-dir",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-nested-plugin-root",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-nested-portable-skill-dir",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-nested-portable-plugin-root",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-nested-plugin-data",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-nested-session-id",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-nested-effort",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-nested-combined-roots",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-nested-repeated-token",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "flagged": false
+    },
+    {
+      "id": "legitimate-metadata-nested-mixed-arguments",
+      "label": "legitimate",
+      "context": "metadata-nested",
+      "flagged": false
+    },
+    {
+      "id": "forbidden-description-command-substitution",
+      "label": "forbidden",
+      "context": "description",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-description-backtick-command",
+      "label": "forbidden",
+      "context": "description",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-description-unlisted-variable",
+      "label": "forbidden",
+      "context": "description",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-description-nested-substitution",
+      "label": "forbidden",
+      "context": "description",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-description-allowed-plus-command",
+      "label": "forbidden",
+      "context": "description",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-description-allowed-plus-backtick",
+      "label": "forbidden",
+      "context": "description",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-description-allowed-plus-unlisted",
+      "label": "forbidden",
+      "context": "description",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-description-parameter-default",
+      "label": "forbidden",
+      "context": "description",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-description-near-miss-token",
+      "label": "forbidden",
+      "context": "description",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-description-unfinished-variable",
+      "label": "forbidden",
+      "context": "description",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-compatibility-command-substitution",
+      "label": "forbidden",
+      "context": "compatibility",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-compatibility-backtick-command",
+      "label": "forbidden",
+      "context": "compatibility",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-compatibility-unlisted-variable",
+      "label": "forbidden",
+      "context": "compatibility",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-compatibility-nested-substitution",
+      "label": "forbidden",
+      "context": "compatibility",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-compatibility-allowed-plus-command",
+      "label": "forbidden",
+      "context": "compatibility",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-compatibility-allowed-plus-backtick",
+      "label": "forbidden",
+      "context": "compatibility",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-compatibility-allowed-plus-unlisted",
+      "label": "forbidden",
+      "context": "compatibility",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-compatibility-parameter-default",
+      "label": "forbidden",
+      "context": "compatibility",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-compatibility-near-miss-token",
+      "label": "forbidden",
+      "context": "compatibility",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-compatibility-unfinished-variable",
+      "label": "forbidden",
+      "context": "compatibility",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-note-command-substitution",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-note-backtick-command",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-note-unlisted-variable",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-note-nested-substitution",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-note-allowed-plus-command",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-note-allowed-plus-backtick",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-note-allowed-plus-unlisted",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-note-parameter-default",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-note-near-miss-token",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-note-unfinished-variable",
+      "label": "forbidden",
+      "context": "metadata-note",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-list-command-substitution",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-list-backtick-command",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-list-unlisted-variable",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-list-nested-substitution",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-list-allowed-plus-command",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-list-allowed-plus-backtick",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-list-allowed-plus-unlisted",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-list-parameter-default",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-list-near-miss-token",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-list-unfinished-variable",
+      "label": "forbidden",
+      "context": "metadata-list",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-nested-command-substitution",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-nested-backtick-command",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-nested-unlisted-variable",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-nested-nested-substitution",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-nested-allowed-plus-command",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-nested-allowed-plus-backtick",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-nested-allowed-plus-unlisted",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-nested-parameter-default",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-nested-near-miss-token",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "flagged": true
+    },
+    {
+      "id": "forbidden-metadata-nested-unfinished-variable",
+      "label": "forbidden",
+      "context": "metadata-nested",
+      "flagged": true
+    }
+  ]
+}
