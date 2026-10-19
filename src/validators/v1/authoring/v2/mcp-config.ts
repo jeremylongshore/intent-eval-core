@@ -34,15 +34,13 @@ export const MCP_CONFIG_BASE_REQUIRED = ['name'] as const;
 /** The IS-overlay required delta (beyond the base floor). */
 export const MCP_CONFIG_OVERLAY_REQUIRED = [
   'type',
-  'command',
-  'args',
   'env',
   'description',
   'version',
   'enabled',
 ] as const;
 
-/** Effective required = base ∪ overlay = the IS 8-field marketplace set (NON-NEGOTIABLE). */
+/** Always-required fields = base ∪ overlay; transport-conditional fields are checked separately. */
 export const MCP_CONFIG_REQUIRED_FIELDS = [
   ...MCP_CONFIG_BASE_REQUIRED,
   ...MCP_CONFIG_OVERLAY_REQUIRED,
@@ -161,9 +159,10 @@ export function upstreamBaseIssues(artifact: AuthoringArtifact): FoldIssue[] {
 // ─── Layer 3: IS overlay (authored by US) ────────────────────────────────────
 
 /**
- * The IS-only v2 delta: the RELOCATED flat all-required projection choice
- * (type, command, args, env — DR-062 C2 from 056 #1, each carrying a
- * convergence trigger) + the three net-new IS tracking/operational fields
+ * The IS-only v2 delta: explicit type and env on every transport, with
+ * command and args required only for stdio (709y). URL transports require
+ * url, matching the base. Each narrowing carries a convergence trigger.
+ * The three net-new IS tracking/operational fields are
  * carried from the v1 overlay (description, version, enabled) + the SemVer
  * narrowing on version + the RELOCATED optional `metadata` extension object
  * (DR-062 C3 prose). A field whose type is already enforced by the base is
@@ -197,6 +196,18 @@ export function isOverlayIssues(artifact: AuthoringArtifact): FoldIssue[] {
 
   if ('metadata' in artifact && !isPlainObject(artifact['metadata'])) {
     issues.push({ message: 'metadata must be an object', path: ['metadata'] });
+  }
+
+  // Conditional requiredness (the overlay schema's if/then/else allOf): when
+  // 'type' is one of the then-branch selector values the then-required
+  // fields apply; otherwise (selector absent — the documented upstream default —
+  // or any other value) the else-required fields apply.
+  {
+    const selector = artifact['type'];
+    const inThen =
+      typeof selector === 'string' &&
+      (['http', 'streamable-http', 'sse', 'ws'] as readonly string[]).includes(selector);
+    issues.push(...requiredFieldsIssues(artifact, inThen ? ['url'] : ['command', 'args']));
   }
 
   return issues;

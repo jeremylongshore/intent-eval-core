@@ -29,6 +29,24 @@ family pointer v1 → v2.)
 
 ## [Unreleased]
 
+### Contract #4 — transport-sensitive MCP process fields (709y proposal)
+
+Bead `bd_000-projects-709y` proposes retiring the DR-062 flat `command`/`args`
+promotion for URL transports. This required-field policy change is staged for
+approval before landing; this entry is not a ratification record.
+
+| Layer | Change |
+| --- | --- |
+| `is-overlay/mcp-config.v2.json` | `command` and `args` move from the unconditional required set to the stdio branch. `http`, `streamable-http`, `sse`, and `ws` require `url`. The six always-required composed fields remain `name`, `type`, `env`, `description`, `version`, and `enabled`. All supplied field constraints remain enforced. lineage: 709y@mcp-transport-requiredness |
+| `mcp-config.schema.json`, `index.json` | Required-field manifests distinguish unconditional fields from transport-conditional fields. The upstream base and frozen v1 family are unchanged. lineage: 709y@mcp-transport-requiredness |
+| `scripts/codegen-authoring.ts`, generated v2 MCP validator | Generate layer-level conditional presence checks for v2 overlays using the same supported if/then/else shape as bases. The generated required-field constants list unconditional fields; the validator enforces conditional fields separately. lineage: 709y@mcp-transport-requiredness |
+| tests | AJV and Zod accept each URL transport without local-process fields, reject absent/invalid URLs, preserve supplied-field validation and the remaining IS requirements, and reject stdio without command or args. The four remote acceptance tests failed on the original implementation. lineage: 709y@mcp-transport-requiredness |
+
+Consumer rollout requires an approved kernel release followed by the marketplace
+kernel pin and pre-screen update. Until then, consumers retain their current
+published contract. Python's Pydantic mirror covers runtime entities, not these
+authoring contracts; no runtime entity or Python schema changes in this proposal.
+
 ### Upstream fold 2026-10: hook-config and agent-definition bases re-derived from the current projections
 
 > Found by the intent-eval-lab freshness reconcile (lab #388, bead 9k5h.18) and folded under bead
