@@ -1,5 +1,7 @@
 # `@intentsolutions/core`
 
+The spec authority kernel for agent-native artifacts.
+
 <!-- intent-select-partner:start -->
 <p><a href="https://intentsolutions.io/"><img src="https://raw.githubusercontent.com/intent-solutions-io/.github/b82af5d3e7951d85e39ea9e65cc24ee8278722a7/assets/brand/claude-select-partner.svg" alt="Intent Solutions: Claude Partner Network Select Services Partner" width="300" height="95" /></a></p>
 
@@ -15,7 +17,7 @@ Part of the **[Intent Eval Platform](https://github.com/intent-solutions-io/inte
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/U5S225PTME)
 
-Canonical contracts kernel for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab) — TypeScript types, JSON Schemas, Zod validators, and state machines for the 16 canonical platform entities (the 13 from Blueprint B § 2 + `SkillVersion`, the 14th per DR-028 T1, + `UsageEvent` and `HumanReview`, the 15th and 16th per DR-103 D1).
+Shared contracts for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab) — TypeScript types, JSON Schemas, Zod validators, and state machines for runtime evidence and authoring artifacts.
 
 > **Status — v0.11.0:** current published release (2026-10-04) (first public release was `v0.1.0`, 2026-05-17). Contracts follow SemVer. Published with Sigstore provenance — verify via `npm audit signatures`.
 
@@ -49,7 +51,7 @@ canTransition(evalRunTransitions, 'queued', 'running'); // true
 
 ## What this is
 
-`intent-eval-core` is the **kernel** of the Intent Eval Platform. It is **bicameral** — it ships two schema tiers:
+`intent-eval-core` maintains the platform's shared contracts in two schema families:
 
 - **Runtime tier** (`schemas/v1/`) — contracts for the 16 canonical platform entities (the 13 from Blueprint B § 2 + `SkillVersion`, the 14th per DR-028 T1, + `UsageEvent` and `HumanReview`, the 15th and 16th per DR-103 D1):
   - **TypeScript interfaces** for every entity
@@ -65,6 +67,16 @@ It is **not**:
 - A harness — deterministic gates live in `audit-harness`
 
 Every validator in the platform — `audit-harness` deterministic gates, `j-rig` behavioral evaluators, `intent-rollout-gate` decision shell — depends on this package for canonical contract definitions. One source of truth, many consumers.
+
+### Authority and upstream sources
+
+For authoring artifacts, **canonical means canonical for Intent Solutions marketplace acceptance**. The upstream base follows captured specifications; the IS overlay expresses our additional acceptance requirements. Our schemas are Apache-2.0 original works, without a warranty of conformance to third-party specifications. Passing an authoring schema is a deterministic lint result, not vendor certification or a signed attestation.
+
+The upstream sources are the [Agent Skills specification](https://agentskills.io/specification), [Anthropic's Claude Code documentation](https://code.claude.com/docs/en/overview), and the [Model Context Protocol specification](https://modelcontextprotocol.io/specification/2025-11-25). The lab's [public coverage map](https://github.com/jeremylongshore/intent-eval-lab/blob/main/specs/lineage/coverage-map.json) and [source registry](https://github.com/jeremylongshore/intent-eval-lab/blob/main/specs/upstream-surface-registry.v1.json) expose the captured sources and tracked coverage. Captures can lag upstream; the internal 6767-h prose-sync document does not replace those sources.
+
+Delivered scope follows the schema indexes: [`authoring/v1`](schemas/authoring/v1/index.json) marks `skill-frontmatter` as `PUBLISHED` and the other five authoring contracts as `SHIPPED-INTERNAL`; [`authoring/v2`](schemas/authoring/v2/index.json) marks all six strict profiles as `SHIPPED-INTERNAL`. Packaging a schema does not promote its lifecycle. The marketplace's switch from advisory checks to blocking checks remains separately gated; this authority claim does not announce that switch.
+
+These public-positioning rules implement [DR-049 D-SAK-1/2/4](https://github.com/jeremylongshore/intent-eval-lab/blob/main/000-docs/049-AT-DECR-isedc-class-1-charter-ratification-2026-06-10.md) and [DR-081's delivered-scope rider](https://github.com/jeremylongshore/intent-eval-lab/blob/main/000-docs/081-AT-DECR-isedc-sak-class-1-charter-ratification-2026-06-17.md). README, package, blog, and marketplace descriptions use the opening one-liner and this scope. Architecture terminology stays in engineering documentation; changes to the public one-liner retain the CMO veto defined in those decisions.
 
 ### Eval-spec identity
 

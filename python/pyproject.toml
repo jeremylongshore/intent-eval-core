@@ -9,7 +9,7 @@ name = "intent-eval-core"
 # distributions, so the versions move together. CI gate:
 # scripts/check_version_lockstep.py.
 version = "0.11.0"
-description = "Python (Pydantic v2) distribution of @intentsolutions/core — the canonical contracts kernel for the Intent Eval Platform. The same entity + predicate contracts the TypeScript package exposes as Zod validators + JSON Schemas, as Pydantic v2 models."
+description = "The spec authority kernel for agent-native artifacts — Python runtime models from @intentsolutions/core, using Pydantic v2."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
