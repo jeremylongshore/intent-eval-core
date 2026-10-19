@@ -8,7 +8,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, confloat, conint, constr
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class Class(Enum):
@@ -118,7 +118,7 @@ class Node(BaseModel):
     """
     Node type per Blueprint B § 1.3 line 92.
     """
-    ref: schema.Uuidv7
+    ref: field_common_schema.Uuidv7
 
 
 class Kind1(Enum):
@@ -177,11 +177,11 @@ class EvalspecDeclarativeEvaluationSpecificationBlueprintB21(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: schema.Uuidv7
-    version: schema.Semver
-    name: schema.KebabSlug
+    id: field_common_schema.Uuidv7
+    version: field_common_schema.Semver
+    name: field_common_schema.KebabSlug
     description: constr(min_length=1)
-    matchers: list[schema.Uuidv7]
+    matchers: list[field_common_schema.Uuidv7]
     """
     MatcherMap FKs.
     """
@@ -197,7 +197,7 @@ class EvalspecDeclarativeEvaluationSpecificationBlueprintB21(BaseModel):
     """
     DAG declaration per Blueprint B § 1.3. Validation contract: runtime topologically sorts; cycles rejected at submission with 400. Wire format (adjacency list with typed edges) is engineer's choice per bd_000-projects-3sjx; semantics ARE spec-bound (node types + edge kinds + failure propagation per § 1.3 line 100).
     """
-    expected_artifacts: list[schema.Sha256]
+    expected_artifacts: list[field_common_schema.Sha256]
     """
     SkillSnapshot.combined_sha values this spec targets. Anchors on CONTENT (sha), not FK — rebuilt snapshots with the same combined_sha still satisfy.
     """
@@ -209,10 +209,10 @@ class EvalspecDeclarativeEvaluationSpecificationBlueprintB21(BaseModel):
     """
     Allowlist of provider IDs.
     """
-    created_at: schema.Rfc3339
-    created_by: schema.ActorIdentity
-    content_hash: schema.Sha256
-    tenant_id: schema.Uuidv7 | None = None
+    created_at: field_common_schema.Rfc3339
+    created_by: field_common_schema.ActorIdentity
+    content_hash: field_common_schema.Sha256
+    tenant_id: field_common_schema.Uuidv7 | None = None
     """
     RESERVED multi-tenancy slot (deferral-G, bd_000-projects-k0fj). OPTIONAL + additive per § 7.2; tenant-isolation semantics deferred to a future DR. v1 single-tenant specs omit it.
     """

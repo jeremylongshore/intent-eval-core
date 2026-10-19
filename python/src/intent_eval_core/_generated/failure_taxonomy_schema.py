@@ -7,7 +7,7 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, constr
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class Example(BaseModel):
@@ -35,19 +35,19 @@ class FailuretaxonomyCanonicalRegistryOfFailureModeClassesBlueprintB213(BaseMode
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: schema.Uuidv7
-    mm_class: schema.MmClassId
+    id: field_common_schema.Uuidv7
+    mm_class: field_common_schema.MmClassId
     """
     Natural key. Accepts any MM-N value (broader than MmClass enum).
     """
-    name: schema.KebabSlug
+    name: field_common_schema.KebabSlug
     description: constr(min_length=1)
     discriminating_question: constr(min_length=1)
     """
     The question a human asks to decide whether a given failure belongs in this class. Drives the classification UI.
     """
     examples: list[Example]
-    version: schema.Semver
+    version: field_common_schema.Semver
     status: Status
-    created_at: schema.Rfc3339
-    created_by: schema.ActorIdentity
+    created_at: field_common_schema.Rfc3339
+    created_by: field_common_schema.ActorIdentity

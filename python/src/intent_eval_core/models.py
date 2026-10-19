@@ -6,8 +6,10 @@ TypeScript ``src/validators/v1/*.ts`` canonical validators. It re-exports the
 (``GateResultV1``, ``EvalSpec``, …) and, for the schemas whose JSON Schema
 carries ``allOf``/``if-then`` conditional rules, layers a hand-written
 cross-field ``model_validator`` on top so the Python models accept/reject
-**exactly** what AJV (the JSON-Schema reference) and Zod (the TypeScript
-reference) accept/reject. No drift from the canonical kernel.
+what AJV (the JSON-Schema reference) and Zod (the TypeScript reference)
+accept/reject for the shared golden fixtures. The published nullable-field
+omission differences remain explicit compatibility exceptions; see
+``LEGACY_NULL_DEFAULTS`` in the generator and bead ``bd_000-projects-wcze.11``.
 
 The ``_generated/`` package is reference material, NOT the public API — never
 import from it directly (mirrors the Zod ``_generated/`` README discipline).

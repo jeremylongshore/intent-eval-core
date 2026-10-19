@@ -8,7 +8,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, constr
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class GateDecision(Enum):
@@ -54,15 +54,15 @@ class GateResultV1NormativeInTotoPredicateBody(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    gate_id: schema.SubjectName
+    gate_id: field_common_schema.SubjectName
     """
     Pipeline-hop-qualified gate identifier. MUST match the in-toto subject `name` per § 7.3.
     """
-    gate_name: schema.KebabSlug
+    gate_name: field_common_schema.KebabSlug
     """
     Short human-readable kebab-case gate name.
     """
-    gate_version: schema.Semver
+    gate_version: field_common_schema.Semver
     """
     SemVer version of the gate logic that produced this row.
     """
@@ -74,22 +74,22 @@ class GateResultV1NormativeInTotoPredicateBody(BaseModel):
     """
     Structured reason strings. Empty array permitted ONLY for unconditional pass. For fail/advisory/error, at least one entry MUST appear; for error, gate_reasons[0] MUST capture the error class per § 7.4 line 829.
     """
-    coverage: schema.Coverage
+    coverage: field_common_schema.Coverage
     policy_ref: constr(pattern=r"^sha256:[a-f0-9]{64}:.+$")
     """
     Format: `sha256:<hex>:<repo-relative-path>`. Defends against mid-flight policy mutation per § 7.4 line 810.
     """
-    policy_hash: schema.Sha256Prefixed
+    policy_hash: field_common_schema.Sha256Prefixed
     """
     sha256-prefixed hash of the policy file content.
     """
-    input_hash: schema.Sha256Prefixed
+    input_hash: field_common_schema.Sha256Prefixed
     """
     sha256-prefixed hash of the input the gate evaluated. MUST equal the in-toto subject[].digest.sha256 for the row per § 7.4 line 814 + § 7.3 line 792.
     """
-    evaluated_at: schema.Rfc3339
-    runner: schema.RunnerIdentifier
-    commit_sha: schema.CommitSha
+    evaluated_at: field_common_schema.Rfc3339
+    runner: field_common_schema.RunnerIdentifier
+    commit_sha: field_common_schema.CommitSha
     metadata: dict[str, Any] | None = None
     """
     Tool-specific free-form metadata. Consumers MUST NOT use this for ship/no-ship decisions per § 7.4 line 818.
@@ -102,7 +102,7 @@ class GateResultV1NormativeInTotoPredicateBody(BaseModel):
     """
     Severity hint when gate_decision='advisory'. Consumer policy decides whether to elevate to blocking.
     """
-    cost_record_ref: schema.Uuidv7 | None = None
+    cost_record_ref: field_common_schema.Uuidv7 | None = None
     """
     FK → CostRecord.id for cost attribution.
     """
@@ -110,7 +110,7 @@ class GateResultV1NormativeInTotoPredicateBody(BaseModel):
     """
     Replay fidelity level per iel-E11.
     """
-    coverage_detail: list[schema.CoverageDimensionDetail] | None = None
+    coverage_detail: list[field_common_schema.CoverageDimensionDetail] | None = None
     """
     Richer per-dimension coverage metadata (deferral-D lockup, bd_000-projects-9xyk). OPTIONAL + additive — the required `coverage` string arrays are unchanged, so the predicate URI is unaffected per § 7.2. Each entry's id MUST be a member of the matching `coverage` array (enforced at the validator layer). Descriptive only; MUST NOT drive ship/no-ship.
     """

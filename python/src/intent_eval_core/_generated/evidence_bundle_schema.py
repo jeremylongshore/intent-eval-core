@@ -7,21 +7,21 @@ from enum import Enum
 
 from pydantic import AnyUrl, BaseModel, ConfigDict, conint
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class Digest(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    sha256: schema.Sha256
+    sha256: field_common_schema.Sha256
 
 
 class SubjectSetItem(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    name: schema.SubjectName
+    name: field_common_schema.SubjectName
     digest: Digest
 
 
@@ -49,9 +49,9 @@ class EvidencebundleAppendOnlyCollectionOfSignedPredicateRowsBlueprintB24(BaseMo
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: schema.Uuidv7
-    eval_run_id: schema.Uuidv7
-    created_at: schema.Rfc3339
+    id: field_common_schema.Uuidv7
+    eval_run_id: field_common_schema.Uuidv7
+    created_at: field_common_schema.Rfc3339
     predicate_uri_set: list[AnyUrl]
     """
     Predicate URIs represented in this bundle's rows.
@@ -61,7 +61,7 @@ class EvidencebundleAppendOnlyCollectionOfSignedPredicateRowsBlueprintB24(BaseMo
     """
     Deduplicated in-toto Subject entries across all rows.
     """
-    storage_key: schema.StorageKey
+    storage_key: field_common_schema.StorageKey
     signing_mode: SigningMode
     """
     Signing posture. sigstore_staging is DR-010 Q3 default for predicates without normative SPEC.md (everything except gate-result/v1 at v1).
@@ -71,8 +71,8 @@ class EvidencebundleAppendOnlyCollectionOfSignedPredicateRowsBlueprintB24(BaseMo
     Populated when signing_mode='rekor_production'; empty otherwise.
     """
     verification_status: VerificationStatus
-    verification_last_checked_at: schema.Rfc3339
-    pre_registration_hash: schema.Sha256Prefixed | None = None
+    verification_last_checked_at: field_common_schema.Rfc3339
+    pre_registration_hash: field_common_schema.Sha256Prefixed | None = None
     """
     Pre-registration commitment hash (D2 binding, v0.2.0 additive). `sha256:<hex>` digest of the pre-registration commitment artifact when the run was pre-registered, or null when it was not. ADDITIVE + OPTIONAL — every v0.1.0 bundle stays valid (absent ≡ null). Cross-field invariants governing when this MUST be non-null land in iec-E12; this is the field surface only.
     """

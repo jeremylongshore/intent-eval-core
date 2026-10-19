@@ -7,7 +7,7 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, conint, constr
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class VersionKind(Enum):
@@ -51,11 +51,11 @@ class SkillversionRefinementLineageRecordOfASkill14ThCanonicalEntityDr028T1Discr
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: schema.Uuidv7
+    id: field_common_schema.Uuidv7
     """
     UUIDv7 PK. The `skill_version_id` the skill-refiner-pass/v1 predicate body references.
     """
-    skill_id: schema.KebabSlug
+    skill_id: field_common_schema.KebabSlug
     """
     Logical skill identifier — stable across versions of the same skill (mirrors SkillSnapshot.skill_id).
     """
@@ -63,19 +63,19 @@ class SkillversionRefinementLineageRecordOfASkill14ThCanonicalEntityDr028T1Discr
     """
     Load-bearing signable discriminator (DR-028 T1 line 90, P0-RATIFY-2 line 233). CLOSED enum — widening it after a signed publish is a /v2 trigger (one-way door). `edit` = a refiner-proposed forward change; `revert` = undo to a prior version's content; `restore` = re-instate an archived version. Distinct from SkillSnapshot, which has no discriminator (single terminal `created`).
     """
-    parent_version_id: schema.Uuidv7 | None = None
+    parent_version_id: field_common_schema.Uuidv7 | None
     """
     HUMAN-READABLE CONVENIENCE POINTER to the PRIOR SkillVersion in the refinement lineage (SkillVersion -> SkillVersion). Lineage is internal — this is NOT an FK to SkillSnapshot (DR-028 T1 line 91). `null` for a ROOT version (the first refinement in a lineage). No record is ever mutated; a rollback is a NEW SkillVersion citing the prior (append-only event log, AC-2 / F-MK-001). DR-085 D3: this UUID is reassignable, so it is a convenience pointer ONLY — the tamper-evident integrity anchor is `parent_content_hash` (a content hash a reviewer cannot silently re-point).
     """
-    content_hash: schema.Sha256
+    content_hash: field_common_schema.Sha256
     """
     DR-085 D3: this version's OWN post-edit content hash — the integrity anchor a child SkillVersion cites as its `parent_content_hash`. BARE 64-hex `sha256`, the SAME alphabet as `SkillSnapshot.combined_sha` (one hash alphabet platform-wide). Append-only content-hash chain: child.parent_content_hash == parent.content_hash makes the lineage tamper-evident — re-pointing `parent_version_id` (a reassignable UUID) cannot forge an append-only claim a verifier can falsify (DR-085 D3 CSO/CISO binding).
     """
-    parent_content_hash: schema.Sha256 | None = None
+    parent_content_hash: field_common_schema.Sha256 | None
     """
     DR-085 D3: the parent SkillVersion's `content_hash` — the tamper-evident lineage integrity anchor (the real append-only proof, vs the reassignable `parent_version_id` convenience pointer). BARE 64-hex `sha256`, ALIGNED to `SkillSnapshot.combined_sha`. MUST be `null` EXACTLY when `parent_version_id` is null (a ROOT version): root emission is provably zero-forgery (null parent_version_id + null parent_content_hash) — an implementer never forges a fake parent on a root (DR-085 D3 DevRel/CISO binding). This iff is machine-enforced at all three layers (if/then below + Zod + Pydantic).
     """
-    source_snapshot_hash: schema.Sha256
+    source_snapshot_hash: field_common_schema.Sha256
     """
     READ-ONLY REFERENCE (content hash) to the PRE-EDIT SkillSnapshot at the moment of refinement — the INPUT to the refinement (DR-028 T1 line 92; DR-085 D4 pre-edit-input clarification, matching the skill-refiner-pass/v1 predicate's now-pre-edit `source_snapshot_hash`). EXPLICITLY NOT A RELATIONAL FOREIGN KEY — there is no enforced relational integrity; it is a content-hash reference (the SkillSnapshot it names need not exist in any table the kernel knows about). DR-085 D3: BARE 64-hex `sha256`, ALIGNED to `SkillSnapshot.combined_sha` + `content_hash` + `parent_content_hash` (one hash alphabet platform-wide — the prior sha256:-prefixed form was the very mismatch DR-085 D3 corrects).
     """
@@ -83,9 +83,9 @@ class SkillversionRefinementLineageRecordOfASkill14ThCanonicalEntityDr028T1Discr
     """
     Identity of the RefinerStrategy that produced this version (DR-028 P0-RATIFY-5 line 270, CISO signed-manifest binding: mechanism-swappable must NOT become mechanism-untraceable). Signed in the skill-refiner-pass/v1 predicate payload, where it is also `refiner_strategy_id`.
     """
-    created_at: schema.Rfc3339
-    created_by: schema.ActorIdentity
-    tenant_id: schema.Uuidv7 | None = None
+    created_at: field_common_schema.Rfc3339
+    created_by: field_common_schema.ActorIdentity
+    tenant_id: field_common_schema.Uuidv7 | None = None
     """
     RESERVED multi-tenancy slot (deferral-G, bd_000-projects-k0fj), mirroring SkillSnapshot. OPTIONAL + additive per Blueprint B § 7.2; tenant-isolation semantics deferred to a future DR. v1 single-tenant versions omit it.
     """
@@ -101,7 +101,7 @@ class SkillversionRefinementLineageRecordOfASkill14ThCanonicalEntityDr028T1Discr
     """
     AT-DECR 011 § D3. OPTIONAL + ADDITIVE — absent/null for every staging row. Rekor transparency-log index, populated ONLY on a production-signed active row. CROSS-FIELD INVARIANT (both directions, machine-enforced at all three layers): `rekor_log_index` is non-null IFF (`signing_mode='rekor_production'` AND `status='active'`). A rekor index without active+production is forged provenance → REFUSED; an active+production row without a rekor index is an unverifiable production claim → REFUSED.
     """
-    retry_after: schema.Rfc3339 | None = None
+    retry_after: field_common_schema.Rfc3339 | None = None
     """
     AT-DECR 011. OPTIONAL + ADDITIVE. RFC 3339 UTC timestamp the reconciler MUST NOT retry a `pending_production` row before (exponential-backoff floor — the reconciler computes it, the kernel only types it). Set only while `status='pending_production'`.
     """

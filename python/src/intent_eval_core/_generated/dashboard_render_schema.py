@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, Field, constr
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class RenderedArtifact(BaseModel):
@@ -20,7 +20,7 @@ class RenderedArtifact(BaseModel):
     """
     OPTIONAL location of the rendered artifact — relative path or absolute URL. The content_hash is the authoritative identifier; uri is a convenience pointer.
     """
-    content_hash: schema.Sha256Prefixed
+    content_hash: field_common_schema.Sha256Prefixed
     """
     sha256-prefixed digest of the rendered HTML artifact bytes. Reproducing this from input_bundles is what a verifier checks.
     """
@@ -34,11 +34,11 @@ class InputBundle(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    bundle_id: schema.Uuidv7 | None = None
+    bundle_id: field_common_schema.Uuidv7 | None = None
     """
     UUIDv7 of an input EvidenceBundle (FK → EvidenceBundle.id).
     """
-    content_hash: schema.Sha256Prefixed | None = None
+    content_hash: field_common_schema.Sha256Prefixed | None = None
     """
     sha256-prefixed digest of the input bundle payload, pinning exact content.
     """
@@ -64,15 +64,15 @@ class DashboardRenderV1InTotoPredicateBodyAttestingARenderedDashboardArtifact(
     """
     Content-addressed evidence inputs the artifact was rendered from. Each entry pins a bundle by id and/or digest so the input set is reproducible. MUST be non-empty — a render with no evidence inputs is not attestable.
     """
-    rendered_at: schema.Rfc3339
+    rendered_at: field_common_schema.Rfc3339
     """
     RFC 3339 UTC timestamp at which the render was produced.
     """
-    renderer: schema.RunnerIdentifier
+    renderer: field_common_schema.RunnerIdentifier
     """
     Renderer tool identity + version in the form `<kebab-slug>@<semver>` (e.g., intent-eval-dashboard@0.2.0). Mirrors gate-result/v1's `runner` discipline so the producing tool is always pinned.
     """
-    renderer_config_hash: schema.Sha256Prefixed | None = None
+    renderer_config_hash: field_common_schema.Sha256Prefixed | None = None
     """
     OPTIONAL sha256-prefixed hash of the renderer configuration / template set, so a verifier can pin not just the tool version but the exact template inputs.
     """

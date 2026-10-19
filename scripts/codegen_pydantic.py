@@ -36,6 +36,7 @@ from __future__ import annotations
 import argparse
 import ast
 import json
+from importlib.metadata import PackageNotFoundError, version
 import os
 import subprocess
 import sys
@@ -45,7 +46,36 @@ from pathlib import Path
 # Pinned generator version. Reproducibility contract: same schemas + this exact
 # version => byte-identical _generated/ output. Bump deliberately (and re-run
 # codegen) — never let it float.
-DCG_PIN = "0.25.9"
+DCG_PIN = "0.86.0"
+
+# Preserve the published 0.11.0 Python omission behavior while upgrading the
+# generator for security. These 21 fields are required by the canonical JSON
+# Schemas but were optional-nullable in the old public Pydantic models.
+# Removing these scoped defaults is a contract tightening, tracked separately
+# in bd_000-projects-wcze.11. No blanket force-optional mode is used.
+LEGACY_NULL_DEFAULTS = {
+    "CostrecordSingleCostResourceAttributionRowBlueprintB212.eval_run_id": None,
+    "CostrecordSingleCostResourceAttributionRowBlueprintB212.provider_id": None,
+    "CostrecordSingleCostResourceAttributionRowBlueprintB212.tool_invocation_id": None,
+    "EvalrunSingleExecutionOfAnEvalspecAgainstASkillsnapshotBlueprintB22.archived_at": None,
+    "EvalrunSingleExecutionOfAnEvalspecAgainstASkillsnapshotBlueprintB22.evidence_bundle_id": None,
+    "EvalrunSingleExecutionOfAnEvalspecAgainstASkillsnapshotBlueprintB22.judged_at": None,
+    "EvalrunSingleExecutionOfAnEvalspecAgainstASkillsnapshotBlueprintB22.lease_expires_at": None,
+    "EvalrunSingleExecutionOfAnEvalspecAgainstASkillsnapshotBlueprintB22.parent_run_id": None,
+    "EvalrunSingleExecutionOfAnEvalspecAgainstASkillsnapshotBlueprintB22.reported_at": None,
+    "EvalrunSingleExecutionOfAnEvalspecAgainstASkillsnapshotBlueprintB22.started_at": None,
+    "EvalrunSingleExecutionOfAnEvalspecAgainstASkillsnapshotBlueprintB22.terminal_reason": None,
+    "EvalrunSingleExecutionOfAnEvalspecAgainstASkillsnapshotBlueprintB22.worker_id": None,
+    "JudgedecisionSingleJudgeSVerdictOnAnEvalrunForAMatchermapBlueprintB25.confidence": None,
+    "JudgedecisionSingleJudgeSVerdictOnAnEvalrunForAMatchermapBlueprintB25.reasoning": None,
+    "JudgedecisionSingleJudgeSVerdictOnAnEvalrunForAMatchermapBlueprintB25.seed": None,
+    "RegressionpackFrozenBundleOfEvalrunsProvingABehaviorContractBlueprintB27.ancestor_pack_id": None,
+    "RolloutgateEvaluationOfAnEvidencebundleAgainstADeploymentPolicyBlueprintB28.rekor_log_index": None,
+    "SessiontraceOtelCompatibleExecutionTraceForAnEvalrunBlueprintB210.closed_at": None,
+    "SkillsnapshotContentAddressedPinOfASkillSSourceDepsConfigBlueprintB29.version_label": None,
+    "ToolinvocationSingleToolProviderCallRecordedUnderASessiontraceBlueprintB211.error": None,
+    "ToolinvocationSingleToolProviderCallRecordedUnderASessiontraceBlueprintB211.result_storage_key": None,
+}
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCHEMAS_DIR = REPO_ROOT / "schemas" / "v1"
@@ -126,6 +156,12 @@ def _run_codegen(src: Path, out: Path) -> None:
         "--use-field-description",
         # Deterministic output: no embedded timestamp header, stable field order.
         "--disable-timestamp",
+        # All kernel refs are normalized to local files; never fetch a schema.
+        "--no-allow-remote-refs",
+        # Explicit compatibility defaults only; canonical schemas stay intact.
+        "--default-values",
+        json.dumps(LEGACY_NULL_DEFAULTS),
+        "--use-default",
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
@@ -141,17 +177,16 @@ def _run_codegen(src: Path, out: Path) -> None:
 def _verify_pin() -> None:
     """Fail fast with a clear message if the generator is missing or off-pin."""
     try:
-        import datamodel_code_generator as dcg  # type: ignore
-    except ImportError:
+        have = version("datamodel-code-generator")
+    except PackageNotFoundError:
         raise SystemExit(
             "datamodel-code-generator is not installed. Install the pinned "
             f"version: pip install 'datamodel-code-generator[http]=={DCG_PIN}'"
-        )
-    have = getattr(dcg, "version", None) or getattr(dcg, "__version__", None)
-    if have and have != DCG_PIN:
-        sys.stderr.write(
-            f"WARNING: datamodel-code-generator {have} installed, pin is {DCG_PIN}. "
-            "Generated output may differ; install the pin for reproducibility.\n"
+        ) from None
+    if have != DCG_PIN:
+        raise SystemExit(
+            f"datamodel-code-generator {have} installed, pin is {DCG_PIN}. "
+            "Refusing generation; install the exact pin for reproducibility."
         )
 
 

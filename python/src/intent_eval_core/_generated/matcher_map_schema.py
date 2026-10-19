@@ -8,7 +8,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, constr
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class InputPattern(BaseModel):
@@ -135,9 +135,9 @@ class MatchermapReusableInputBehaviorPatternDefinitionBlueprintB23(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: schema.Uuidv7
-    mm_class: schema.MmClass
-    name: schema.KebabSlug
+    id: field_common_schema.Uuidv7
+    mm_class: field_common_schema.MmClass
+    name: field_common_schema.KebabSlug
     input_pattern: InputPattern | InputPattern1 | InputPattern2
     """
     Typed input pattern — closed 3-variant discriminated union per Blueprint B § 2.3 line 159.
@@ -146,8 +146,8 @@ class MatchermapReusableInputBehaviorPatternDefinitionBlueprintB23(BaseModel):
     """
     Typed expected behavior. v1 named variants + open extension slot per spec's explicit 'etc.' trailer.
     """
-    version: schema.Semver
-    content_hash: schema.Sha256
+    version: field_common_schema.Semver
+    content_hash: field_common_schema.Sha256
     description: constr(min_length=1)
-    created_at: schema.Rfc3339
-    created_by: schema.ActorIdentity
+    created_at: field_common_schema.Rfc3339
+    created_by: field_common_schema.ActorIdentity

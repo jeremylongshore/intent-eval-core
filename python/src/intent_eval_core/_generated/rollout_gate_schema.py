@@ -7,7 +7,7 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, conint, constr
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class Decision(Enum):
@@ -33,21 +33,21 @@ class RolloutgateEvaluationOfAnEvidencebundleAgainstADeploymentPolicyBlueprintB2
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: schema.Uuidv7
-    eval_run_id: schema.Uuidv7
-    evidence_bundle_id: schema.Uuidv7
+    id: field_common_schema.Uuidv7
+    eval_run_id: field_common_schema.Uuidv7
+    evidence_bundle_id: field_common_schema.Uuidv7
     policy_ref: constr(pattern=r"^sha256:[a-f0-9]{64}:.+$")
     """
     Format: <content_hash>:<path>. Defends against mid-flight policy mutation.
     """
-    policy_content_hash: schema.Sha256
+    policy_content_hash: field_common_schema.Sha256
     decision: Decision
     decision_reasons: list[str]
     """
     Structured reason strings. Per Blueprint B § 2.8: 'one per matched-or-unmatched policy rule.'
     """
-    coverage: schema.Coverage
-    evaluated_at: schema.Rfc3339
-    gate_version: schema.Semver
+    coverage: field_common_schema.Coverage
+    evaluated_at: field_common_schema.Rfc3339
+    gate_version: field_common_schema.Semver
     signing_mode: SigningMode
     rekor_log_index: conint(ge=0) | None = None

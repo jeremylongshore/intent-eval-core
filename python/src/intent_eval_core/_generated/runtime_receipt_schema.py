@@ -7,7 +7,7 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, conint, constr
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class RuntimeLimitsInEffect(BaseModel):
@@ -67,11 +67,11 @@ class RuntimereceiptSignedRecordOfHowAnEvalrunExecutedBlueprintB26(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: schema.Uuidv7
-    eval_run_id: schema.Uuidv7
-    created_at: schema.Rfc3339
-    eval_spec_content_hash: schema.Sha256
-    skill_snapshot_sha: schema.Sha256
+    id: field_common_schema.Uuidv7
+    eval_run_id: field_common_schema.Uuidv7
+    created_at: field_common_schema.Rfc3339
+    eval_spec_content_hash: field_common_schema.Sha256
+    skill_snapshot_sha: field_common_schema.Sha256
     provider_adapter_versions: dict[str, str]
     """
     Per-provider adapter version mapping. Key: provider id, Value: SemVer.
@@ -89,11 +89,11 @@ class RuntimereceiptSignedRecordOfHowAnEvalrunExecutedBlueprintB26(BaseModel):
     Measured resource consumption per Blueprint B § 2.6 — fully spec-bound 4-field shape.
     """
     worker_identity: constr(min_length=1)
-    worker_host_fingerprint: schema.Sha256
+    worker_host_fingerprint: field_common_schema.Sha256
     terminal_state: TerminalState
     """
     Mirrors EvalRun.state's terminal value.
     """
     terminal_reason: TerminalReason
-    evidence_bundle_id: schema.Uuidv7
-    cost_record_id: schema.Uuidv7
+    evidence_bundle_id: field_common_schema.Uuidv7
+    cost_record_id: field_common_schema.Uuidv7

@@ -3,9 +3,11 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class HumanreviewOpenEndedHumanTrustSignalOnAnEvalrunNetNewCanonicalEntityIsedcDr103D1(
@@ -18,27 +20,27 @@ class HumanreviewOpenEndedHumanTrustSignalOnAnEvalrunNetNewCanonicalEntityIsedcD
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: schema.Uuidv7
+    id: field_common_schema.Uuidv7
     """
     UUIDv7 PK. The `human_review_id` the human-review/v1 predicate body references.
     """
-    eval_run_id: schema.Uuidv7
+    eval_run_id: field_common_schema.Uuidv7
     """
     FK -> EvalRun.id (required). The EvalRun this human is assessing.
     """
-    session_trace_id: schema.Uuidv7 | None = None
+    session_trace_id: field_common_schema.Uuidv7 | None
     """
     FK -> SessionTrace.id, NULLABLE. ANTI-GAMING (DR-103 D1 B1.2): a review MUST pin to a verified source — this OR `judge_decision_id` MUST be non-null. A review pinned to nothing is forgery-cost-zero and is refused at all three layers.
     """
-    judge_decision_id: schema.Uuidv7 | None = None
+    judge_decision_id: field_common_schema.Uuidv7 | None
     """
     FK -> JudgeDecision.id, NULLABLE. The machine verdict the human is agreeing-with / overriding (JudgeDecision's signed predicate is `eval-verdict/v1`). ANTI-GAMING (DR-103 D1 B1.2): this OR `session_trace_id` MUST be non-null (pin to something verified).
     """
-    supersedes_id: schema.Uuidv7 | None = None
+    supersedes_id: field_common_schema.Uuidv7 | None
     """
     Convenience pointer to the prior HumanReview this row revises (HumanReview -> HumanReview). `null` for the first review. No record is ever mutated — a revision is a NEW row citing the prior (append-only ledger).
     """
-    reviewer_identity: schema.ActorIdentity
+    reviewer_identity: field_common_schema.ActorIdentity
     """
     Identity of the human reviewer (engineer email, account name). The human-trust signal's authorship anchor. DR-103 D3 B3.2 names verified reviewer identity + the pinned session as `human-review/v1`'s REAL trust criterion (the predicate being permanently staging is by design, NOT a half-finished state).
     """
@@ -46,24 +48,24 @@ class HumanreviewOpenEndedHumanTrustSignalOnAnEvalrunNetNewCanonicalEntityIsedcD
     """
     ANTI-GAMING (DR-103 D1 B1.2): the `human_reviews` ledger is a HUMAN-only signal, so a service-account-authored row is EXCLUDED structurally — this MUST be `false`. A service-account assessment is not a human-trust signal and cannot be laundered into the human-signal counts. Carried as a `const false` field (not omitted) so the exclusion is an explicit, audited claim on every row rather than an implicit assumption.
     """
-    score_text: str | None = None
+    score_text: str | None
     """
     Open-ended human assessment as NON-COMPARABLE free TEXT — intentionally NOT an enum or number (DR-103 C3 B6.3). Consumers MUST NOT parse this into a scalar or aggregate it; a numeric channel that needs comparison is a SEPARATE structured field, never this string. Nullable: a review may carry only a thumb and/or an annotation.
     """
-    thumbs: bool | None = None
+    thumbs: bool | None
     """
     Coarse up/down signal. `true` = thumbs-up, `false` = thumbs-down, `null` = no thumb on this review. One of the three ORTHOGONAL channels (DR-103 C3 B6.3) — never averaged with the others.
     """
-    annotation: str | None = None
+    annotation: str | None
     """
     Free-text annotation / comment from the reviewer. Distinct from `score_text` (which is the open-ended SCORE channel) — an annotation is contextual prose, a score_text is the human's open-ended assessment. Nullable. One of the three ORTHOGONAL channels (DR-103 C3 B6.3).
     """
-    input_hash: schema.Sha256
+    input_hash: field_common_schema.Sha256
     """
     BARE 64-hex sha256 of the canonical input the human reviewed. The parallel HumanReviewStatement binds `subject[0].digest.sha256 === input_hash` (DR-103 D1 B1.3) — that pin IS the forgery cost. BARE alphabet (aligned to the entity-hash convention, e.g. SkillSnapshot.combined_sha); the in-toto wire layer strips/adds the `sha256:` prefix at the boundary.
     """
-    created_at: schema.Rfc3339
-    tenant_id: schema.Uuidv7 | None = None
+    created_at: field_common_schema.Rfc3339
+    tenant_id: field_common_schema.Uuidv7 | None = None
     """
     RESERVED multi-tenancy slot (deferral-G, bd_000-projects-k0fj; DR-085 D5), OPTIONAL-NOT-NULLABLE and byte-identical to EvalSpec/EvalRun/SkillSnapshot/SkillVersion. An absent tenant is a first-class single-tenant/global state, NEVER pooled into a cross-tenant aggregate (DR-103 D2 B2.2). v1 single-tenant reviews omit it; tenant-isolation semantics deferred to a future DR.
     """

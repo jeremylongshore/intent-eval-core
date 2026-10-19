@@ -8,7 +8,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, confloat, constr
 
-from . import _common_schema as schema
+from . import _common_schema as field_common_schema
 
 
 class Verdict(Enum):
@@ -28,7 +28,7 @@ class EvalSetRef(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    hash: schema.Sha256Prefixed
+    hash: field_common_schema.Sha256Prefixed
     """
     sha256-prefixed digest of the frozen eval-set content.
     """
@@ -36,7 +36,7 @@ class EvalSetRef(BaseModel):
     """
     Version identifier of the frozen eval-set.
     """
-    lineage_id: schema.Uuidv7
+    lineage_id: field_common_schema.Uuidv7
     """
     UUIDv7 of the eval-set lineage the frozen version belongs to.
     """
@@ -46,7 +46,7 @@ class NamedDimensionDelta(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: schema.KebabSlug
+    id: field_common_schema.KebabSlug
     """
     Named-dimension identifier (kebab-slug).
     """
@@ -100,19 +100,19 @@ class SkillRefinerPassV1InTotoPredicateBodyAttestingASkillversionClearedTheSkill
     """
     Identifier of the RefinerStrategy that produced this verdict. REQUIRED in the signed body per the DR-028 CISO Session-7 binding (mechanism-swappable must not become mechanism-untraceable). Strategy ids are append-only-registered — a retired id is burned forever, never reused for a different mechanism (DR-082 Q5 CISO clarification).
     """
-    skill_version_id: schema.Uuidv7
+    skill_version_id: field_common_schema.Uuidv7
     """
     UUIDv7 of the accepted SkillVersion (the 14th entity per DR-028 T1). Referenced by the kernel's EXISTING UUIDv7 primitive — this predicate does NOT define a SkillVersion entity (DR-028 one-way-door).
     """
-    parent_version_id: schema.Uuidv7 | None = None
+    parent_version_id: field_common_schema.Uuidv7 | None
     """
     DR-085 D3: NULLABLE UUIDv7 of the parent SkillVersion the accepted version was refined from — `null` for a ROOT SkillVersion (the first refinement in a lineage), so a root attests a valid pass WITHOUT forging a parent (root emission is provably zero-forgery — DR-085 D3 DevRel/CISO binding). When non-null, binds parent→child so a refiner cannot launder an unrelated skill through a forged lineage (CISO binding). REQUIRED key, but its value MAY be null (matching the SkillVersion entity's nullable parent_version_id).
     """
-    source_snapshot_hash: schema.Sha256Prefixed
+    source_snapshot_hash: field_common_schema.Sha256Prefixed
     """
     DR-085 D4: sha256-prefixed content hash of the PRE-EDIT SkillSnapshot — the INPUT to the refinement (re-defined to mean pre-edit input consistently with the SkillVersion entity's source_snapshot_hash; the prior 'post-edit' meaning collided semantically with the entity's meaning, the very collision D4 corrects). The POST-EDIT output is now the separate result_snapshot_hash. References the SkillSnapshot content by the kernel's EXISTING sha256-prefixed primitive.
     """
-    result_snapshot_hash: schema.Sha256Prefixed
+    result_snapshot_hash: field_common_schema.Sha256Prefixed
     """
     DR-085 D4: sha256-prefixed content hash of the POST-EDIT output SkillSnapshot — the RESULT of the refinement (the artifact the pass attests). The in-toto subject[].digest.sha256 for the row MUST equal this value WITHOUT the sha256: prefix (the authoring-chamber analogue of gate-result/v1's input_hash === subject digest binding, DR-082 Q4 — the subject is the post-edit artifact being attested, so it binds to result_snapshot_hash, not the pre-edit source_snapshot_hash). References the SkillSnapshot content by the kernel's EXISTING sha256-prefixed primitive.
     """
@@ -120,7 +120,7 @@ class SkillRefinerPassV1InTotoPredicateBodyAttestingASkillversionClearedTheSkill
     """
     Reference to the FROZEN eval-set the verdict was derived against — the entire epistemic basis of the claim. The hash pins exact content; version + lineage_id pin which published eval-set and its provenance lineage.
     """
-    edit_proposal_hash: schema.Sha256Prefixed
+    edit_proposal_hash: field_common_schema.Sha256Prefixed
     """
     sha256-prefixed hash of the EditProposal (the bounded edit-ops) that earned the pass — binds WHAT changed.
     """
@@ -140,7 +140,7 @@ class SkillRefinerPassV1InTotoPredicateBodyAttestingASkillversionClearedTheSkill
     """
     Statistical-test family identifier. CONST for v1 — the acceptance gate is a one-sided z-test (DR-028 + DR-082 Q2). Changing the test family is a SEMANTIC change that mints /v2 (the same deltas/alpha would no longer mean the same verdict).
     """
-    cost_record_ref: schema.Uuidv7 | None = None
+    cost_record_ref: field_common_schema.Uuidv7 | None = None
     """
     OPTIONAL FK → CostRecord.id for cost attribution of the refiner run. Descriptive — not a determinant of accept.
     """
