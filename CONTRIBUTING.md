@@ -6,7 +6,7 @@ Thank you for your interest in contributing to **`@intentsolutions/core`** — t
 
 ### Prerequisites
 
-- Node 20+ (CI runs on 20 and 22)
+- Node 22 (see `.nvmrc`; the published package's runtime floor is separate)
 - pnpm 9+
 - Git
 - GitHub account
@@ -17,7 +17,8 @@ Thank you for your interest in contributing to **`@intentsolutions/core`** — t
 git clone https://github.com/jeremylongshore/intent-eval-core.git
 cd intent-eval-core
 pnpm install
-pnpm run check          # full 9-step gate chain
+pnpm run build          # resolve package self-imports before the first lint run
+pnpm run check          # full canonical gate chain
 ```
 
 ### Git hooks
@@ -41,12 +42,48 @@ remain CI regardless of which (or neither) you install locally.
 ### Quick self-check
 
 ```bash
-pnpm run build          # tsup all entry points
+pnpm run build          # tsc -p tsconfig.build.json
 pnpm run typecheck      # tsc --noEmit across src/ and tests/
-pnpm run test           # vitest (154+ tests)
+pnpm run test           # Vitest, including dependency-patch regression cases
 pnpm run lint           # eslint
 pnpm exec audit-harness verify  # hash-pinned policy verification
 ```
+
+### Development dependency patches
+
+Use `pnpm install --frozen-lockfile` to reproduce the reviewed toolchain. Vitest
+and its V8 coverage provider use the same version; the explicit Vite dependency
+prevents an older auto-installed peer from surviving a test-runner upgrade.
+The four coverage thresholds remain 100%, with the existing source inclusion
+and exclusion rules.
+
+Two transitive development dependencies have local pnpm patches because their
+upstream advisories have no published fixed version:
+
+- [`braces@3.0.3`](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm), reached
+  through `tsd → globby → fast-glob → micromatch`, rejects excessive nesting
+  before parsing deeper blocks or entering recursive AST walkers. The parser
+  limits its block stack to 64; an iterative check also rejects supplied ASTs
+  deeper than 64 or with repeated child nodes (cycles or shared subtrees).
+- [`sprintf-js@1.0.3`](https://github.com/advisories/GHSA-hp3w-g68c-fv3c), reached
+  through `api-extractor → ts-command-line → argparse`, rejects format strings
+  longer than 10,000 characters and width or precision values above 10,000
+  before formatting. The format check also applies to supplied parse trees.
+
+The patches live in `patches/` and are bound by the pnpm lockfile and harness
+hashes. `scripts/toolchain-patches.test.ts` exercises the installed transitive
+copies with malicious and normal inputs. Removing a patch makes those
+regressions fail. The ordinary type tests and API Extractor checks must also
+pass, so rejection limits cannot silently break their callers.
+
+Registry audit tools still report the original package versions: the remaining
+one high and one moderate advisory are locally mitigated, not absent from the
+registry. There is no audit ignore list or severity downgrade. Run both
+`pnpm audit --json` and `pnpm audit --prod --json`; review new findings separately.
+The production dependency tree does not contain these tools. Reevaluate and
+remove a patch only when its dependency path is removed or an upstream fix is
+verified against the same regression cases. These limits address the cited
+nesting and formatting issues; they are not a general resource sandbox.
 
 ## How to Contribute
 

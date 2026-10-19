@@ -180,7 +180,7 @@ export const SkillRefinerPassV1StatementSchema = z
   .strict()
   .superRefine((data, ctx) => {
     const subject0 = data.subject[0];
-    /* v8 ignore next -- .min(1) guarantees subject[0] */
+    // Zod can run this refinement after the array's .min(1) check fails.
     if (subject0 === undefined) return;
 
     const expected = data.predicate.result_snapshot_hash.slice(SHA256_PREFIX_LEN);

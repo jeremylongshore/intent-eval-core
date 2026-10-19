@@ -1,0 +1,26 @@
+diff --git a/src/sprintf.js b/src/sprintf.js
+index c0fc7c08b2e6fe38de2883034b8d28c8f34e9866..044b9a89dd959e67119a9c4c01fcb205948213dd 100644
+--- a/src/sprintf.js
++++ b/src/sprintf.js
+@@ -30,6 +30,11 @@
+             }
+             else if (node_type === "array") {
+                 match = parse_tree[i] // convenience purposes only
++                // Local mitigation for GHSA-hp3w-g68c-fv3c. Bound allocation
++                // before formatting, including callers supplying a parse tree.
++                if (Number(match[6]) > 10000 || Number(match[7]) > 10000) {
++                    throw new RangeError('[sprintf] width or precision exceeds 10000')
++                }
+                 if (match[2]) { // keyword argument
+                     arg = argv[cursor]
+                     for (k = 0; k < match[2].length; k++) {
+@@ -121,6 +126,9 @@
+     sprintf.cache = {}
+ 
+     sprintf.parse = function(fmt) {
++        if (fmt.length > 10000) {
++            throw new RangeError('[sprintf] format exceeds 10000 characters')
++        }
+         var _fmt = fmt, match = [], parse_tree = [], arg_names = 0
+         while (_fmt) {
+             if ((match = re.text.exec(_fmt)) !== null) {
