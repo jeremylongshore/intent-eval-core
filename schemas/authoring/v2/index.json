@@ -47,7 +47,8 @@
         "base: `streamable-http` alias accepted in the selector enum (056 #3, C1 adopt)",
         "base: per-transport shapes replace the flat shape — stdio requires `command`, URL-bearing transports require `url`; enum provenance re-attributed to the Claude Code page, `ws` Claude-Code-only (056 #4, C1 adopt)",
         "base: `type` optional with the stdio default; the flat all-required projection choice relocates to the overlay with convergence triggers (056 #1, C2 widen)",
-        "overlay: kernel-only `metadata` extension object relocated from the base (DR-062 Class-3 prose — documented fields only in the base)"
+        "overlay: kernel-only `metadata` extension object relocated from the base (DR-062 Class-3 prose — documented fields only in the base)",
+        "overlay: command and args required only for stdio; URL transports require url (709y proposal); explicit type/env and IS tracking fields remain required"
       ],
       "layers": {
         "upstreamBase": "upstream-base/mcp-config.v2.json",
@@ -55,7 +56,7 @@
         "isOverlay": "is-overlay/mcp-config.v2.json"
       },
       "baseRequired": ["name"],
-      "overlayRequired": ["type", "command", "args", "env", "description", "version", "enabled"]
+      "overlayRequired": ["type", "env", "description", "version", "enabled"]
     },
     "plugin-manifest": {
       "path": "plugin-manifest.schema.json",

@@ -17,8 +17,7 @@
  *   - ajv ↔ Zod fold agreement on the v2 fixture corpus + branch probes (the
  *     D8 backstop), including the conditional-required branches
  *   - the MONOTONICITY property: the overlay is strictly additive/narrowing on
- *     the v2 base; effective required = base ∪ overlay = the IS 8-field set
- *     (preserved from v1 verbatim modulo the transport → type wire-name fix)
+ *     the v2 base; always-required fields plus transport-conditional requirements
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -301,6 +300,62 @@ describe('mcp-config v2 — per-transport conditional shapes (056 #4 adoption)',
   });
 });
 
+describe('mcp-config v2 — remote transports do not require a local process (709y)', () => {
+  const remote = {
+    name: 'remote-server',
+    env: {},
+    description: 'A remote MCP server.',
+    version: '1.0.0',
+    enabled: true,
+  };
+
+  it.each(['http', 'streamable-http', 'sse', 'ws'])(
+    '%s accepts a URL without command/args and preserves the remaining constraints',
+    (type) => {
+      const valid: Record<string, unknown> = {
+        ...remote,
+        type,
+        url: type === 'ws' ? 'wss://example.com/mcp' : 'https://example.com/mcp',
+      };
+      expect(validateComposition(valid)).toBe(true);
+      expect(McpConfigV2Schema.safeParse(valid).success).toBe(true);
+      expect(validateBase(valid)).toBe(true);
+
+      for (const field of ['url', 'name', 'type', 'env', 'description', 'version', 'enabled']) {
+        const missing = { ...valid };
+        delete missing[field];
+        expect(validateComposition(missing), `missing ${field}`).toBe(false);
+        expect(McpConfigV2Schema.safeParse(missing).success, `missing ${field}`).toBe(false);
+      }
+      for (const patch of [
+        { url: '' },
+        { url: 42 },
+        { command: '' },
+        { command: 42 },
+        { args: 'server.js' },
+        { args: [42] },
+        { description: 'Run $(whoami).' },
+        { version: '1.0' },
+        { enabled: 'true' },
+      ]) {
+        expect(validateComposition({ ...valid, ...patch })).toBe(false);
+        expect(McpConfigV2Schema.safeParse({ ...valid, ...patch }).success).toBe(false);
+      }
+      expect(validateComposition({ ...valid, command: 'node', args: [] })).toBe(true);
+      expect(McpConfigV2Schema.safeParse({ ...valid, command: 'node', args: [] }).success).toBe(
+        true,
+      );
+    },
+  );
+
+  it.each(['command', 'args'])('stdio still requires %s even when a URL is supplied', (field) => {
+    const missing: Record<string, unknown> = { ...V2_VALID, url: 'https://example.com/mcp' };
+    delete missing[field];
+    expect(validateComposition(missing)).toBe(false);
+    expect(McpConfigV2Schema.safeParse(missing).success).toBe(false);
+  });
+});
+
 describe('mcp-config v2 — ajv ↔ Zod fold agreement on composition branches', () => {
   it.each([
     ['canonical stdio accepted', {}, true],
@@ -395,15 +450,7 @@ describe('mcp-config v2 — monotonicity (overlay strictly additive/narrowing on
     const baseReq = base['required'] as string[];
     const overlayReq = overlay['required'] as string[];
     expect(baseReq).toEqual(['name']);
-    expect(overlayReq).toEqual([
-      'type',
-      'command',
-      'args',
-      'env',
-      'description',
-      'version',
-      'enabled',
-    ]);
+    expect(overlayReq).toEqual(['type', 'env', 'description', 'version', 'enabled']);
     expect(baseReq.some((f) => overlayReq.includes(f))).toBe(false);
   });
 
@@ -413,12 +460,12 @@ describe('mcp-config v2 — monotonicity (overlay strictly additive/narrowing on
     }
   });
 
-  it('effective required = base ∪ overlay = the IS 8-field mcp set (v1 surface preserved modulo transport → type)', () => {
+  it('always-required fields exclude the transport-conditional command/args pair', () => {
     expect([...MCP_CONFIG_V2_REQUIRED_FIELDS].sort()).toEqual(
-      ['args', 'command', 'description', 'enabled', 'env', 'name', 'type', 'version'].sort(),
+      ['description', 'enabled', 'env', 'name', 'type', 'version'].sort(),
     );
     expect([...MCP_CONFIG_V2_OVERLAY_REQUIRED].sort()).toEqual(
-      ['args', 'command', 'description', 'enabled', 'env', 'type', 'version'].sort(),
+      ['description', 'enabled', 'env', 'type', 'version'].sort(),
     );
   });
 
