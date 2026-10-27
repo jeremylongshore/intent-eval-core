@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-10-19
+
+### Changed
+
+- Publish the ratified public positioning: “The spec authority kernel for
+  agent-native artifacts.” Scope canonical authority to Intent Solutions
+  marketplace acceptance and retain the existing authoring lifecycle labels
+  (`bd_000-projects-3kye.8`).
+- Display the official Intent Solutions Select partner badge and document the
+  current 16-entity, four-predicate Python export surface. Reconcile the document
+  index, package-version wording and observed advisory review workflow.
+- Include this changelog in the npm package.
+- Route release-failure alerts to the Buzz `sys-deploys` channel.
+
+### Added
+
+- Record the YAML substitution policy baseline and its measured differences
+  against marketplace labels. This measurement does not change schema policy
+  or promote authoring contracts (`bd_000-projects-h9r9`).
+
 ### Security
 
 - Upgrade the pinned Python model generator to 0.86.0, refuse off-pin execution,
@@ -358,7 +378,10 @@ First public release. The canonical contracts kernel for the [Intent Eval Platfo
 - **Architectural bindings**: [DR-010](https://github.com/jeremylongshore/intent-eval-lab/blob/main/000-docs/010-AT-DECR-isedc-council-session-4-widened-scope-2026-05-13.md) (ISEDC Session 4 widened-scope lock; TS-primary signing surfaces; unification thesis binding); [Blueprint A](https://github.com/jeremylongshore/intent-eval-lab/blob/main/000-docs/011-AT-ARCH-ecosystem-master-blueprint.md) (12 binding principles, kernel-only anti-goals); [Blueprint B](https://github.com/jeremylongshore/intent-eval-lab/blob/main/000-docs/012-AT-ARCH-platform-runtime-blueprint.md) (runtime architecture, 13-entity domain model, `gate-result/v1` NORMATIVE spec); [Blueprint C](https://github.com/jeremylongshore/intent-eval-lab/blob/main/000-docs/013-AT-SPEC-repo-blueprint-template.md) (repo template, this repo's blueprint per `iec-E10`); [Canonical Glossary](https://github.com/jeremylongshore/intent-eval-lab/blob/main/000-docs/014-DR-GLOS-canonical-glossary.md) (single source of truth for platform terminology).
 - **Quality posture**: 100% line/branch/function/statement coverage on all consumer-facing code; 0 architecture violations across 8 forbidden dep-cruiser rules (kernel-no-runtime-deps, predicates-no-entities, state-machines-pure, validators-only-import-zod, …); 154 vitest tests + ~80 tsd negative assertions ≈ 170 type-level + runtime assertions; 31 ajv-based JSON Schema validation tests with positive + negative golden fixtures; 31 Zod validator tests with positive + negative fixtures; full ERD-walk integration test locks every Blueprint B § 6.2 cross-entity invariant; `@intentsolutions/audit-harness@0.1.0` wired (escape-scan + arch + harness-hash via husky pre-commit + GitHub Actions CI); sigstore provenance attached to the published tarball — verify with `npm audit signatures`.
 
-[Unreleased]: https://github.com/jeremylongshore/intent-eval-core/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/jeremylongshore/intent-eval-core/compare/v0.11.1...HEAD
+[0.11.1]: https://github.com/jeremylongshore/intent-eval-core/compare/v0.11.0...v0.11.1
+[0.11.0]: https://github.com/jeremylongshore/intent-eval-core/compare/v0.10.0...v0.11.0
+[0.10.0]: https://github.com/jeremylongshore/intent-eval-core/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/jeremylongshore/intent-eval-core/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/jeremylongshore/intent-eval-core/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/jeremylongshore/intent-eval-core/compare/v0.6.0...v0.7.0

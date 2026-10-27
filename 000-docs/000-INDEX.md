@@ -24,13 +24,14 @@ Naming: `NNN-CC-ABCD-description-YYYY-MM-DD.md` where:
 | 003 | [Core repo boundary doctrine](003-AT-STND-core-repo-boundaries-2026-05-18.md) | 2026-05-18 | AT-STND | NORMATIVE (boundary enforcement; pairs with FORBIDDEN.md + ALLOWLIST.md + scripts/check-boundaries.ts) |
 | 004 | [Testing SOP + CI/CD bootstrap AAR](004-AT-AAR-testing-cicd-bootstrap-2026-05-19.md) | 2026-05-19 | AT-AAR | informational (iec-E12 ratify-and-close) |
 | 005 | [appaudit DevOps playbook](005-AA-AUDT-appaudit-devops-playbook.md) | 2026-05-20 | AA-AUDT | informational |
-| 006 | [v0.2.0 additive schema evolution AAR](006-AA-AACR-v0.2.0-additive-schema-evolution-2026-06-03.md) | 2026-06-03 | AA-AACR | shipped (iec-E12 reconciled; v0.2.0 tagged + published; kernel now at 0.9.0) |
+| 006 | [v0.2.0 additive schema evolution AAR](006-AA-AACR-v0.2.0-additive-schema-evolution-2026-06-03.md) | 2026-06-03 | AA-AACR | shipped (iec-E12 reconciled; v0.2.0 tagged + published; historical release record) |
 | 007 | [Emit signed gate-result evidence for the dashboard](007-DR-RFC-emit-evidence-dashboard-ingest-2026-06-07.md) | 2026-06-07 | DR-RFC | accepted (nr75.4; emit engine + release.yml job) |
 | 008 | [Schema-policy eval — marketplace-tier foundation](008-AA-EVAL-schema-policy-marketplace-tier-2026-06-09.md) | 2026-06-09 | AA-EVAL | closes audit C2 (foundation sound; coverage boundary measured) |
 | 009 | [CompositionDag wire format normative spec](009-DR-RFC-compositiondag-wire-format-2026-06-10.md) | 2026-06-10 | DR-RFC | accepted (iec-deferral-F; locks CompositionDag serialization) |
 | 010 | [ID + event-ID invariants](010-AT-STND-id-and-event-id-invariants-2026-06-13.md) | 2026-06-13 | AT-STND | NORMATIVE (iec-E06 invariant register; kernel-vs-runtime generation boundary) |
 | 011 | [SkillVersion signing state machine (DR-028 T1 / DR-085 D1 deferred)](011-AT-DECR-skillversion-signing-state-machine-2026-07-09.md) | 2026-07-09 | AT-DECR | RATIFIED (acting-CTO, aon3.4; additive six OPTIONAL fields + staging-first state machine + both-directions cross-field invariant; kernel 0.10.0) |
-| 012 | [Eval-substrate contract identity](012-AT-SPEC-eval-substrate-contract-identity-2026-08-01.md) | 2026-08-01 | AT-SPEC | IMPLEMENTATION APPLICATION — core `EvalSpec` remains canonical; J-Rig's skill-shaped profile is `SkillEvalSpec` with an explicit adapter and lineage; current kernel currency is 0.10.0; master plan `IEP-EVAL-EVOLUTION-001`; bead `bd_000-projects-htjt.1`. |
+| 012 | [Eval-substrate contract identity](012-AT-SPEC-eval-substrate-contract-identity-2026-08-01.md) | 2026-08-01 | AT-SPEC | IMPLEMENTATION APPLICATION — core `EvalSpec` remains canonical; J-Rig's skill-shaped profile is `SkillEvalSpec` with an explicit adapter and lineage; recorded against kernel 0.10.0; master plan `IEP-EVAL-EVOLUTION-001`; bead `bd_000-projects-htjt.1`. |
+| 013 | [Canonical dashboard evidence](013-AT-SPEC-canonical-dashboard-evidence-2026-10-12.md) | 2026-10-12 | AT-SPEC | IMPLEMENTED — canonical payload hashing, projection consistency and mutation contracts for the private evidence producer. |
 | 015 | [YAML substitution policy baseline](015-AA-EVAL-yaml-shell-substitution-baseline-2026-10-19.md) | 2026-10-19 | AA-EVAL | Measured; kernel targets not met against marketplace labels; policy follow-up `9pey` remains open. |
 
 ## Cross-repo authority chain

@@ -74,4 +74,4 @@ These changes have ripple effects across every downstream consumer (`audit-harne
 
 ## Merge gate
 
-**CI required checks are the only merge gate.** Do not block merges waiting for Gemini or Greptile (both dark as of 2026-07-22). See `CLAUDE.md` § AI code review.
+**CI required checks are the merge gate.** Read advisory reviews that have arrived; do not block merges waiting for an AI reviewer. MiniMax and Greptile reviews were observed on PR #121 in October 2026. See `CLAUDE.md` § AI code review.

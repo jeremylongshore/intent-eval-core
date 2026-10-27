@@ -19,12 +19,12 @@ Part of the **[Intent Eval Platform](https://github.com/intent-solutions-io/inte
 
 Shared contracts for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab) — TypeScript types, JSON Schemas, Zod validators, and state machines for runtime evidence and authoring artifacts.
 
-> **Status — v0.11.0:** current published release (2026-10-04) (first public release was `v0.1.0`, 2026-05-17). Contracts follow SemVer. Published with Sigstore provenance — verify via `npm audit signatures`.
+> **Package version — v0.11.1.** Published versions are listed on [npm](https://www.npmjs.com/package/@intentsolutions/core) and [PyPI](https://pypi.org/project/intent-eval-core/). Contracts follow SemVer. npm releases carry Sigstore provenance — verify the installed release via `npm audit signatures`.
 
 ## Install
 
 ```bash
-# Types-only (zero runtime deps)
+# Types and JSON Schemas (Zod is an installed package dependency)
 pnpm add @intentsolutions/core
 
 # Types + Zod runtime validators
@@ -53,7 +53,7 @@ canTransition(evalRunTransitions, 'queued', 'running'); // true
 
 `intent-eval-core` maintains the platform's shared contracts in two schema families:
 
-- **Runtime tier** (`schemas/v1/`) — contracts for the 16 canonical platform entities (the 13 from Blueprint B § 2 + `SkillVersion`, the 14th per DR-028 T1, + `UsageEvent` and `HumanReview`, the 15th and 16th per DR-103 D1):
+- **Runtime tier** (`schemas/v1/`) — contracts for the 16 canonical platform entities (the 13 from Blueprint B § 2 + `SkillVersion` per DR-028 T1 + `UsageEvent` and `HumanReview` per DR-103 D1):
   - **TypeScript interfaces** for every entity
   - **JSON Schemas** as the language-neutral wire format
   - **Zod validators** for runtime validation at every trust boundary

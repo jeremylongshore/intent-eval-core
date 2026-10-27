@@ -52,11 +52,11 @@ print(gate.gate_decision)                 # GateDecision.pass_
 
 ## What's exported
 
-15 canonical entities + 3 predicate bodies (Blueprint B § 2 / § 7 + SkillVersion DR-028 T1 + UsageEvent DR-103 D1):
+16 canonical entities + 4 predicate bodies (Blueprint B § 2 / § 7 + SkillVersion DR-028 T1 + UsageEvent and HumanReview DR-103 D1):
 
 | Entity models | Predicate-body models |
 | --- | --- |
-| `EvalSpec`, `EvalRun`, `MatcherMap`, `EvidenceBundle`, `JudgeDecision`, `RuntimeReceipt`, `RegressionPack`, `RolloutGate`, `SkillSnapshot`, `SessionTrace`, `ToolInvocation`, `CostRecord`, `FailureTaxonomy` | `GateResultV1`, `RetractionV1`, `DashboardRenderV1` |
+| `EvalSpec`, `EvalRun`, `MatcherMap`, `EvidenceBundle`, `JudgeDecision`, `RuntimeReceipt`, `RegressionPack`, `RolloutGate`, `SkillSnapshot`, `SkillVersion`, `HumanReview`, `SessionTrace`, `ToolInvocation`, `CostRecord`, `UsageEvent`, `FailureTaxonomy` | `GateResultV1`, `RetractionV1`, `DashboardRenderV1`, `SkillRefinerPassV1` |
 
 Plus `GATE_RESULT_V1_URI` (the canonical predicate URI at
 `evals.intentsolutions.io`).
