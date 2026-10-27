@@ -1,6 +1,6 @@
 {
   "name": "@intentsolutions/core",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "publishConfig": {
     "access": "public",
     "provenance": true,
@@ -62,6 +62,7 @@
     "dist",
     "schemas",
     "LICENSE",
+    "CHANGELOG.md",
     "README.md"
   ],
   "engines": {

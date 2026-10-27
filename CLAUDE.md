@@ -76,7 +76,7 @@ test:types (tsd) + harness:verify + api:check/api:diff + Codecov upload.
 
 ## Project structure
 
-Published as **`@intentsolutions/core@0.11.0`** (sigstore provenance; npm + PyPI, 2026-10-04). The kernel is **bicameral** — a runtime tier and an authoring tier:
+Package version: **`@intentsolutions/core@0.11.1`**. Check npm and PyPI for published versions; npm releases carry Sigstore provenance. The kernel is **bicameral** — a runtime tier and an authoring tier:
 
 ```text
 intent-eval-core/
@@ -158,47 +158,27 @@ Use `bd-sync link/note/close` for every state change. After bulk operations, JSO
 5. **CI is the source of truth for "passes"** — local `pnpm run check` is necessary but not sufficient; main-branch protection requires the CI status check to pass.
 6. **PRs go through review even from the owner** — the canonical contracts kernel earns its weight from review discipline. No direct pushes to main.
 
-## AI code review — BOTH REVIEWERS ARE DARK (do not wait for one)
+## AI code review
 
-**As of 2026-07-22 no AI reviewer runs on this repo.** Verified by surveying the
-last four PRs across all six Intent Eval Platform repos: `gemini-code-assist`
-now posts only a sunset notice, and `greptile` has zero activity anywhere.
+Advisory MiniMax and Greptile reviews were observed on
+[PR #121](https://github.com/jeremylongshore/intent-eval-core/pull/121) on
+2026-10-19. The July 2026 observation that both review services were inactive
+is historical. Gemini's retained configuration is not evidence that its service
+is active.
 
-- **Gemini Code Assist** — **SUNSET, permanently.** The consumer version on
-  GitHub has ceased all review activity; the bot says so verbatim on live PRs.
-  `.gemini/config.yaml` + `.gemini/styleguide.md` are retained but INERT. This
-  is a vendor decision — it is not a quota that resets and it is not coming back.
-- **Greptile** (`.greptile/config.json` + `rules.md` + `files.json`) — configured
-  to the platform-unified schema (`strictness: 3`, `commentTypes:
-["logic","syntax"]`, `statusCheck: false`, a universal `no-gate-weakening`
-  rule, plus this repo's scoped invariant rules) but **not observed reviewing
-  any PR**. The config stays so the App works if it is reinstalled; do not treat
-  it as an expected reviewer today.
+Read reviews that have arrived and check their claims against implementation
+and test evidence. Never wait for an advisory review to merge. All required
+checks must pass on the exact PR head; use `safe-merge` under the estate merge
+policy. Review comments do not replace deterministic CI or authorize weakening
+its gates.
 
-**Operationally: never block a merge waiting for an AI review.** Check whether
-one arrived, read it if so, and otherwise proceed on CI. The deterministic merge gate is this repo's own CI (`lint + typecheck + test + build`) plus CodeQL. That was
-always the required gate; it is now the only one. Installing or uninstalling the
-GitHub Apps is an admin (UI) action — the in-repo config here does not do it.
-
-**Replacement (decided 2026-07-22, not yet activated):** stand up the advisory
-lane we already run on the marketplace repo —
-`claude-code-plugins/.github/workflows/minimax-review.yml`. The action is
-[`tarmojussila/minimax-code-review`](https://github.com/tarmojussila/minimax-code-review)
-(the upstream mechanism), consumed via our own fork
-`jeremylongshore/minimax-code-review` **pinned to an immutable SHA** — the right
-supply-chain posture for a small single-maintainer action: we do not auto-track
-upstream. It is fork-safe by construction (`pull_request`, not
-`pull_request_target`, plus a same-repo guard, so a forked PR never receives the
-API key) and kill-switched by repo variable.
-
-**Do not copy CCPI's prompts.** The mechanism is generic; the value is prompts
-grounded in the consuming repo's own invariants — CCPI's three lanes are written
-against its validators and its A-grade bar and would be noise here. For this
-repo the reviewer should be pointed at kernel contract integrity — `FORBIDDEN.md` anti-goals and `ALLOWLIST.md`, three-layer JSON-Schema/Zod/Pydantic parity, cross-field invariants, and any change to a signed one-way-door shape.
-
-Activation needs owner secret actions: repo secret `MINIMAX_API_KEY` + repo
-variable `ENABLE_MINIMAX_REVIEW=true` (+ `MINIMAX_MODEL`). Until then this repo
-is CI-only, deliberately.
+The MiniMax workflow runs defect and adversarial lanes with the review rules
+from the PR's base commit. It uses the SHA-pinned
+`jeremylongshore/minimax-code-review` fork, the same-repository PR guard,
+`MINIMAX_API_KEY`, and `ENABLE_MINIMAX_REVIEW=true`. Its prompts are grounded in
+this kernel's boundaries, JSON Schema/Zod/Pydantic parity, signed contracts,
+and cross-field invariants. Keep review configuration and API credentials
+separate; changing repository files does not install a GitHub App.
 
 ## Anti-goals (binding scope control)
 

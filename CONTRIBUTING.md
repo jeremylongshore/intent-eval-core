@@ -1,6 +1,6 @@
 # Contributing to @intentsolutions/core
 
-Thank you for your interest in contributing to **`@intentsolutions/core`** — the canonical contracts kernel for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab). This package ships TypeScript types, JSON Schemas, Zod validators, and state machines for the 13 canonical entities; four downstream IEP repos consume it.
+Thank you for your interest in contributing to **`@intentsolutions/core`** — the canonical contracts kernel for the [Intent Eval Platform](https://github.com/jeremylongshore/intent-eval-lab). This package ships TypeScript types, JSON Schemas, Zod validators, and state machines for the 16 canonical entities; four downstream IEP repos consume it.
 
 ## Getting Started
 
