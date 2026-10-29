@@ -455,9 +455,10 @@ const CONTRACTS: readonly ContractSpec[] = [
       ' * env). Enum provenance: the Claude Code page, NOT the machine-readable MCP\n' +
       ' * schema (056 finding 4); `ws` is Claude-Code-only; `sse` is deprecated.',
     overlayDoc:
-      ' * The IS-only v2 delta: the RELOCATED flat all-required projection choice\n' +
-      ' * (type, command, args, env — DR-062 C2 from 056 #1, each carrying a\n' +
-      ' * convergence trigger) + the three net-new IS tracking/operational fields\n' +
+      ' * The IS-only v2 delta: explicit type and env on every transport, with\n' +
+      ' * command and args required only for stdio (709y). URL transports require\n' +
+      ' * url, matching the base. Each narrowing carries a convergence trigger.\n' +
+      ' * The three net-new IS tracking/operational fields are\n' +
       ' * carried from the v1 overlay (description, version, enabled) + the SemVer\n' +
       ' * narrowing on version + the RELOCATED optional `metadata` extension object\n' +
       ' * (DR-062 C3 prose). A field whose type is already enforced by the base is\n' +
@@ -1730,7 +1731,10 @@ function parseConditionalRequires(layer: LayerSchema): ParsedConditionalRequire[
  * the documented upstream default — or any other value, whose own enum/type
  * check reports separately) falls to the else branch.
  */
-function conditionalRequiredBlock(conditionals: readonly ParsedConditionalRequire[]): string {
+function conditionalRequiredBlock(
+  conditionals: readonly ParsedConditionalRequire[],
+  layer = 'base',
+): string {
   if (conditionals.length === 0) {
     return '';
   }
@@ -1739,7 +1743,7 @@ function conditionalRequiredBlock(conditionals: readonly ParsedConditionalRequir
     const thenArr = `[${c.thenRequired.map((v) => `'${v}'`).join(', ')}]`;
     const elseArr = `[${c.elseRequired.map((v) => `'${v}'`).join(', ')}]`;
     return [
-      `  // Conditional requiredness (the base schema's if/then/else allOf): when`,
+      `  // Conditional requiredness (the ${layer} schema's if/then/else allOf): when`,
       `  // '${c.selector}' is one of the then-branch selector values the then-required`,
       `  // fields apply; otherwise (selector absent — the documented upstream default —`,
       `  // or any other value) the else-required fields apply.`,
@@ -1974,6 +1978,10 @@ function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSc
   // Layer-level conditional requiredness on the base (DR-062 per-transport
   // shapes). Parsed feature-gated; unrecognized base allOf shapes throw.
   const conditionalBlock = conditionalRequiredBlock(parseConditionalRequires(base));
+  const overlayConditionalBlock =
+    spec.version === 'v2'
+      ? conditionalRequiredBlock(parseConditionalRequires(overlay), 'overlay')
+      : '';
 
   // Overlay-layer checks: the overlay-required fields in declaration order, then
   // the OPTIONAL (non-required) overlay extension fields (e.g. the DR-062
@@ -1995,7 +2003,19 @@ function renderValidator(spec: ContractSpec, base: LayerSchema, overlay: LayerSc
         !VISIBILITY_FIELDS.has(f) &&
         f !== 'required_environment_variables',
     )
-    .map((f) => baseFieldCheck(f, overlayProps[f] ?? {}, fieldConstPrefix, spec.version).join('\n'))
+    .map((f) => {
+      const schema = overlayProps[f] ?? {};
+      // Presence-only annotations inherit their value checks from the base.
+      // Treating a comment-only schema as a string would reject valid args arrays.
+      if (
+        spec.version === 'v2' &&
+        f in baseProps &&
+        Object.keys(schema).every((key) => key === '$comment')
+      ) {
+        return '';
+      }
+      return baseFieldCheck(f, schema, fieldConstPrefix, spec.version).join('\n');
+    })
     .filter((s) => s.length > 0);
   const overlayChecks = [...overlayCheckBlocks, ...optionalOverlayBlocks].join('\n\n');
 
@@ -2267,7 +2287,7 @@ ${baseReqDecl}
 /** The IS-overlay required delta (beyond the base floor). */
 ${overlayReqDecl}
 
-/** Effective required = base ∪ overlay = the IS 8-field marketplace set (NON-NEGOTIABLE). */
+/** ${overlayConditionalBlock ? 'Always-required fields = base ∪ overlay; transport-conditional fields are checked separately.' : 'Effective required = base ∪ overlay = the IS 8-field marketplace set (NON-NEGOTIABLE).'} */
 export const ${constPrefix}_REQUIRED_FIELDS = [
   ...${constPrefix}_BASE_REQUIRED,
   ...${constPrefix}_OVERLAY_REQUIRED,
@@ -2296,7 +2316,7 @@ export function isOverlayIssues(artifact: AuthoringArtifact): FoldIssue[] {
 ${overlayInit}
 
 ${overlayChecks}
-${visibilityLoop}${envVarBlock}${exclusionBlock}
+${visibilityLoop}${envVarBlock}${exclusionBlock}${overlayConditionalBlock}
   return issues;
 }
 ${envVarHelper}${exclusionHelper}${scopedToolHelper}
