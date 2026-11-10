@@ -1,198 +1,116 @@
 # TEST_AUDIT.md — `@intentsolutions/core`
 
-**Audit run date:** 2026-05-19
-**Auditor:** `/audit-tests` skill (Claude Code), grounded in `~/.claude/skills/audit-tests/`
-**Auditor harness version:** `@intentsolutions/audit-harness@0.1.0` (latest at audit time)
-**Repo classification:** `library` (TypeScript, pure-type kernel + opt-in Zod validators)
-**Branch at audit:** `main` @ commit `7441221`
+## Verification refresh — 2026-11-10
 
----
+Base: `df2813373cf503a38e66e29306ba83f91c823384` (0.11.1).
+Tracking: `bd_000-projects-h08j.6.2`, parent `bd_000-projects-h08j.6`.
+The May 19 audit at `7441221` is historical; its grade, counts and Python
+ deferrals are not current findings. No aggregate grade is assigned here:
+measured checks pass, but protection and traceability gaps remain.
 
-## Executive summary
+## Classification and freshness
 
-**Grade: A** — all required layers installed and enforced. The kernel exceeds the minimum bar for a library: 100% test coverage, 0 architecture violations across 8 forbidden dep-cruiser rules + 4-axis boundary checker, dual type-test discipline (vitest `expectTypeOf` in-process + `tsd` separate process), sigstore-signed npm publishing.
+The installed harness classifies this package as a **library**, with no
+unresolved classification signals. Registry hash:
+`sha256:ffbc75700fb5eb501cb47f1e4038f47ab95ae1fba534b38095e1fe7820c80ed1`.
+Installed harness: **1.4.0**. The separately tracked 2.0 propagation decision
+remains outside this refresh; no tooling upgrade was performed.
 
-The repo passes IS Testing SOP at the highest standard appropriate to its type. The /audit-tests verdict is **no P0 / no P1 gaps**; the remaining items in the "what's not done" section below are explicitly waived for a pure-type library per [`tests/TESTING.md § Waived gates`](tests/TESTING.md).
+The kernel owns contracts, schemas, validators and state machines. It ships
+Zod runtime validators and a Pydantic distribution; it does not execute agents,
+judge evaluations, sign evidence, or operate persistence services. The old
+pure-type rationale in engineer-owned policy requires reconciliation, not an
+automatic waiver change.
 
----
+## Measured verification
 
-## Classification
-
-| Field | Value |
+| Check | Evidence at the audited base |
 | --- | --- |
-| Repo type | `library` |
-| Sub-classification | Pure-type kernel + opt-in runtime validator subpath |
-| Language | TypeScript 5 (strict + every additional strict flag) |
-| Module system | ESM only (`"type": "module"`) |
-| Runtime | Node 20+ / pnpm 9+ |
-| Public-surface posture | Types-only main entry (zero runtime cost); `zod` runtime dep loads only when consumer imports the validators subpath |
-| Compliance overlay | none |
+| Harness integrity | 32 pinned files verified before changes |
+| Canonical check | All 16 command stages pass; 1,465 tests pass and one existing shallow-clone fallback case skips across 53 test files |
+| Coverage | Vitest/V8 4.1.12: 1,373/1,373 lines, 1,141/1,141 branches, 162/162 functions, 1,415/1,415 statements; all four existing 100% floors pass |
+| Architecture | dependency-cruiser reports zero violations |
+| Boundary checker | Zero violations; package-category axis remains informative |
+| Type/API checks | `test:types` and `api:check` run separately after build; inspect PR CI for final hosted results |
+| Python | Python 3.12.3: 161 tests pass; pinned Pydantic codegen check confirms 22 generated modules |
+| Python compatibility | Workflow matrix covers 3.10, 3.11 and 3.12; local results above cover only 3.12 |
 
----
+Coverage includes `src/**/*.ts` and excludes test files, barrel `index.ts`
+files, and non-exported runtime `_generated` reference output. Scripts and
+Python are outside this coverage denominator. Therefore 100% is a statement
+about that configured scope, not all repository code or downstream workflows.
+No coverage exclusion or threshold changed in this refresh.
 
-## 7-layer taxonomy results
+## Layers and enforcement
 
-| Layer | Status | Detail |
-| --- | --- | --- |
-| **L0** — Enforcement harness | ✅ INSTALLED | `@intentsolutions/audit-harness@0.1.0` as devDep; `pnpm exec audit-harness verify` + `init` + `arch` + `escape-scan` all wired |
-| **L1** — Git hooks + CI enforcement | ✅ INSTALLED | husky pre-commit (escape-scan + boundaries + lint-staged); GitHub Actions CI (`lint + typecheck + test + build` REQUIRED check) + dedicated boundary-check workflow |
-| **L2** — Static analysis + linting | ✅ INSTALLED | ESLint 9 flat config (typed lint via `projectService`, `no-explicit-any: error`, type-imports enforced); Prettier 3; TypeScript 5 with ALL strict flags including `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`, `noImplicitOverride`, `noPropertyAccessFromIndexSignature` |
-| **L3** — Unit + function tests | ✅ INSTALLED, OVER-INDEXED | vitest 2 (runtime + `expectTypeOf` type-level); **154 tests across 8 files**; **100% line/branch/function/statement coverage** enforced via `vitest.config.ts`; `tsd@0.33` second-opinion type-test with ~80 negative-test assertions against published `dist/` |
-| **L4** — Integration + regression — architecture rules | ✅ INSTALLED | dependency-cruiser 17 with 8 forbidden rules (`no-circular`, `no-orphans`, `no-deprecated-core`, `kernel-no-runtime-deps`, `validators-only-import-zod`, `predicates-no-entities`, `no-test-imports-in-src`, `state-machines-pure`); 0 violations. PLUS new 4-axis boundary checker (`scripts/check-boundaries.ts`) covering package patterns, import paths, directory names, npm categories, URL patterns; 0 violations |
-| **L4** — Integration (DB / IO / contract) | WAIVED | Pure-type library — no IO, no DB, no migrations, no external contracts to test. `tests/TESTING.md § Waived gates` documents the rationale. |
-| **L5** — System quality (perf / sec / a11y / chaos) | WAIVED | No runtime to perf-test; no UI to a11y-test; security covered by L2 + escape-scan + boundary checker URL-pattern axis. |
-| **L6** — E2E / BDD / Gherkin | WAIVED | Library, not service — no user journey to E2E. Consumers (audit-harness, j-rig, intent-rollout-gate) own their own BDD. |
-| **L7** — Acceptance / UAT | WAIVED | Library, not product — acceptance lives at the consumer level. |
-
-### Additional test layers shipped (above the canonical 7)
-
-| Layer | Status | Detail |
-| --- | --- | --- |
-| **Schema validation** | ✅ INSTALLED | 31 ajv-based JSON Schema validation tests (draft 2020-12) against 16 positive + 4 negative golden fixtures + 7 cross-cutting Blueprint B invariants codified at the schema layer |
-| **Validator parity** | ✅ INSTALLED | 31 Zod validator tests proving the hand-authored validators agree with ajv schema validators on the same fixtures |
-| **Full ERD-walk integration** | ✅ INSTALLED | `src/integration.test.ts` constructs all 13 entities + gate-result/v1 + DSSE Statement end-to-end; locks every Blueprint B § 6.2 cross-entity invariant |
-| **Type-level integration** | ✅ INSTALLED | tsd negative tests in `test-d/*.test-d.ts` proving brand non-interchangeability, state literal closed-set discipline, JudgeVerdict vs GateDecision distinctness, GateResultV1 required-field discipline |
-
----
-
-## Test totals
-
-| Metric | Value |
+| Layer | Observed configuration and enforcement |
 | --- | --- |
-| Test files | 8 (vitest) + 3 (tsd test-d) = 11 |
-| Vitest assertions | 154 across 8 files |
-| Tsd negative assertions | ~80 |
-| ajv schema validation tests | 31 |
-| Zod validator tests | 31 |
-| **Total test/assertion count** | ~295 |
-| Coverage (lines) | 100% |
-| Coverage (branches) | 100% |
-| Coverage (functions) | 100% |
-| Coverage (statements) | 100% |
+| L1 | Pre-commit runs staged escape-scan, boundaries and lint-staged. CI verifies integrity. Seven GitHub-required contexts are listed below. |
+| L2 | Strict TypeScript, ESLint, formatting, runtime/authoring codegen drift, namespace/chamber isolation, rubric-floor checks, architecture and boundaries are installed. |
+| L3 | Vitest runtime and type assertions, tsd, V8 coverage, and Python parity/codegen tests are installed. The Python matrix is not currently required by GitHub branch protection. |
+| L4 | Cross-entity type composition, schema/Zod/Pydantic parity, architecture and provenance contract tests exist. They do not prove downstream execution or signing. |
+| L5–L7 | Preserve engineer-declared waivers; no service/UI/UAT success is inferred. |
 
----
+API drift is **blocking**: `ci.yml` permits the extractor step to fail so the
+following conditional step can print the diff and exit 1. That diagnostic
+`continue-on-error` is not an advisory bypass. Conversely, Codecov upload
+failure is explicitly non-blocking.
 
-## Architecture rules
+Mutation, CRAP, bias-count and Gherkin remain waived under existing policy;
+no measurement or passing result is claimed for them. The declared
+`type-test.count: 90` floor has no explicit counting gate found in package
+scripts, hooks or workflows.
 
-dep-cruiser config at `.dependency-cruiser.cjs`, hash-pinned via `.harness-hash`. Per-rule status on current `main`:
+## Required-check reconciliation proposal — pending approval
 
-| Rule | Severity | Status |
-| --- | --- | --- |
-| `no-circular` | error | 0 violations |
-| `no-orphans` | warn | 0 |
-| `no-deprecated-core` | warn | 0 |
-| `kernel-no-runtime-deps` | error | 0 (carve-out for `src/validators/` via negative lookahead `^src/(?!validators/)`) |
-| `validators-only-import-zod` | error | 0 |
-| `predicates-no-entities` | error | 0 |
-| `no-test-imports-in-src` | error | 0 |
-| `state-machines-pure` | error | 0 |
+Live GitHub protection on November 10 requires these seven contexts:
 
-Plus the new 4-axis boundary checker (`scripts/check-boundaries.ts`):
+- `lint + typecheck + test + build`
+- `4-axis boundary check`
+- `yamllint`
+- `actionlint`
+- `markdownlint-cli2`
+- `typos`
+- `lychee`
 
-| Axis | Status |
-| --- | --- |
-| A1 Package patterns | 1 runtime dep (zod), well below cap of 8; 0 forbidden-pattern matches |
-| A2 Import paths | 0 forbidden src/ subpaths; all 8 allowed subpaths recognized |
-| A3 Directory names | 0 forbidden top-level dirs; all 21 allowed top-level files recognized |
-| A4 Package categories | informative-only at v0.1 (npm-keyword heuristic) |
-| URL patterns | 0 `labs.intentsolutions.io` usage as a real URL (test-assertion safety-net excluded) |
+Proposed change: **retain those seven and add these eight**, each associated
+with GitHub Actions application ID `15368`:
 
----
+- `codegen-check + parity (py3.10)`
+- `codegen-check + parity (py3.11)`
+- `codegen-check + parity (py3.12)`
+- `prose-anchor validity (6767-h citations)`
+- `coverage-map completeness + prose-anchors + is-extension-rationale`
+- `changelog observance (schemas/ vs governing CHANGELOG)`
+- `Analyze (javascript-typescript)`
+- `Analyze (python)`
 
-## Gaps
+All eight are defined on every PR without path filters and passed the prior
+release PR #123. They protect Python parity, schema citations and rationale,
+change lineage, and security analysis. Scheduled CodeQL run `42612611880`
+failed, so historical PR success is not a claim that all recent runs succeeded.
+Inspect the audit PR's exact-head results before applying this proposal.
 
-**0 P0 gaps · 0 P1 gaps.**
+Keep `strict=true`, administrator enforcement, conversation resolution,
+review rules and every other protection setting unchanged; force pushes and
+branch deletion remain disabled. This is an additive status-check update only.
+It has **not been applied**: `AGENTS.md` explicitly requires confirmation for
+branch-protection modifications. The local `safe-merge` observed-check union
+provides additional merge checks, but does not replace server-side protection.
 
-P2 deferrals (intentional, tracked):
+## Traceability findings and follow-up
 
-| Item | Bead | Why deferred |
-| --- | --- | --- |
-| Pydantic codegen + Python distribution | `iec-E08` | v0.x is JS-first; Python kernel deferred to v0.3+ after Phase B kickoff |
-| Rust crate distribution | (not yet beaded) | Post-Pydantic; surface via Class-2 governance when triggered |
-| Mutation testing | n/a — WAIVED for pure-type library | Mutations on `as const` arrays + type definitions don't add signal |
-| CRAP score | n/a — WAIVED | No algorithmic complexity to score in pure-type code |
-| Bias-count | n/a — WAIVED | No BDD scenarios |
-| Gherkin-lint | n/a — WAIVED | No `.feature` files |
-| Property-based testing | n/a — informative-only | Could land when a runtime-effective opportunity emerges (e.g., Pydantic cross-language fuzz post-iec-E08) |
+The retained RTM contains 24 original requirements: 18 MUST, five SHOULD and
+one COULD. Their tags and rows are preserved. It is not a complete inventory
+of the current package: Python, SAK, SkillVersion, UsageEvent and HumanReview
+need explicit mapping. Persona and journey observations now distinguish typed
+construction from real execution, hashing, signing and persistence; the
+existing persona coverage target is unchanged, and achieved coverage is not
+claimed from unmeasured flows.
 
-P2 architectural deferrals (filed during the v0.1.0 sprint):
-
-| Bead | Title |
-| --- | --- |
-| `bd_000-projects-gzgj` | iec-deferral-A: AssertionExpression typed-class enum (Class-2 ISEDC) |
-| `bd_000-projects-k0fj` | iec-deferral-G: tenant_id reservation (Architect W1) |
-| `bd_000-projects-21re` | iec-deferral-C: ScoringConfig fields beyond aggregation_rule |
-| `bd_000-projects-3sjx` | iec-deferral-F: CompositionDag wire format normative spec |
-| `bd_000-projects-84li` | iec-deferral-E: ToolInvocationError.enum_class registry |
-| `bd_000-projects-9xyk` | iec-deferral-D: gate-result/v1 coverage element shape lockup |
-| `bd_000-projects-ra9a` | iec-deferral-B: MatcherInputPattern.structural payload spec |
-
----
-
-## RTM / Personas / Journeys
-
-| Artifact | Source of truth | State |
-| --- | --- | --- |
-| `tests/RTM.md` | 24 REQ-IEC-NNN requirements derived from DR-010 + Blueprints A/B/C + Glossary + IS Testing SOP + standards-body discipline | All MUSTs covered; all SHOULDs covered; COULDs tracked as deferral beads (above) |
-| `tests/PERSONAS.md` | 4 downstream-consumer personas (audit-harness, j-rig, intent-rollout-gate, methodology authors) | 100% key-flow coverage on the 3 runtime-consumer personas; methodology-author persona is non-runtime |
-| `tests/JOURNEYS.md` | 3 type-level journeys (full ERD walk, NEW MM-class lifecycle, gate-result/v1 consumer parse) | All kernel-owned steps tested; runtime-owned steps marked as downstream concerns |
-
----
-
-## escape-scan result
-
-Run: `pnpm exec audit-harness escape-scan --staged`
-Result: **PASS** (0 REFUSE, 0 CHALLENGE, 0 FLAG)
-
-Hash-pin manifest at `.harness-hash` covers `.dependency-cruiser.cjs`. Future iteration: add FORBIDDEN.md + ALLOWLIST.md + CODEOWNERS + tests/TESTING.md to the harness pin set (upstream harness package will need a config option to expand the default pin set).
-
----
-
-## CI gate chain
-
-`.github/workflows/ci.yml` (required status check on main):
-
-1. `pnpm install --frozen-lockfile`
-2. `pnpm run harness:verify` (hash-pinned policy verification)
-3. `pnpm run lint` (ESLint)
-4. `pnpm run typecheck` (tsc --noEmit)
-5. `pnpm run arch` (dependency-cruiser via audit-harness)
-6. `pnpm run test` (vitest run)
-7. `pnpm run test:coverage` (100% floor enforced)
-8. `pnpm run build` (tsc -p tsconfig.build.json)
-9. `pnpm run test:types` (tsd against published dist/)
-10. Verify dist artifacts present (index.js + index.d.ts + validators + schemas)
-
-`.github/workflows/boundary-check.yml` (additional separate workflow):
-
-1. `pnpm run boundaries` (4-axis check)
-2. Post PR comment on failure with override-detection from PR body
-
-`.github/workflows/release.yml` (tag-triggered):
-
-1. Full CI gate re-runs
-2. Tag-vs-package version drift guard
-3. `pnpm publish --provenance` (sigstore-keyless via GH OIDC — npm provenance flow)
-4. Sigstore attestation attached to npm tarball; verifiable via `npm audit signatures @intentsolutions/core`
-
-**Sigstore signing approach**: npm provenance IS the canonical sigstore-keyless OIDC flow for npm-published packages. Adding a separate `cosign sign-blob` step would only be useful for non-npm artifacts (e.g., a Rust crate or Python wheel at iec-E08). For the current JS-only kernel, npm provenance covers the cosign-keyless requirement of iec-E12f end-to-end.
-
----
-
-## Recommendations
-
-**No P0/P1 gaps.** The audit verdict is "no remediation required."
-
-Future ratchet-ups (P2, tracked as `iec-E07/E08`):
-
-1. SemVer regression test suite (`iec-E07`) — automated suite that catches MAJOR-bump-worthy changes BEFORE they merge, by detecting changes to the § 6.6 stability promise items in the per-repo blueprint
-2. Pydantic codegen + Python distribution (`iec-E08`) — when Phase B kickoff signal arrives, JSON Schema → Pydantic models → PyPI
-
----
-
-## Audit history
-
-| Run date | Auditor | Branch | Verdict |
-| --- | --- | --- | --- |
-| 2026-05-16 | Inline during iec-E02e | feat branch | Initial install + scaffolds; 0 P0/P1 gaps post-install |
-| 2026-05-19 | Formal `/audit-tests` (this report) | main @ 7441221 | Grade A; 0 gaps; ratify-and-close |
+`bd_000-projects-h08j.6.3` tracks the policy-rationale reconciliation, explicit
+type-test-count enforcement, and expanded requirement mappings. Those findings
+remain open; this refresh does not claim full traceability or a clean audit.
+The protection portion of `bd_000-projects-h08j.6.2` remains pending the exact
+approval above. Other repositories and the reproducible end-to-end walkthrough
+remain under the parent bead.
