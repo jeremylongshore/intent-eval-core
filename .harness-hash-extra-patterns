@@ -47,3 +47,10 @@ scripts/toolchain-patches.test.ts
 # wcze.10 — Python generator security pin and published compatibility checks.
 python/pyproject.toml
 python/tests/test_codegen_security.py
+
+# h08j.6.3 — declared type-test floor and its compilation/discovery inputs.
+scripts/type-test-inventory.test.ts
+tests/TESTING.md
+vitest.config.ts
+tsconfig.json
+package.json

@@ -76,13 +76,52 @@ not verify signatures or apply consumer policy. The downstream assertions in
 the table identify responsibility; they are not verified consumer test results
 from this audit.
 
+### J4 — Python runtime contract and regeneration
+
+| # | Kernel-owned step | Linked REQ | Test evidence |
+| --- | --- | --- | --- |
+| 1 | Import published models and accept shared valid payloads | REQ-IEC-025 | `python/tests/test_parity.py`: package surface and valid-fixture suites |
+| 2 | Reject shared invalid payloads and cross-field contradictions | REQ-IEC-025 | Same file's negative/cross-field suites; compare schema/Zod suites via the shared fixture corpus |
+| 3 | Detect stale generated output and refuse unsafe or failed regeneration without replacing existing files | REQ-IEC-026 | `test_codegen_idempotent.py`, `test_codegen_security.py`, `test_codegen_preservation.py` |
+| 4 | Check npm/Python version agreement | REQ-IEC-027 | `test_version_lockstep.py` |
+
+**Boundary**: this is runtime model validation and generator behavior, not
+service execution. The published omitted-nullable compatibility exceptions
+remain in `wcze.11`; positive shared-fixture tests do not resolve them.
+
+### J5 — Authoring contract selection and governance
+
+| # | Kernel-owned step | Linked REQ | Test evidence |
+| --- | --- | --- | --- |
+| 1 | Select one of the six composed v1 authoring schemas | REQ-IEC-028 | Six v1 `*-schema.test.ts` suites plus `authoring-schemas.test.ts` |
+| 2 | Validate positive/negative metadata using schema and generated Zod validators | REQ-IEC-028 | `authoring-fixtures.test.ts` and per-family parity cases |
+| 3 | Select stricter v2 without v1 references or frozen-v1 mutation | REQ-IEC-029 | Six `*-v2-schema.test.ts` suites; `authoring-v1-frozen.test.ts` requires the historical tag for byte comparisons |
+| 4 | Reject fused chambers, predicate namespaces and weakened policy floors | REQ-IEC-030–031 | `chamber-isolation.test.ts`, `predicate-namespace-isolation.test.ts`, `rubric-floor-guard.test.ts` corruption cases |
+| 5 | Resolve coverage/citation/rationale and cross-schema references | REQ-IEC-031–032 | `coverage-map-gates.test.ts`, `prose-anchor-validity.test.ts`, `changelog-observance.test.ts`, `cross-schema-invariants.test.ts`, `version-ordering-invariant.test.ts` |
+
+**Boundary**: these checks do not publish, install or execute an artifact,
+certify an upstream vendor, or grant canonical-v2/advisory-to-blocking promotion.
+
+### J6 — Later entity validation and statement boundaries
+
+| # | Kernel-owned step | Linked REQ | Test evidence |
+| --- | --- | --- | --- |
+| 1 | Validate SkillVersion root/parent/hash/discriminator consistency | REQ-IEC-033 | `src/validators/v1/validators.test.ts` root, revert/restore and contradictory-parent cases; schema/Python counterparts |
+| 2 | Validate legal signing transitions and conditional Rekor metadata | REQ-IEC-034 | `src/entities/skill-version-signing.test.ts`; validator rejection of forged/missing index combinations |
+| 3 | Validate UsageEvent source markers, quantities and structural no-rollup rule | REQ-IEC-035 | `src/entities/usage-event.test.ts` positive and refusal paths |
+| 4 | Validate HumanReview pin, human-only marker, nonempty signal and tenant nullability | REQ-IEC-036 | `src/entities/HumanReview.test.ts` positive and refusal paths |
+| 5 | Validate human-review/v1 statement identity/digest and permanent staging declaration | REQ-IEC-037 | `src/predicates/human-review-v1.test.ts` |
+
+**Boundary**: the kernel checks supplied data and transition maps. Runtime
+identity verification, source authentication, append-only storage, signing,
+Rekor reconciliation and policy decisions are not performed by these tests.
+
 ## Untested steps
 
 The historical statement that no steps were untested is not a current
 completion verdict. The distinctions above separate demonstrated contract
 composition/validation from execution and governance obligations. No new
 kernel execution implementation is implied: execution remains downstream.
-This inventory also lacks explicit journeys for Python parity/codegen,
-authoring v1/v2 contracts and governance guards, and the later SkillVersion,
-UsageEvent and HumanReview surfaces. Their existing tests need a requirements
-and journey mapping before a whole-package coverage claim.
+J4–J6 now map Python, authoring and later-entity contract paths to the additive
+RTM requirements. They do not turn downstream steps in J1–J3 into kernel-owned
+work or establish whole-platform journey coverage.

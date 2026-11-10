@@ -51,12 +51,32 @@ Requirements for `intent-eval-core` are derived from Phase A foundation docs on 
 ## Current inventory scope — 2026-11-10
 
 The 24 requirement rows above retain their original IDs and MoSCoW tiers
-(18 MUST, 5 SHOULD, 1 COULD). They describe the original Blueprint B surface;
-they are not an exhaustive mapping of the current package. The inventory does
-not yet map the Python distribution and parity/codegen tests, authoring v1/v2
-contracts and governance guards, or the later SkillVersion, UsageEvent and
-HumanReview surfaces to explicit requirement rows. Tests for these surfaces
-exist; their presence alone does not establish a complete requirements map.
+(18 MUST, 5 SHOULD, 1 COULD). The additive mappings below cover subsequent
+Python, authoring and entity contracts. They do not replace those rows or
+establish a whole-package requirements-coverage percentage.
+
+### Additive current contract mappings
+
+Each row identifies a kernel-owned contract and concrete positive/negative
+checks. MUST tiers follow the cited existing contract or policy; these rows
+introduce no new runtime responsibility or promotion authority.
+
+| REQ-ID | Existing authority | MoSCoW | Kernel-owned requirement | Test evidence and limits |
+| --- | --- | --- | --- | --- |
+| REQ-IEC-025 | DR-010 shared contracts; `python/README.md` parity contract | MUST | Published Python models accept/reject shared runtime fixtures consistently with JSON Schema and Zod | `python/tests/test_parity.py` (`TestValidFixtures`, negative fixtures and cross-field suites); `src/__tests__/schemas.test.ts`; `src/validators/v1/validators.test.ts`. This is shared-fixture parity, not universal language equivalence. The 21 published omitted-nullable exceptions remain explicit in `python/tests/test_codegen_security.py` and bead `bd_000-projects-wcze.11`. |
+| REQ-IEC-026 | Python generation contract in `python/README.md` | MUST | Pydantic generation uses the pinned tool, rejects unsafe input, preserves existing output on failure, and detects drift without mutation | `python/tests/test_codegen_security.py` rejects off-pin tools/unsafe references; `test_codegen_preservation.py` covers partial output, failed generation, concurrent edits and non-mutating checks; `test_codegen_idempotent.py` checks the actual generated tree. |
+| REQ-IEC-027 | Python distribution version-lockstep contract | MUST | npm, pyproject and Python package versions agree | `python/tests/test_version_lockstep.py`; `.github/workflows/python.yml` runs the lockstep command plus codegen/parity on Python 3.10–3.12. Workflow presence alone is not evidence that branch protection requires it. |
+| REQ-IEC-028 | DR-044 D7/D8; plan 033 §14.10 | MUST | Six authoring v1 contracts compose upstream base, universal folds and per-contract overlay; generated validators agree with schemas on fixtures | `src/__tests__/authoring-schemas.test.ts`, `authoring-fixtures.test.ts`, and the six `*-schema.test.ts` suites for skill-frontmatter, plugin-manifest, agent-definition, mcp-config, hook-config and marketplace-catalog. They assert positive/negative acceptance and composition; they do not certify upstream vendor behavior. |
+| REQ-IEC-029 | DR-049 v1 freeze; DR-062 authoring v2 reconciliation | MUST | v1 bytes remain frozen; v2 is an isolated narrowing with no v1 references and no implied canonical promotion | `src/__tests__/authoring-v1-frozen.test.ts` compares frozen paths to tag v0.4.1; all six `*-v2-schema.test.ts` suites test composition, rejection/acceptance and v2 lifecycle markers. The shallow-clone fallback is a skip, not freeze evidence. |
+| REQ-IEC-030 | DR-049 D-SAK-1 namespace/version/trust separation | MUST | Authoring lint contracts cannot inherit runtime predicate namespaces, version lanes or trust roots | `src/__tests__/predicate-namespace-isolation.test.ts` and `chamber-isolation.test.ts` mutate clean fixtures to forbidden namespace/shared-version/signing-anchor states and require rejection. |
+| REQ-IEC-031 | DR-049 rubric floor; plan 033 §14.2.3/§14.16 | MUST | Required-field/security floors, cited prose anchors, coverage-map entries and extension rationales cannot silently drift | `src/__tests__/rubric-floor-guard.test.ts`, `prose-anchor-validity.test.ts`, `coverage-map-gates.test.ts`, `changelog-observance.test.ts`: weakening, dangling/missing/stale mapping, absent rationale and missing change-lineage fixtures fail. |
+| REQ-IEC-032 | Plan 033 §14.B cross-schema invariants | MUST | Structural cross-contract references resolve and validate; allowed/disallowed tool overlap remains advisory | `src/__tests__/cross-schema-invariants.test.ts` checks missing/invalid referenced manifests and artifact collections, plus advisory overlap; `version-ordering-invariant.test.ts` checks the separate version ordering contract. No downstream artifact installation or execution is claimed. |
+| REQ-IEC-033 | DR-028 T1; DR-085 D3/D5 | MUST | SkillVersion distinguishes edit/revert/restore and binds root/non-root parent identity and hash semantics | `src/validators/v1/validators.test.ts` accepts root/revert/restore fixtures and rejects bad discriminator, forged parent/hash pairing and parentless revert/restore; `src/__tests__/schemas.test.ts` and `python/tests/test_parity.py` check corresponding representations. No hash derivation or persistent lineage store is executed. |
+| REQ-IEC-034 | `000-docs/011-AT-DECR-skillversion-signing-state-machine-2026-07-09.md` | MUST | SkillVersion signing fields remain additive, staging-first, with legal transitions and bounded retry metadata | `src/entities/skill-version-signing.test.ts` checks legal/illegal transitions, terminals and retry ceiling; `src/validators/v1/validators.test.ts` rejects inconsistent active/production/Rekor-index fields. These validate a signer's input contract, not a Rekor call, retry loop or production activation. |
+| REQ-IEC-035 | DR-103 D1/C3 | MUST | UsageEvent requires verified source markers for gated meters, nonnegative integer counts and no heterogeneous rolled scalar | `src/entities/usage-event.test.ts` rejects missing/unverified source, fractional/negative quantities and injected rolled totals; `src/__tests__/schemas.test.ts` and `python/tests/test_parity.py` cover schema/Python fixtures. Authenticating the supplied source marker and persistence remain consumer responsibilities. |
+| REQ-IEC-036 | DR-103 D1/D2 | MUST | HumanReview requires a source pin, non-service-account marker and a nonempty signal; tenant remains optional-not-nullable | `src/entities/HumanReview.test.ts` rejects unpinned/service-account/empty reviews and null tenant; `src/__tests__/schemas.test.ts` and `python/tests/test_parity.py` cover shared representations. This checks supplied identity fields, not real human identity verification. |
+| REQ-IEC-037 | DR-103 D3 | MUST | human-review/v1 keeps its permanent staging declaration and separate statement identity with subject/hash binding | `src/predicates/human-review-v1.test.ts` locks the staging constant and rejects wrong predicate URI, empty subjects and digest mismatches. No live signing or remote signature verification occurs. |
+| REQ-IEC-038 | `tests/TESTING.md` declared type-test.count floor | MUST | At least the declared number of authored expectTypeOf assertion chains remain in discovered, compiled test files | `scripts/type-test-inventory.test.ts` reads the existing floor and counts actual imported assertion chains; negative fixtures reject misleading syntax/registration cases. `pnpm run typecheck` remains the type verdict; the inventory is not a mutation score or proof of assertion usefulness. |
 
 The evidence column also requires scope-aware interpretation:
 
@@ -80,15 +100,17 @@ while separating kernel-owned contract checks from consumer-owned execution.
 
 ## Orphans (tests not linked to a REQ)
 
-The v0.0.0 audit identified none. The current expanded suite has not been
-exhaustively linked to the 24-row inventory; see the scope limits above.
+The v0.0.0 audit identified none. The additive rows link the requested Python, authoring and later-entity surfaces.
+A complete orphan-test census has not been performed; no zero-orphans claim is made.
 
 ## Uncovered requirements
 
 | REQ-ID | Severity | Reason |
 | --- | --- | --- |
 | historical v0.0.0 result | — | The original audit reported all MUSTs/SHOULDs covered and COULDs tracked; this is not a current completion verdict. |
-| current inventory reconciliation | unverified | Later surfaces and runtime-versus-type evidence require explicit mapping before a current coverage verdict. |
+| REQ-IEC-009 / REQ-IEC-014 | unverified beyond contract scope | Per-entity compatibility execution and persistent append-only enforcement are not proven by typed construction fixtures. |
+| REQ-IEC-012 | policy reconciliation | Original no-runtime-dependency wording conflicts with the existing opt-in validator exception; MUST and waiver remain unchanged pending an engineer decision. |
+| REQ-IEC-025 | known compatibility exception | Published Python omitted-nullable behavior is tracked in `bd_000-projects-wcze.11`; shared-fixture success does not erase the exception. |
 
 ## Engineer overrides
 

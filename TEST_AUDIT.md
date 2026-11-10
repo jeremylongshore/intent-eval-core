@@ -57,9 +57,24 @@ following conditional step can print the diff and exit 1. That diagnostic
 failure is explicitly non-blocking.
 
 Mutation, CRAP, bias-count and Gherkin remain waived under existing policy;
-no measurement or passing result is claimed for them. The declared
-`type-test.count: 90` floor has no explicit counting gate found in package
-scripts, hooks or workflows.
+no measurement or passing result is claimed for them. At the audited base,
+the declared `type-test.count: 90` floor had no counting regression. The
+follow-up adds `scripts/type-test-inventory.test.ts` to the existing Vitest
+discovery and CI test command. It counts authored assertion chains imported
+from Vitest, reads the unchanged policy floor, and checks that discovery and
+TypeScript compilation include the inventoried files. The TypeScript compiler
+remains the type verdict. Comments, strings, bare factories, shadowed bindings,
+skipped/conditional registrations, and uncalled helpers do not inflate the
+count. Suppressed assertion chains are excluded; unrelated negative type tests
+remain permitted. Disabled typechecking and unsupported focused registration
+fail explicitly. This is not a count of executed parameterized cases, a mutation
+score, or proof that every assertion is useful.
+
+The follow-up measured **176 authored chains across 54 discovered and compiled
+test files**, above the unchanged floor of 90. Fullcheck passed with 1474 tests
+and one existing skip; coverage retained 100% statements, branches, functions
+and lines. Build/API checks, tsd and hash verification also passed. The corpus
+AST scan has a bounded 30-second timeout to accommodate coverage instrumentation.
 
 ## Required-check reconciliation proposal — pending approval
 
@@ -105,16 +120,22 @@ provides additional merge checks, but does not replace server-side protection.
 ## Traceability findings and follow-up
 
 The retained RTM contains 24 original requirements: 18 MUST, five SHOULD and
-one COULD. Their tags and rows are preserved. It is not a complete inventory
-of the current package: Python, SAK, SkillVersion, UsageEvent and HumanReview
-need explicit mapping. Persona and journey observations now distinguish typed
-construction from real execution, hashing, signing and persistence; the
-existing persona coverage target is unchanged, and achieved coverage is not
-claimed from unmeasured flows.
+one COULD. Their tags and rows are preserved. Additive REQ-IEC-025–038 map
+Python, SAK, SkillVersion, UsageEvent, HumanReview and the existing type-test
+floor to concrete tests. P5–P7 and J4–J6 map the corresponding kernel-owned
+consumer flows. Original persona floors and original journeys are unchanged.
+Mappings distinguish validation of supplied data from authenticating sources,
+executing runtimes, hashing, signing, persisting ledgers and publishing results.
+No complete orphan-test census or whole-package coverage percentage is claimed.
 
-`bd_000-projects-h08j.6.3` tracks the policy-rationale reconciliation, explicit
-type-test-count enforcement, and expanded requirement mappings. Those findings
-remain open; this refresh does not claim full traceability or a clean audit.
+The documented Python nullable-omission compatibility exceptions remain in
+`bd_000-projects-wcze.11`; fixture parity cannot close that contract decision.
+The no-runtime-dependency/pure-type policy rationale and REQ-IEC-012 still need
+an explicit engineer disposition under `bd_000-projects-h08j.6.3`: acknowledge
+the existing opt-in validator exception, and decide whether mutation/CRAP
+waivers should continue for the current runtime validator surface. Neither
+waiver nor requirement wording is silently changed by these mappings.
+
 The protection portion of `bd_000-projects-h08j.6.2` remains pending the exact
 approval above. Other repositories and the reproducible end-to-end walkthrough
 remain under the parent bead.

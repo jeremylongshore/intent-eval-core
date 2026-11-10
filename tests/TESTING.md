@@ -88,7 +88,7 @@ Removing any waiver requires an engineer commit that adds the gate AND re-pins v
 | L2 | format | Prettier 3 | `pnpm run format:check` |
 | L2 | typecheck | TypeScript 5 strict | `pnpm run typecheck` |
 | L2 | runtime reference drift | json-schema-to-zod + Prettier | `pnpm run codegen:validators:check` (read-only; rejects stale, missing and obsolete output) |
-| L3 | runtime + type tests | Vitest 4.1.12 + `expectTypeOf` | `pnpm run test` |
+| L3 | runtime + type tests | Vitest 4.1.12 + `expectTypeOf` | `pnpm run test`; `scripts/type-test-inventory.test.ts` enforces the declared type-test count on discovered, compiled assertion chains |
 | L3 | Python parity + codegen preservation | pytest | `python -m pytest python/tests -q` (install `./python[dev]`; CI covers Python 3.10–3.12) |
 | L3 | coverage | Vitest V8 | `pnpm run test:coverage` (100% floor enforced in `vitest.config.ts`) |
 | L4 | architecture rules | `dependency-cruiser@17` via harness | `pnpm exec audit-harness arch` |
@@ -119,8 +119,10 @@ Removing any waiver requires an engineer commit that adds the gate AND re-pins v
 The classification, architectural-binding, threshold and waiver sections above
 retain engineer policy verbatim. Their pure-type/no-runtime-dependency rationale
 is stale: the package includes Zod validators and ships a Pydantic distribution.
-Policy reconciliation and expanded traceability are tracked in
-`bd_000-projects-h08j.6.3`; this audit does not silently change a waiver or floor.
+The additive RTM and persona/journey mappings cover current Python, authoring
+and later-entity contract tests. `scripts/type-test-inventory.test.ts` enforces
+the existing type-test floor without changing it. Policy-rationale decisions
+remain tracked in `bd_000-projects-h08j.6.3`; no waiver or floor changes here.
 
 ## Traceability
 
