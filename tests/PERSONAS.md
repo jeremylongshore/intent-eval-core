@@ -65,6 +65,51 @@ those consumer flows.
 
 **Evidence boundary**: not a runtime persona. Spec-consistency review is required; this audit does not establish that review as complete.
 
+### P5 — Python runtime-contract consumer
+
+**Role**: loads the Pydantic runtime entity/predicate models. Python does not
+implement the authoring-schema validator family (`python/README.md`).
+
+| Kernel-owned flow | Requirement | Evidence |
+| --- | --- | --- |
+| Import shipped models and validate shared positive/negative fixtures | REQ-IEC-025 | `python/tests/test_parity.py` checks exports, valid/invalid fixtures and cross-field rules |
+| Regenerate safely or reject stale/unsafe generation | REQ-IEC-026 | `python/tests/test_codegen_idempotent.py`, `test_codegen_preservation.py`, `test_codegen_security.py` |
+| Consume a version aligned with npm | REQ-IEC-027 | `python/tests/test_version_lockstep.py` |
+
+**Limits**: shared-fixture parity excludes the documented published nullable
+omission differences tracked by `bd_000-projects-wcze.11`. This mapping proves
+neither every possible payload nor downstream persistence or signing.
+
+### P6 — Authoring-contract validator consumer
+
+**Role**: selects the published v1 or separately shipped internal v2 profile
+for skill, plugin, agent, MCP, hook and marketplace metadata.
+
+| Kernel-owned flow | Requirement | Evidence |
+| --- | --- | --- |
+| Parse six composed contract families and reject violated folds | REQ-IEC-028 | Six v1 `src/__tests__/*-schema.test.ts` families and `authoring-fixtures.test.ts` |
+| Select v2 without mutating frozen v1 or implying promotion | REQ-IEC-029 | Six `*-v2-schema.test.ts` suites and `authoring-v1-frozen.test.ts` |
+| Detect namespace/chamber, rubric, citation and cross-schema inconsistencies | REQ-IEC-030–032 | `predicate-namespace-isolation`, `chamber-isolation`, `rubric-floor-guard`, `coverage-map-gates`, `prose-anchor-validity`, `changelog-observance`, `cross-schema-invariants` and `version-ordering-invariant` suites |
+
+**Limits**: validation is not artifact installation, agent execution, upstream
+vendor certification, or a change to the advisory/promotion lifecycle.
+
+### P7 — Refinement, product-metering and human-review contract consumer
+
+**Role**: consumes SkillVersion, UsageEvent and HumanReview schemas, state
+maps and validators in a separate runtime.
+
+| Kernel-owned flow | Requirement | Evidence |
+| --- | --- | --- |
+| Validate lineage and legal signing-state metadata | REQ-IEC-033–034 | `src/validators/v1/validators.test.ts`, `src/entities/skill-version-signing.test.ts` |
+| Reject unverified-meter markers, invalid quantities and rolled scalars | REQ-IEC-035 | `src/entities/usage-event.test.ts` plus schema/Python shared fixtures |
+| Reject empty, unpinned or service-account-marked human reviews | REQ-IEC-036 | `src/entities/HumanReview.test.ts` plus schema/Python shared fixtures |
+| Validate separate human-review Statement identity and digest binding | REQ-IEC-037 | `src/predicates/human-review-v1.test.ts` |
+
+**Limits**: supplied marker validation does not authenticate a real person or
+source. Tests do not execute a signer, reconciler, persistent ledger, or
+production rollout. Those remain downstream evidence obligations.
+
 ## Coverage floor
 
 For a library kernel with 4 consumer personas, the coverage threshold is **per-persona key-flow coverage ≥ 100%** (each persona's key flows have at least one type-level integration test).
@@ -77,9 +122,9 @@ For a library kernel with 4 consumer personas, the coverage threshold is **per-p
 | P4 — methodology authors | n/a (not a runtime consumer) | n/a |
 
 The 100% floor above is unchanged. These observations do not establish that the
-floor is met. This four-persona inventory predates Python consumers, authoring
-contract consumers, and later entity surfaces; their flows still require
-explicit mapping rather than an inferred coverage percentage.
+floor is met. The original four-persona policy sentence is preserved. P5–P7 add explicit
+kernel-owned flows for the later surfaces; no new percentage or change to the
+engineer-owned coverage target is inferred from their test mappings.
 
 ## Personas NOT in scope at the kernel layer
 
