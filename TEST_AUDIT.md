@@ -5,7 +5,7 @@
 Base: `df2813373cf503a38e66e29306ba83f91c823384` (0.11.1).
 Tracking: `bd_000-projects-h08j.6.2`, parent `bd_000-projects-h08j.6`.
 The May 19 audit at `7441221` is historical; its grade, counts and Python
- deferrals are not current findings. No aggregate grade is assigned here:
+deferrals are not current findings. No aggregate grade is assigned here:
 measured checks pass, but protection and traceability gaps remain.
 
 ## Classification and freshness
@@ -73,8 +73,9 @@ Live GitHub protection on November 10 requires these seven contexts:
 - `typos`
 - `lychee`
 
-Proposed change: **retain those seven and add these eight**, each associated
-with GitHub Actions application ID `15368`:
+Proposed change: **retain those seven and add these ten**, nine associated
+with GitHub Actions application ID `15368` and the aggregate `CodeQL` check
+with GitHub Advanced Security application ID `57789`:
 
 - `codegen-check + parity (py3.10)`
 - `codegen-check + parity (py3.11)`
@@ -84,10 +85,13 @@ with GitHub Actions application ID `15368`:
 - `changelog observance (schemas/ vs governing CHANGELOG)`
 - `Analyze (javascript-typescript)`
 - `Analyze (python)`
+- `CodeQL` (application ID `57789`)
+- `gate / bd-claim-precheck`
 
-All eight are defined on every PR without path filters and passed the prior
+The workflow jobs run on every PR without path filters. All ten contexts
+were observed passing on the prior
 release PR #123. They protect Python parity, schema citations and rationale,
-change lineage, and security analysis. Scheduled CodeQL run `42612611880`
+change lineage, security analysis, and task-claim discipline. Scheduled CodeQL run `42612611880`
 failed, so historical PR success is not a claim that all recent runs succeeded.
 Inspect the audit PR's exact-head results before applying this proposal.
 
