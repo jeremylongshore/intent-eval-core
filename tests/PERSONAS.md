@@ -14,11 +14,14 @@
 - Wrap it in an in-toto `GateResultV1Statement` with a `subject` array that satisfies `SUBJECT_NAME_REGEX`
 - Sign as DSSE envelope; append row to an `EvidenceBundle`
 
-**Test coverage**: `src/integration.test.ts` exercises this flow end-to-end.
+**Observed kernel evidence**: `src/integration.test.ts` constructs typed
+predicate, Statement, and bundle fixtures and checks selected references. It
+does not sign a DSSE envelope or append to a persistent bundle. Signing and
+persistence remain downstream execution concerns, unverified by this suite.
 
 ### P2 — `j-rig-skill-binary-eval` (behavioral evaluation)
 
-**Role**: depends on the kernel for `JudgeDecision`, `EvalRun`, `SessionTrace`, `ToolInvocation` shapes. Implements the `@j-rig/rollout-gate` policy translator that maps `gate-result/v1.gate_decision` → `RolloutGate.decision`.
+**Role**: depends on the kernel for `JudgeDecision`, `EvalRun`, `SessionTrace`, `ToolInvocation` shapes. Implements the `@intentsolutions/rollout-gate` policy translator that maps `gate-result/v1.gate_decision` → `RolloutGate.decision`.
 
 **Key flows**:
 
@@ -26,7 +29,11 @@
 - Emit `RolloutGate` with `decision` mapped from policy + verdict aggregation
 - Reference `MatcherMap` and `FailureTaxonomy` for verdict classification
 
-**Test coverage**: `src/integration.test.ts` exercises the RolloutGate ↔ gate-result/v1 mapping invariant.
+**Observed kernel evidence**: `src/integration.test.ts` constructs a `ship`
+RolloutGate and a `pass` predicate fixture, then checks those assigned values.
+This demonstrates compatible contract shapes; it does not execute aggregation
+or policy translation. The current published decision package is
+`@intentsolutions/rollout-gate`; downstream behavior needs its own evidence.
 
 ### P3 — `intent-rollout-gate` (GitHub Action shell)
 
@@ -39,7 +46,12 @@
 - Apply consumer-side `tests/TESTING.md` policy (which is NOT in the kernel — § 7.6 architectural separation)
 - Emit GH Action output: pass / fail / advisory
 
-**Test coverage**: at the kernel level, `gate-result-v1.test.ts` proves the predicate body is parseable. End-to-end consumption tests live in the rollout-gate repo.
+**Observed kernel evidence**: `src/predicates/gate-result-v1.test.ts` locks
+predicate/Statement/DSSE field types and subject naming. Runtime parse-and-reject
+evidence lives in `src/validators/v1/evidence-statement.test.ts`, including
+subject-name and digest mismatches. Signature verification, policy application,
+and Action output are downstream responsibilities; this audit does not verify
+those consumer flows.
 
 ### P4 — `intent-eval-lab` methodology authors
 
@@ -51,7 +63,7 @@
 - Propose new MM-classes via `FailureTaxonomy` lifecycle
 - Authorize URI bumps for `gate-result/vN+1` via ISEDC DRs
 
-**Test coverage**: not a runtime persona — covered by spec-consistency review.
+**Evidence boundary**: not a runtime persona. Spec-consistency review is required; this audit does not establish that review as complete.
 
 ## Coverage floor
 
@@ -59,10 +71,15 @@ For a library kernel with 4 consumer personas, the coverage threshold is **per-p
 
 | Persona | Key flows | Covered |
 | --- | --- | --- |
-| P1 — audit-harness | 1/1 (predicate-body construction + DSSE wrap + bundle append) | ✓ |
-| P2 — j-rig | 1/1 (RolloutGate ↔ gate-result/v1 mapping) | ✓ |
-| P3 — intent-rollout-gate | 1/1 (predicate body parse-and-narrow) | ✓ |
+| P1 — audit-harness | Typed predicate/Statement/bundle composition demonstrated; signing and persistence not executed | Full key-flow coverage unverified |
+| P2 — j-rig | Typed RolloutGate/predicate composition demonstrated; aggregation and policy translation not executed | Full key-flow coverage unverified |
+| P3 — intent-rollout-gate | Kernel field types and runtime statement validation demonstrated; consumer execution not audited | Full key-flow coverage unverified |
 | P4 — methodology authors | n/a (not a runtime consumer) | n/a |
+
+The 100% floor above is unchanged. These observations do not establish that the
+floor is met. This four-persona inventory predates Python consumers, authoring
+contract consumers, and later entity surfaces; their flows still require
+explicit mapping rather than an inferred coverage percentage.
 
 ## Personas NOT in scope at the kernel layer
 

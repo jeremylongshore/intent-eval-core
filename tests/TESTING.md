@@ -81,29 +81,29 @@ Removing any waiver requires an engineer commit that adds the gate AND re-pins v
 
 | Layer | Gate | Tool | Invocation |
 | --- | --- | --- | --- |
-| L0 | enforcement harness | `@intentsolutions/audit-harness@0.1.0` | `pnpm exec audit-harness <cmd>` |
+| L0 | enforcement harness | `@intentsolutions/audit-harness@1.4.0` | `pnpm exec audit-harness <cmd>` |
 | L1 | pre-commit | `husky@9.1.7` + `lint-staged@17` | `.husky/pre-commit` |
 | L1 | CI checks | GitHub Actions | `.github/workflows/ci.yml` (`lint + typecheck + test + build` required) |
 | L2 | lint | ESLint 9 flat | `pnpm run lint` |
 | L2 | format | Prettier 3 | `pnpm run format:check` |
 | L2 | typecheck | TypeScript 5 strict | `pnpm run typecheck` |
 | L2 | runtime reference drift | json-schema-to-zod + Prettier | `pnpm run codegen:validators:check` (read-only; rejects stale, missing and obsolete output) |
-| L3 | runtime + type tests | vitest 2 + `expectTypeOf` | `pnpm run test` |
+| L3 | runtime + type tests | Vitest 4.1.12 + `expectTypeOf` | `pnpm run test` |
 | L3 | Python parity + codegen preservation | pytest | `python -m pytest python/tests -q` (install `./python[dev]`; CI covers Python 3.10–3.12) |
-| L3 | coverage | vitest c8 | `pnpm run test:coverage` (100% floor enforced in `vitest.config.ts`) |
+| L3 | coverage | Vitest V8 | `pnpm run test:coverage` (100% floor enforced in `vitest.config.ts`) |
 | L4 | architecture rules | `dependency-cruiser@17` via harness | `pnpm exec audit-harness arch` |
 | escape-scan | diff-gate | harness | `pnpm exec audit-harness escape-scan --staged` |
 
 ## Frameworks
 
-- **Test runner**: vitest 2
+- **Test runner**: Vitest 4.1.12
 - **Python regressions**: `python/tests/test_codegen_preservation.py` exercises
   documentation retention, obsolete-module pruning, failure preservation,
   concurrent edits and read-only checks, including the real pinned generator.
-- **Type-level assertions**: `expectTypeOf` from vitest 2 (in-process) + `tsd@0.33` (separate-process second-opinion via `pnpm run test:types`) — both wired in iec-E02e
+- **Type-level assertions**: `expectTypeOf` from Vitest 4.1.12 (in-process) + `tsd@0.33` (separate-process second-opinion via `pnpm run test:types`) — both wired in iec-E02e
 - **Lint**: ESLint 9 flat + typescript-eslint 8 (typed lint via `projectService`)
 - **Format**: Prettier 3
-- **Coverage**: vitest c8 (`@vitest/coverage-v8@2`)
+- **Coverage**: Vitest V8 (`@vitest/coverage-v8@4.1.12`)
 - **Architecture**: dependency-cruiser 17 (config: `.dependency-cruiser.cjs`)
 - **Pre-commit**: husky 9 + lint-staged 17
 
@@ -111,10 +111,16 @@ Removing any waiver requires an engineer commit that adds the gate AND re-pins v
 
 | Field | Value |
 | --- | --- |
-| Date | 2026-05-16 |
-| Auditor | `/audit-tests` skill (Claude Code) |
-| Grade | A (96/100) — all required gates green, 100% coverage, 93 type-level assertions, only deferred items are 8 architectural beads filed for follow-up |
-| Report | `TEST_AUDIT.md` (transient, at repo root) |
+| Date | 2026-11-10 |
+| Scope | Verification refresh at `df2813373cf503a38e66e29306ba83f91c823384`; measured gates and enforcement mapping, with historical traceability limits made explicit |
+| Result | See current measurements and open findings in `TEST_AUDIT.md`; no aggregate grade assigned |
+| Report | `TEST_AUDIT.md` |
+
+The classification, architectural-binding, threshold and waiver sections above
+retain engineer policy verbatim. Their pure-type/no-runtime-dependency rationale
+is stale: the package includes Zod validators and ships a Pydantic distribution.
+Policy reconciliation and expanded traceability are tracked in
+`bd_000-projects-h08j.6.3`; this audit does not silently change a waiver or floor.
 
 ## Traceability
 

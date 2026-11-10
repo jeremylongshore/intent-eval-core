@@ -48,15 +48,47 @@ Requirements for `intent-eval-core` are derived from Phase A foundation docs on 
 | REQ-IEC-023 | Standards-body discipline | SHOULD | Negative tests with `@ts-expect-error` / `expectError` prove the constraints constrain | `test-d/*.test-d.ts` (~80 expectError assertions) |
 | REQ-IEC-024 | Standards-body discipline | SHOULD | Full ERD-walk integration test composes the entire chain | `src/integration.test.ts` |
 
+## Current inventory scope — 2026-11-10
+
+The 24 requirement rows above retain their original IDs and MoSCoW tiers
+(18 MUST, 5 SHOULD, 1 COULD). They describe the original Blueprint B surface;
+they are not an exhaustive mapping of the current package. The inventory does
+not yet map the Python distribution and parity/codegen tests, authoring v1/v2
+contracts and governance guards, or the later SkillVersion, UsageEvent and
+HumanReview surfaces to explicit requirement rows. Tests for these surfaces
+exist; their presence alone does not establish a complete requirements map.
+
+The evidence column also requires scope-aware interpretation:
+
+- `src/integration.test.ts` constructs typed fixtures and checks selected
+  cross-entity references. It does not execute a runtime, derive snapshot
+  hashes, sign DSSE envelopes, persist append-only bundles, or decide policy.
+- REQ-IEC-009's implicit compatibility statement is not a separately verified
+  per-entity traceability result. REQ-IEC-014's cited suite checks transition
+  legality and selected field types, not a persistent append-only store.
+- REQ-IEC-012 retains its MUST tier. Its original no-runtime-dependency wording
+  must be reconciled with the existing opt-in Zod validator exception in
+  `.dependency-cruiser.cjs`; this audit does not change that policy.
+- Current runtime statement validation has stronger evidence than the original
+  type-only map: `src/validators/v1/evidence-statement.test.ts` checks accepted
+  statements and rejection of subject-name/digest mismatches, invalid envelope
+  constants, unknown keys, and malformed predicate bodies.
+
+No current all-MUSTs-covered or no-orphans verdict is established by this
+historical inventory. Reconciliation must preserve each binding requirement
+while separating kernel-owned contract checks from consumer-owned execution.
+
 ## Orphans (tests not linked to a REQ)
 
-None identified at v0.0.0.
+The v0.0.0 audit identified none. The current expanded suite has not been
+exhaustively linked to the 24-row inventory; see the scope limits above.
 
 ## Uncovered requirements
 
 | REQ-ID | Severity | Reason |
 | --- | --- | --- |
-| none at v0.0.0 | — | All MUSTs covered; SHOULDs covered; COULDs explicitly tracked as deferrals in bd |
+| historical v0.0.0 result | — | The original audit reported all MUSTs/SHOULDs covered and COULDs tracked; this is not a current completion verdict. |
+| current inventory reconciliation | unverified | Later surfaces and runtime-versus-type evidence require explicit mapping before a current coverage verdict. |
 
 ## Engineer overrides
 

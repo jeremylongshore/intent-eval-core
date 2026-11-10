@@ -27,7 +27,13 @@
 | 13 | Subject name MUST satisfy `SUBJECT_NAME_REGEX` (§ 7.3) | L3 | REQ-IEC-003 | `gate-result-v1.test.ts` § "subject naming" |
 | 14 | DSSE envelope wraps Statement; row is independently verifiable | L3 | REQ-IEC-002 | `gate-result-v1.test.ts` § "in-toto + DSSE wrapping" |
 
-**Coverage**: ✅ all 14 steps tested.
+**Observed evidence**: the cited integration test explicitly describes itself
+as type-level composition. It constructs fixtures and checks selected foreign
+keys and values; it does not derive the combined hash, execute or transition a
+run, collect costs, sign or independently verify a DSSE envelope, persist an
+append-only bundle, or apply rollout policy. The predicate suite locks envelope
+field types. The 14-step journey contract is retained, but complete execution
+coverage is not established by these tests.
 
 ### J2 — NEW MM-class lifecycle (taxonomy → kernel enum bump)
 
@@ -41,7 +47,11 @@
 | 2 | ISEDC review + transition to `status: 'canonical'` | governance | REQ-IEC-011 | manual ISEDC DR; runtime path tested |
 | 3 | Bump kernel's `MmClass` literal union to include 'MM-7'; new MatcherMap rows can now use it | code change | REQ-IEC-001, REQ-IEC-011 | regression on existing tests + new MM-7 test required at bump time |
 
-**Coverage**: steps 1, 3 covered at the type level; step 2 is governance (out of code-test scope).
+**Observed evidence**: `session-tool-cost-failure.test.ts` demonstrates an open
+`MmClassId` accepting MM-7, the current closed MatcherMap enum, and legal/illegal
+taxonomy transitions. It does not perform the future enum bump in step 3 or the
+ISEDC decision in step 2. Those steps remain conditional change/governance
+obligations, not completed tests.
 
 ### J3 — `gate-result/v1` consumer parse
 
@@ -58,8 +68,21 @@
 | 5 | Narrow `predicate` to `GateResultV1` interface; access required + optional fields | type-level | REQ-IEC-002 | `gate-result-v1.test.ts` § "predicate body shape" |
 | 6 | Apply consumer-side policy from `tests/TESTING.md` per § 7.6 architectural separation | runtime — downstream | n/a (consumer-owned) | downstream tests in `intent-rollout-gate` |
 
-**Coverage**: steps 3, 5 covered at the kernel; steps 1, 2, 4, 6 are runtime concerns covered downstream.
+**Observed evidence**: the predicate suite covers field types and URI constants.
+`src/validators/v1/evidence-statement.test.ts` additionally parses valid
+statements and rejects mismatched subject names/digests and invalid envelope
+constants, providing runtime kernel validation evidence for steps 3–5. It does
+not verify signatures or apply consumer policy. The downstream assertions in
+the table identify responsibility; they are not verified consumer test results
+from this audit.
 
 ## Untested steps
 
-None at the kernel level. All steps that are kernel-owned have type-level tests; all steps that are runtime-owned are documented as downstream consumer concerns.
+The historical statement that no steps were untested is not a current
+completion verdict. The distinctions above separate demonstrated contract
+composition/validation from execution and governance obligations. No new
+kernel execution implementation is implied: execution remains downstream.
+This inventory also lacks explicit journeys for Python parity/codegen,
+authoring v1/v2 contracts and governance guards, and the later SkillVersion,
+UsageEvent and HumanReview surfaces. Their existing tests need a requirements
+and journey mapping before a whole-package coverage claim.
