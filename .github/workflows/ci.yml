@@ -93,10 +93,9 @@ jobs:
       - name: Architecture rules (Blueprint A anti-goals)
         run: pnpm run arch
 
-      - name: Test (runtime + in-process type assertions)
-        run: pnpm run test
-
-      - name: Coverage (100% floor enforced via vitest config)
+      # Coverage executes the same complete runtime/type-assertion suite once.
+      # Keep the coverage thresholds and the separate published-surface tsd gate.
+      - name: Test with coverage (100% floor enforced via vitest config)
         run: pnpm run test:coverage
 
       - name: Upload coverage to Codecov
