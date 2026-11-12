@@ -33,6 +33,7 @@ Naming: `NNN-CC-ABCD-description-YYYY-MM-DD.md` where:
 | 012 | [Eval-substrate contract identity](012-AT-SPEC-eval-substrate-contract-identity-2026-08-01.md) | 2026-08-01 | AT-SPEC | IMPLEMENTATION APPLICATION — core `EvalSpec` remains canonical; J-Rig's skill-shaped profile is `SkillEvalSpec` with an explicit adapter and lineage; recorded against kernel 0.10.0; master plan `IEP-EVAL-EVOLUTION-001`; bead `bd_000-projects-htjt.1`. |
 | 013 | [Canonical dashboard evidence](013-AT-SPEC-canonical-dashboard-evidence-2026-10-12.md) | 2026-10-12 | AT-SPEC | IMPLEMENTED — canonical payload hashing, projection consistency and mutation contracts for the private evidence producer. |
 | 015 | [YAML substitution policy baseline](015-AA-EVAL-yaml-shell-substitution-baseline-2026-10-19.md) | 2026-10-19 | AA-EVAL | Measured; kernel targets not met against marketplace labels; policy follow-up `9pey` remains open. |
+| 016 | [Kernel adoption disposition packet](016-PP-PLAN-kernel-adoption-disposition-2026-11-12.md) | 2026-11-12 | PP-PLAN | PROPOSED — owner decisions unset; skill-card, capability and evaluation-profile review for bead6fwn / issue90; no schema adoption or release. |
 
 ## Cross-repo authority chain
 
